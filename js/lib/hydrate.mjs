@@ -126,7 +126,11 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
 
   store.subscribe(() => {
     if (raf) return;
-    raf = requestAnimationFrame(() => { raf = 0; rerender(); });
+    // rAF never fires in a hidden tab; fall back so state changes still land.
+    const schedule = typeof document !== 'undefined' && document.hidden
+      ? cb => setTimeout(cb, 16)
+      : requestAnimationFrame;
+    raf = schedule(() => { raf = 0; rerender(); });
   });
 
   rerender();

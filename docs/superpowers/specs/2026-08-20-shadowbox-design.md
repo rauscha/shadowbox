@@ -68,7 +68,10 @@ idiom (MFM data, staged against synthetic), and colorblind-safe encoding through
   no CDN. Formulas are sparse by design — the figures carry the argument; formulas are
   shorthand appearing *after* the idea is visible.
 - Site is its own visual world (no parent-site sidebar — the `doppler` precedent) but
-  imports IBM Plex and the parent's `--color-*` token vocabulary so it reads as Andrew's.
+  reads as Andrew's: IBM Plex via Google Fonts (with real fallback stacks, the parent
+  precedent), and the parent's `--color-*` token *values copied into*
+  `css/shadowbox.css` — never a runtime link to the parent stylesheet. Self-contained
+  by construction.
 - Dark mode via `prefers-color-scheme`, same mechanism as the parent site.
 
 ## 5. The instrument contract (the architectural decision)
@@ -173,7 +176,10 @@ Instruments:
 
 **Staged data:** synthetic cloud with a ρ dial (truth known because you dialed it).
 Then a real biometry pair — head circumference vs estimated fetal weight — where
-"millimetres vs grams" isn't a contrived gotcha, it's Tuesday.
+"millimetres vs grams" isn't a contrived gotcha, it's Tuesday. The essay must state
+plainly that EFW is *computed from* biometry (including HC), so part of that tight
+correlation is by construction — an honest aside the target audience would otherwise
+catch us on, and itself a small lesson in derived variables.
 
 ### Rung 3 — PCA (`pca.html`)
 
@@ -209,10 +215,12 @@ provenance block (source, year, extraction method, citation, license note).
 - **Synthetic:** generated in-browser by a seeded PRNG (mulberry32); default seeds
   committed so pages render identically for everyone; "resample" draws a new seed.
   Ground truth (true line, true ρ) always carried in state and drawable.
-- **NCHS natality** (rung 1): public-use natality file; extract birthweight and
-  gestational age (plus a couple of covariates banked for future rungs); downsample to
-  ~500 points; document the extraction under `data/README.md`. Public, unrestricted,
-  citable.
+- **NCHS natality** (rung 1): birthweight and gestational age (plus a couple of
+  covariates banked for future rungs), ≤500 points, provenance under `data/README.md`.
+  Concrete initial route: the OpenIntro `births14` sample (1,000 births drawn from the
+  2014 NCHS natality file; openly licensed, citable, kilobytes not gigabytes),
+  downsampled. A direct extract from a raw NCHS public-use file (multi-GB) is the
+  documented upgrade path, not a prerequisite.
 - **Fetal biometry** (rungs 2–3): **simulated from published reference centiles and
   correlation structure** (Hadlock-era / WHO fetal growth parameters), labeled plainly
   on-page as "simulated from published parameters." Rationale: individual-level public

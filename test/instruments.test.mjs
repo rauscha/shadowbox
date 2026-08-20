@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as FS from '../js/instruments/fit-scatter.mjs';
+import * as LB from '../js/instruments/loss-bowl.mjs';
 import { synthLine, ols, sse } from '../js/math/core.mjs';
 
 const state = () => {
@@ -53,4 +54,35 @@ test('applyDrag: points moves one data point', () => {
   const out = FS.applyDrag(s, { id: 'points', index: 3, x: L.x(2), y: L.y(2) });
   assert.ok(Math.abs(out.xs[3] - 2) < 1e-9 && Math.abs(out.ys[3] - 2) < 1e-9);
   assert.equal(out.xs.length, s.xs.length);
+});
+
+test('loss-bowl renders bands, contours, ols minimum and a draggable marker', () => {
+  const s = state();
+  const svg = LB.render({ ...LB.defaults, idKey: 'b1', xs: s.xs, ys: s.ys, slope: s.slope, intercept: s.intercept, loss: 'squared' });
+  assert.match(svg, /^<svg[^>]*viewBox="0 0 640 460"/);
+  assert.ok((svg.match(/data-role="band"/g) || []).length > 20);
+  assert.ok((svg.match(/data-role="contour"/g) || []).length >= 4);
+  assert.ok(svg.includes('data-drag="marker"'));
+  assert.ok(svg.includes('data-role="minimum"'));
+});
+
+test('loss-bowl marker sits at (slope, intercept); applyDrag inverts it', () => {
+  const s = state();
+  const st = { ...LB.defaults, idKey: 'b2', xs: s.xs, ys: s.ys, slope: s.slope + 0.4, intercept: s.intercept - 1, loss: 'squared' };
+  const L = LB.layout(st);
+  const svg = LB.render(st);
+  const m = svg.match(/data-drag="marker"[^>]*? cx="([0-9.-]+)"[^>]*? cy="([0-9.-]+)"/);
+  assert.ok(m, 'marker with cx/cy present');
+  assert.ok(Math.abs(+m[1] - L.x(st.slope)) < 0.5 && Math.abs(+m[2] - L.y(st.intercept)) < 0.5);
+  const out = LB.applyDrag(st, { id: 'marker', index: 0, x: L.x(1.0), y: L.y(2.0) });
+  assert.ok(Math.abs(out.slope - 1.0) < 1e-6 && Math.abs(out.intercept - 2.0) < 1e-6);
+});
+
+test('loss-bowl surface markup is cached per (xs,ys,loss)', () => {
+  const s = state();
+  const st = { ...LB.defaults, idKey: 'b3', xs: s.xs, ys: s.ys, slope: 0, intercept: 0, loss: 'squared' };
+  const a = LB.render(st);
+  const b = LB.render({ ...st, slope: 1 });                 // marker moved, same data
+  const band = /(<g data-role="surface">[\s\S]*?<\/g>)/;
+  assert.equal(a.match(band)[1], b.match(band)[1]);
 });

@@ -1,0 +1,134 @@
+// shadowbox hydration runtime. Small and boring on purpose.
+// An instrument is {name, defaults, posterState, controls, render, applyDrag}.
+// mount() swaps an inline poster SVG for the live instrument and wires:
+//   - declarative controls (sliders / toggles / actions) below the SVG
+//   - pointer drags on [data-drag] elements, routed through instrument.applyDrag
+//   - keyboard drags (tab to a handle, arrows nudge, shift = coarse)
+// Pure helpers (createStore, controlsMarkup, clientToViewBox) are node-tested;
+// DOM binding is exercised in the browser QA pass.
+
+export function createStore(initial) {
+  let state = { ...initial };
+  const subs = new Set();
+  return {
+    get: () => state,
+    set(partial, { silent = false } = {}) {
+      state = { ...state, ...partial };
+      if (!silent) for (const fn of subs) fn(state);
+    },
+    subscribe(fn) { subs.add(fn); return () => subs.delete(fn); },
+  };
+}
+
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+export function controlsMarkup(controls, state) {
+  const parts = [];
+  for (const c of controls) {
+    // A truth toggle has nothing to show when the dataset carries no truth.
+    if (c.id === 'showTruth' && !state.truth) continue;
+    if (c.kind === 'slider') {
+      parts.push(`<label>${esc(c.label)}<input type="range" data-control="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${state[c.id]}"></label>`);
+    } else if (c.kind === 'toggle') {
+      const pressed = state[c.id] === c.on;
+      parts.push(`<button type="button" data-control="${c.id}" data-on="${esc(c.on)}" data-off="${esc(c.off)}" aria-pressed="${pressed}">${esc(c.label)}</button>`);
+    } else if (c.kind === 'action') {
+      parts.push(`<button type="button" data-action="${c.id}">${esc(c.label)}</button>`);
+    }
+  }
+  return parts.join('\n');
+}
+
+// Invert an affine screen CTM {a,b,c,d,e,f}: client px -> viewBox units.
+export function clientToViewBox(m, cx, cy) {
+  const det = m.a * m.d - m.b * m.c;
+  const x = cx - m.e, y = cy - m.f;
+  return { x: (m.d * x - m.c * y) / det, y: (m.a * y - m.b * x) / det };
+}
+
+function coerce(c, raw) {
+  return c && c.kind === 'toggle' ? raw : Number(raw);
+}
+
+export function mount(el, instrument, store, { actions = {} } = {}) {
+  let dragging = null;          // {id, index} while a pointer drag is live
+  let raf = 0;
+
+  function markup(state) {
+    return `${instrument.render(state)}\n<div class="controls">${controlsMarkup(instrument.controls, state)}</div>`;
+  }
+
+  function bind() {
+    const svg = el.querySelector('svg');
+    if (!svg) return;
+
+    el.querySelectorAll('input[data-control]').forEach(input => {
+      input.addEventListener('input', () => store.set({ [input.dataset.control]: Number(input.value) }));
+    });
+    el.querySelectorAll('button[data-control]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.control;
+        const cur = store.get()[id];
+        const onVal = btn.dataset.on === 'true' ? true : btn.dataset.on === 'false' ? false : btn.dataset.on;
+        const offVal = btn.dataset.off === 'true' ? true : btn.dataset.off === 'false' ? false : btn.dataset.off;
+        store.set({ [id]: cur === onVal ? offVal : onVal });
+      });
+    });
+    el.querySelectorAll('button[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => { const fn = actions[btn.dataset.action]; if (fn) fn(store); });
+    });
+
+    svg.addEventListener('pointerdown', ev => {
+      const t = ev.target.closest('[data-drag]');
+      if (!t) return;
+      dragging = { id: t.dataset.drag, index: Number(t.dataset.index || 0) };
+      svg.setPointerCapture(ev.pointerId);
+      ev.preventDefault();
+    });
+    svg.addEventListener('pointermove', ev => {
+      if (!dragging) return;
+      const m = svg.getScreenCTM();
+      if (!m) return;
+      const p = clientToViewBox(m, ev.clientX, ev.clientY);
+      store.set(instrument.applyDrag(store.get(), { ...dragging, x: p.x, y: p.y }));
+    });
+    const end = () => { dragging = null; };
+    svg.addEventListener('pointerup', end);
+    svg.addEventListener('pointercancel', end);
+
+    svg.addEventListener('keydown', ev => {
+      const t = ev.target.closest('[data-drag]');
+      if (!t) return;
+      const step = ev.shiftKey ? 16 : 4;
+      const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[ev.key];
+      if (!d) return;
+      ev.preventDefault();
+      const box = t.getBBox();
+      const cx = box.x + box.width / 2 + d[0];
+      const cy = box.y + box.height / 2 + d[1];
+      store.set(instrument.applyDrag(store.get(), { id: t.dataset.drag, index: Number(t.dataset.index || 0), x: cx, y: cy }));
+    });
+  }
+
+  function rerender() {
+    // Preserve keyboard focus across the innerHTML swap.
+    const focused = document.activeElement && el.contains(document.activeElement)
+      ? { drag: document.activeElement.dataset?.drag, index: document.activeElement.dataset?.index }
+      : null;
+    el.innerHTML = markup(store.get());
+    bind();
+    if (focused && focused.drag) {
+      const again = el.querySelector(`[data-drag="${focused.drag}"][data-index="${focused.index ?? 0}"]`)
+        || el.querySelector(`[data-drag="${focused.drag}"]`);
+      if (again) again.focus();
+    }
+  }
+
+  store.subscribe(() => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => { raf = 0; rerender(); });
+  });
+
+  rerender();
+  return { rerender };
+}

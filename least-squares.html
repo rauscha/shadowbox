@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>least squares — shadowbox</title>
+  <meta name="description" content="An interactive essay on least squares: drag the line, watch the squares, find the bottom of the bowl — then try it on real births.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/shadowbox.css">
+</head>
+<body>
+  <main class="essay">
+    <p class="kicker">shadowbox · rung 1</p>
+    <h1>Least squares</h1>
+
+    <p>Before you trust any line through any scatter, you should get to choose one by
+    hand and feel what “best” costs.</p>
+
+    <p>Every regression figure in every paper is the output of a machine that was
+    handed a scatter of points and a definition of <em>best</em>, and returned a line.
+    This page opens that machine. You will drive it by hand first, see the definition
+    it optimizes drawn as literal ink on the page, and then watch the whole search
+    collapse into geometry — a bowl with a bottom. At the end you will run it on four
+    hundred real births, where the machine works perfectly and the more interesting
+    question — <em>should it?</em> — quietly appears.</p>
+
+    <details class="from-zero">
+      <summary>Start from zero: lines and errors</summary>
+      <p>A line is two decisions. The <strong>slope</strong> is how much the
+      prediction rises for each unit you move right — “about 190 extra grams per
+      extra week,” say. The <strong>intercept</strong> is where the line sits when
+      the horizontal axis reads zero: raise it and the whole line moves up without
+      tilting; it anchors the line’s height.</p>
+      <p>Once you have a line, it makes a promise at every point: <em>for this x, I
+      predict this y.</em> The <strong>error</strong> of that promise, called the
+      residual, is the vertical gap between the promise and what actually happened —
+      how far the real point sits above or below the line. A line fits well when its
+      gaps are collectively small. The entire question of this page is what
+      “collectively” should mean.</p>
+    </details>
+
+    <h2>The squares are not a metaphor</h2>
+
+    <p>Below, twelve synthetic points and a line you control. Drag the line’s body to
+    slide it; drag its round handles to tilt it; drag the points themselves if you
+    want to make trouble. Each vertical gap has been squared — drawn as an actual
+    square whose side is the gap. The dots filling each square are laid on a fixed
+    grid, so <strong>bigger squares carry more dots</strong>, and the readout in the
+    corner is the total.</p>
+
+    <div class="instrument-mount" id="fs-syn">
+<!-- poster:fit-scatter-synthetic -->
+<!-- /poster:fit-scatter-synthetic -->
+    </div>
+
+    <p>Try to make the total small. That instinct you are using — shrink the big
+    squares first, tolerate several small ones — is the definition. <em>Least
+    squares</em> is nothing more than the line that spends the least ink. Squaring is
+    why one huge gap costs more than four small ones: a gap twice as large buys a
+    square four times the area. The fit fears outliers because you drew the error as
+    an area, and areas grow fast.</p>
+
+    <h2>Every line is a point somewhere else</h2>
+
+    <p>Your line has just two knobs — slope and intercept. So the whole universe of
+    candidate lines is a two-dimensional plane: slope across, intercept up. Every
+    line you tried above is one point in that plane, and the total ink it spent is a
+    height. Here is that landscape.</p>
+
+    <div class="instrument-mount" id="lb-syn">
+<!-- poster:loss-bowl-synthetic -->
+<!-- /poster:loss-bowl-synthetic -->
+    </div>
+
+    <p>The two figures are one object. Drag the line above and this marker moves;
+    drag the marker and the line follows. Darker is less ink, and the rings are
+    contour lines crowding toward a single lowest point. The surface is a
+    <strong>bowl</strong> — smooth, with no false valleys — so the best line was
+    never really a search through lines at all. It is the bottom of the bowl, and
+    everything rolls there.</p>
+
+    <p>Now press <em>absolute error</em> on the first figure. The squares become
+    sticks — gaps counted at face value instead of squared — and the bowl grows a
+    crease along its floor. “Squared” is not a law of nature. It is a choice, with
+    consequences: the smooth bowl gives calculus something to grip, and it is why
+    outliers pull so hard. Absolute error forgives outliers and creases the
+    landscape. Statistics is full of such choices dressed up as defaults.</p>
+
+    <h2>The bottom can be solved, not searched</h2>
+
+    <p>A smooth bowl has one bottom, and calculus finds it in closed form. For slope
+    <math><mover><mi>m</mi><mo>^</mo></mover></math> and intercept
+    <math><mover><mi>b</mi><mo>^</mo></mover></math>:</p>
+
+    <p style="text-align:center">
+      <math display="block">
+        <mrow>
+          <mover><mi>m</mi><mo>^</mo></mover>
+          <mo>=</mo>
+          <mfrac>
+            <msub><mi>S</mi><mrow><mi>x</mi><mi>y</mi></mrow></msub>
+            <msub><mi>S</mi><mrow><mi>x</mi><mi>x</mi></mrow></msub>
+          </mfrac>
+          <mspace width="2em"></mspace>
+          <mover><mi>b</mi><mo>^</mo></mover>
+          <mo>=</mo>
+          <mover><mi>y</mi><mo>¯</mo></mover>
+          <mo>−</mo>
+          <mover><mi>m</mi><mo>^</mo></mover>
+          <mover><mi>x</mi><mo>¯</mo></mover>
+        </mrow>
+      </math>
+    </p>
+
+    <p>Read it as geometry, not ceremony: the slope is how much x and y vary
+    <em>together</em> (their covariance, <math><msub><mi>S</mi><mrow><mi>x</mi><mi>y</mi></mrow></msub></math>)
+    divided by how much x varies <em>alone</em>
+    (<math><msub><mi>S</mi><mrow><mi>x</mi><mi>x</mi></mrow></msub></math>); the
+    intercept then slides the line through the cloud’s center of mass
+    (<math><mover><mi>x</mi><mo>¯</mo></mover></math>, <math><mover><mi>y</mi><mo>¯</mo></mover></math>).
+    Those two quantities — covariance and variance — are the entire machine, and
+    rung 2 is about seeing them as shapes.</p>
+
+    <h2>When the truth is drawn on screen</h2>
+
+    <p>These twelve points are synthetic: they were manufactured by adding noise to a
+    line I know. Press <em>show the true line</em> above, then <em>resample</em> a
+    few times. The truth holds still; the fit wobbles around it, tugged by each new
+    draw of noise. That wobble is the whole subject of statistical inference — how
+    far a fit can stray from a truth — and here you can see it only because the
+    truth is drawn. Remember the feeling. You are about to lose it.</p>
+
+    <h2>Four hundred real births</h2>
+
+    <p>Same instrument, no tricks: 400 births sampled from the 2014 US natality
+    file — gestational age against birthweight. There is no <em>show the truth</em>
+    button now, because nobody has the truth. There is only the machine and its
+    definition of best.</p>
+
+    <div class="instrument-mount" id="fs-births">
+<!-- poster:fit-scatter-births -->
+<!-- /poster:fit-scatter-births -->
+    </div>
+
+    <p>The fitted slope is real knowledge: on the order of two hundred grams per
+    week, which is why a 36-weeker and a 40-weeker are different babies. But drag a
+    single extreme preemie and watch the fit barely move — then look at the left
+    edge, where the relationship visibly bends away from any straight line. Growth
+    is not linear across this range, and the machine does not care.</p>
+
+    <p>The machine happily fits a line whether or not a line is the right question.
+    Nothing in the readout will tell you. The next two rungs build the eyes that
+    do.</p>
+
+    <footer>
+      <a href="index.html">← shadowbox</a> · rung 2: covariance — coming
+    </footer>
+  </main>
+
+  <script type="module">
+    import * as FS from './js/instruments/fit-scatter.mjs';
+    import * as LB from './js/instruments/loss-bowl.mjs';
+    import { createStore, mount } from './js/lib/hydrate.mjs';
+    import { synthLine, ols } from './js/math/core.mjs';
+
+    // --- synthetic stage: fit-scatter and loss-bowl share ONE store ---
+    const GEN = { n: 12, slope: 0.62, intercept: 1.1, noise: 0.9 };
+    let seed = 11;
+    const d = synthLine({ seed, ...GEN });
+    const syn = createStore({
+      xs: d.xs, ys: d.ys,
+      slope: 0.15, intercept: 3.2,      // start deliberately wrong: fat squares
+      loss: 'squared', truth: d.truth, showTruth: false, residuals: true,
+    });
+    const actions = {
+      resample: st => {
+        seed += 1;
+        const nd = synthLine({ seed, ...GEN });
+        st.set({ xs: nd.xs, ys: nd.ys, truth: nd.truth });
+      },
+    };
+    mount(document.getElementById('fs-syn'), FS, syn, { actions, overlay: {
+      idKey: 'fs-syn',
+      labels: { x: 'x', y: 'y', title: 'drag the line. drag the points.' },
+    } });
+    mount(document.getElementById('lb-syn'), LB, syn, { overlay: {
+      idKey: 'lb-syn',
+      labels: { x: 'slope', y: 'intercept', title: 'every line you could draw is one point in this plane' },
+    } });
+
+    // --- clinical stage: real births, separate store, no truth ---
+    fetch('data/births.json').then(r => r.json()).then(b => {
+      const fit = ols(b.xs, b.ys);
+      const births = createStore({
+        xs: b.xs, ys: b.ys,
+        slope: fit.slope, intercept: fit.intercept,
+        loss: 'squared', truth: null, showTruth: false, residuals: false,
+      });
+      mount(document.getElementById('fs-births'), FS, births, { overlay: {
+        idKey: 'fs-births',
+        labels: { x: 'gestational age (weeks)', y: 'birthweight (g)', title: 'every birth is a point. the line is a choice.' },
+      } });
+    }).catch(() => { /* fetch failed: the committed poster stays — static by construction */ });
+  </script>
+</body>
+</html>

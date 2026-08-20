@@ -15,6 +15,7 @@ export const defaults = {
   loss: 'squared',            // 'squared' | 'absolute'
   truth: null,                // {slope, intercept} | null
   showTruth: false,
+  residuals: true,            // dense datasets start with the ink off
   domain: null,               // {x0,x1,y0,y1} | null -> padded data extent
   labels: { x: 'x', y: 'y', title: 'drag the line. drag the points.' },
 };
@@ -24,6 +25,7 @@ export const posterState = null; // set per page in tools/poster.mjs
 export const controls = [
   { id: 'loss', kind: 'toggle', label: 'absolute error', on: 'absolute', off: 'squared' },
   { id: 'showTruth', kind: 'toggle', label: 'show the true line', on: true, off: false },
+  { id: 'residuals', kind: 'toggle', label: 'show the squares', on: true, off: false },
   { id: 'resample', kind: 'action', label: 'resample' },
 ];
 
@@ -100,7 +102,7 @@ export function render(state) {
 
   // residuals: squares (squared loss) or sticks (absolute loss), dot-screened
   parts.push(`<g clip-path="url(#${id('clip')})">`);
-  for (let i = 0; i < xs.length; i++) {
+  for (let i = 0; state.residuals !== false && i < xs.length; i++) {
     const px = L.x(xs[i]);
     const py = L.y(ys[i]);
     const phat = L.y(slope * xs[i] + intercept);
@@ -130,9 +132,11 @@ export function render(state) {
     parts.push(`<circle data-drag="line-rot" data-index="${idx}" tabindex="0" aria-label="line handle ${idx + 1}" cx="${F(L.x(hx))}" cy="${F(hy)}" r="8" fill="var(--accent)" stroke="var(--bg)" stroke-width="2"/>`);
   }
 
-  // data points
+  // data points (dense sets: smaller glyphs, not individually tabbable — tab exhaustion)
+  const tab = xs.length <= 30 ? ' tabindex="0"' : '';
+  const r = xs.length <= 60 ? 4.5 : 2.5;
   for (let i = 0; i < xs.length; i++) {
-    parts.push(`<circle data-drag="points" data-index="${i}" tabindex="0" aria-label="data point ${i + 1}" cx="${F(L.x(xs[i]))}" cy="${F(L.y(ys[i]))}" r="4.5" fill="var(--heading)"/>`);
+    parts.push(`<circle data-drag="points" data-index="${i}"${tab} aria-label="data point ${i + 1}" cx="${F(L.x(xs[i]))}" cy="${F(L.y(ys[i]))}" r="${r}" fill="var(--heading)"/>`);
   }
 
   // readout (in-SVG so posters carry it)

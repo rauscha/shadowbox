@@ -27,6 +27,8 @@ export function controlsMarkup(controls, state) {
   for (const c of controls) {
     // A truth toggle has nothing to show when the dataset carries no truth.
     if (c.id === 'showTruth' && !state.truth) continue;
+    // The residual toggle only earns its place on dense data; sparse data always draws them.
+    if (c.id === 'residuals' && (!state.xs || state.xs.length <= 60)) continue;
     if (c.kind === 'slider') {
       parts.push(`<label>${esc(c.label)}<input type="range" data-control="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${state[c.id]}"></label>`);
     } else if (c.kind === 'toggle') {
@@ -46,15 +48,13 @@ export function clientToViewBox(m, cx, cy) {
   return { x: (m.d * x - m.c * y) / det, y: (m.a * y - m.b * x) / det };
 }
 
-function coerce(c, raw) {
-  return c && c.kind === 'toggle' ? raw : Number(raw);
-}
-
-export function mount(el, instrument, store, { actions = {} } = {}) {
+export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}) {
+  const full = () => ({ ...store.get(), ...overlay });
   let dragging = null;          // {id, index} while a pointer drag is live
   let raf = 0;
 
-  function markup(state) {
+  function markup() {
+    const state = full();
     return `${instrument.render(state)}\n<div class="controls">${controlsMarkup(instrument.controls, state)}</div>`;
   }
 
@@ -90,7 +90,7 @@ export function mount(el, instrument, store, { actions = {} } = {}) {
       const m = svg.getScreenCTM();
       if (!m) return;
       const p = clientToViewBox(m, ev.clientX, ev.clientY);
-      store.set(instrument.applyDrag(store.get(), { ...dragging, x: p.x, y: p.y }));
+      store.set(instrument.applyDrag(full(), { ...dragging, x: p.x, y: p.y }));
     });
     const end = () => { dragging = null; };
     svg.addEventListener('pointerup', end);
@@ -106,7 +106,7 @@ export function mount(el, instrument, store, { actions = {} } = {}) {
       const box = t.getBBox();
       const cx = box.x + box.width / 2 + d[0];
       const cy = box.y + box.height / 2 + d[1];
-      store.set(instrument.applyDrag(store.get(), { id: t.dataset.drag, index: Number(t.dataset.index || 0), x: cx, y: cy }));
+      store.set(instrument.applyDrag(full(), { id: t.dataset.drag, index: Number(t.dataset.index || 0), x: cx, y: cy }));
     });
   }
 
@@ -115,7 +115,7 @@ export function mount(el, instrument, store, { actions = {} } = {}) {
     const focused = document.activeElement && el.contains(document.activeElement)
       ? { drag: document.activeElement.dataset?.drag, index: document.activeElement.dataset?.index }
       : null;
-    el.innerHTML = markup(store.get());
+    el.innerHTML = markup();
     bind();
     if (focused && focused.drag) {
       const again = el.querySelector(`[data-drag="${focused.drag}"][data-index="${focused.index ?? 0}"]`)

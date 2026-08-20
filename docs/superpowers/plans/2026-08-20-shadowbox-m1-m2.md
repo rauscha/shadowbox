@@ -32,14 +32,14 @@
 **Interfaces:**
 - Produces: CSS custom properties consumed by all pages: `--bg --surface --border --text --text-light --heading --accent --accent-warm --ink` (light + dark values); classes `.essay`, `.instrument`, `.controls`, `.readout`, `details.from-zero`.
 
-- [ ] **Step 1: Write `.gitignore`**
+- [x] **Step 1: Write `.gitignore`**
 
 ```
 __pycache__/
 .DS_Store
 ```
 
-- [ ] **Step 2: Write `CLAUDE.md`**
+- [x] **Step 2: Write `CLAUDE.md`**
 
 ```markdown
 # shadowbox
@@ -61,11 +61,11 @@ served at andrewrausch.com/shadowbox/. Spec: docs/superpowers/specs/.
   between `<!-- poster:KEY -->` markers (idempotent). Run after changing any instrument.
 ```
 
-- [ ] **Step 3: Write `css/shadowbox.css`** — parent-site token values copied (light: bg `#fbfcfd`, surface `#eef1f4`, border `#d9dee4`, text `#3b4252`, text-light `#5a6270`, heading `#0d121b`, accent `#1e4a7a`, accent-warm `#c1272d`; dark: bg `#0e1116`, surface `#181d26`, border `#2a3340`, text `#b8bdc7`, text-light `#8d95a3`, heading `#eef1f5`, accent lightened `#7ea9d8`, accent-warm `#e06a6f`), `--ink` = `#1a1f2b` light / `#dfe4ec` dark (the halftone ink). IBM Plex via Google Fonts `<link>` in pages, stacks `'IBM Plex Serif', Georgia, serif` (essay), `'IBM Plex Sans', Arial, sans-serif` (UI), `'IBM Plex Mono', Consolas, monospace` (readouts). Layout: `.essay{max-width:44rem;margin:0 auto;padding:2rem 1.25rem;font-family:var(--font-serif);line-height:1.65}`; `.instrument{margin:2rem 0}` with `svg{width:100%;height:auto;display:block}`; `.controls` = flex row of labeled ranges/buttons (sans, 0.85rem); `.readout{font-family:var(--font-mono)}`; `details.from-zero` = bordered summary block; visible `:focus-visible{outline:3px solid var(--accent);outline-offset:2px}`; `@media print` hides `.controls`.
+- [x] **Step 3: Write `css/shadowbox.css`** — parent-site token values copied (light: bg `#fbfcfd`, surface `#eef1f4`, border `#d9dee4`, text `#3b4252`, text-light `#5a6270`, heading `#0d121b`, accent `#1e4a7a`, accent-warm `#c1272d`; dark: bg `#0e1116`, surface `#181d26`, border `#2a3340`, text `#b8bdc7`, text-light `#8d95a3`, heading `#eef1f5`, accent lightened `#7ea9d8`, accent-warm `#e06a6f`), `--ink` = `#1a1f2b` light / `#dfe4ec` dark (the halftone ink). IBM Plex via Google Fonts `<link>` in pages, stacks `'IBM Plex Serif', Georgia, serif` (essay), `'IBM Plex Sans', Arial, sans-serif` (UI), `'IBM Plex Mono', Consolas, monospace` (readouts). Layout: `.essay{max-width:44rem;margin:0 auto;padding:2rem 1.25rem;font-family:var(--font-serif);line-height:1.65}`; `.instrument{margin:2rem 0}` with `svg{width:100%;height:auto;display:block}`; `.controls` = flex row of labeled ranges/buttons (sans, 0.85rem); `.readout{font-family:var(--font-mono)}`; `details.from-zero` = bordered summary block; visible `:focus-visible{outline:3px solid var(--accent);outline-offset:2px}`; `@media print` hides `.controls`.
 
-- [ ] **Step 4: Write `index.html`** — head boilerplate (charset, viewport, title `shadowbox`, description, Plex fonts link, stylesheet), `.essay` body: h1 `shadowbox`, tagline paragraph: *"Every method here casts a shadow of the data and asks you to judge the object from it. These pages let you move the light."* Rung list: link `least-squares.html` (“1 · Least squares — what ‘best fit’ buys you”), unlinked li items for rung 2 (covariance) and rung 3 (PCA) marked “coming”. Footer line: “Andrew Rausch · part of andrewrausch.com”.
+- [x] **Step 4: Write `index.html`** — head boilerplate (charset, viewport, title `shadowbox`, description, Plex fonts link, stylesheet), `.essay` body: h1 `shadowbox`, tagline paragraph: *"Every method here casts a shadow of the data and asks you to judge the object from it. These pages let you move the light."* Rung list: link `least-squares.html` (“1 · Least squares — what ‘best fit’ buys you”), unlinked li items for rung 2 (covariance) and rung 3 (PCA) marked “coming”. Footer line: “Andrew Rausch · part of andrewrausch.com”.
 
-- [ ] **Step 5: Verify + commit**
+- [x] **Step 5: Verify + commit**
 
 Run: `python -m http.server 8000` → open `http://localhost:8000/` — tokens render, dark mode flips with OS setting.
 ```bash
@@ -86,7 +86,7 @@ git add -A && git commit -m "scaffold: tokens, index stub, repo rules"
   `ols(xs,ys) -> {slope,intercept,residuals,sse}`,
   `lossSurface(xs,ys,{s0,s1,b0,b1,n=48,loss='squared'}) -> {values,min,max,minAt:[slope,intercept],s0,s1,b0,b1,n}` (values[j][i], j=intercept row, i=slope col).
 
-- [ ] **Step 1: Write failing hand-computable tests**
+- [x] **Step 1: Write failing hand-computable tests**
 
 ```js
 // test/math.test.mjs
@@ -131,9 +131,9 @@ test('lossSurface grid contains the ols minimum', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify failure** — `node --test test/` → FAIL (module not found).
+- [x] **Step 2: Run to verify failure** — `node --test test/` → FAIL (module not found).
 
-- [ ] **Step 3: Implement `js/math/core.mjs` (stats half)**
+- [x] **Step 3: Implement `js/math/core.mjs` (stats half)**
 
 ```js
 export function mean(xs) { let s = 0; for (const x of xs) s += x; return s / xs.length; }
@@ -180,9 +180,9 @@ export function lossSurface(xs, ys, { s0, s1, b0, b1, n = 48, loss = 'squared' }
 }
 ```
 
-- [ ] **Step 4: Run to verify pass** — `node --test test/` → all PASS.
+- [x] **Step 4: Run to verify pass** — `node --test test/` → all PASS.
 
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "math: sample stats, ols, loss surface (hand-pinned tests)"`
+- [x] **Step 5: Commit** — `git add -A && git commit -m "math: sample stats, ols, loss surface (hand-pinned tests)"`
 
 ---
 
@@ -199,7 +199,7 @@ export function lossSurface(xs, ys, { s0, s1, b0, b1, n = 48, loss = 'squared' }
   `synthLine({seed,n,slope,intercept,noise,xMin,xMax}) -> {xs,ys,truth}`,
   `synthCloud({seed,n,rho,sdX,sdY,meanX,meanY}) -> {xs,ys,truth}`.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 ```js
 function sameDirection(u, v, tol = 1e-9) {
@@ -254,9 +254,9 @@ test('mulberry32 is deterministic; synth generators carry truth', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify failure.**
+- [x] **Step 2: Run to verify failure.**
 
-- [ ] **Step 3: Implement (append to core.mjs)**
+- [x] **Step 3: Implement (append to core.mjs)**
 
 ```js
 export function signNorm(v) {
@@ -343,8 +343,8 @@ export function synthCloud({ seed = 1, n = 80, rho = 0.7, sdX = 1, sdY = 1, mean
 }
 ```
 
-- [ ] **Step 4: Run to verify pass.**
-- [ ] **Step 5: Commit** — `git commit -am "math: eigen (closed-form 2x2 + jacobi), pca, seeded synth"`
+- [x] **Step 4: Run to verify pass.**
+- [x] **Step 5: Commit** — `git commit -am "math: eigen (closed-form 2x2 + jacobi), pca, seeded synth"`
 
 ---
 
@@ -358,7 +358,7 @@ export function synthCloud({ seed = 1, n = 80, rho = 0.7, sdX = 1, sdY = 1, mean
 - Produces: `test/fixtures.json` shape:
   `{ ols: [{xs,ys,slope,intercept,sse}], stats: [{xs,ys,variance_x,covariance,corr}], eig2: [{sxx,sxy,syy,values,vector1}], eig4: [{matrix,values,vectors}], pca: [{X,standardize,explained,components}], loss: [{xs,ys,slope,intercept,sse,sae}] }`
 
-- [ ] **Step 1: Write `reference/fixtures.py`**
+- [x] **Step 1: Write `reference/fixtures.py`**
 
 ```python
 """Ground truth for shadowbox's JS math core. Hand-run:
@@ -420,9 +420,9 @@ path.write_text(json.dumps(out, indent=1))
 print(f"wrote {path} ({path.stat().st_size} bytes)")
 ```
 
-- [ ] **Step 2: Generate fixtures** — `uv run --with numpy python reference/fixtures.py` → `test/fixtures.json` exists, non-trivial size.
+- [x] **Step 2: Generate fixtures** — `uv run --with numpy python reference/fixtures.py` → `test/fixtures.json` exists, non-trivial size.
 
-- [ ] **Step 3: Add fixture battery to `test/math.test.mjs`** (failing first only if math is wrong — battery is the point):
+- [x] **Step 3: Add fixture battery to `test/math.test.mjs`** (failing first only if math is wrong — battery is the point):
 
 ```js
 import { readFileSync } from 'node:fs';
@@ -469,8 +469,8 @@ test('fixture battery: pca matches numpy', () => {
 });
 ```
 
-- [ ] **Step 4: Run** — `node --test test/` → PASS. If eigen directions fail only on near-tie cases, widen only that case's tolerance and say so in the commit message.
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "reference: numpy fixtures + fixture battery pinning js math"`
+- [x] **Step 4: Run** — `node --test test/` → PASS. If eigen directions fail only on near-tie cases, widen only that case's tolerance and say so in the commit message.
+- [x] **Step 5: Commit** — `git add -A && git commit -m "reference: numpy fixtures + fixture battery pinning js math"`
 
 ---
 
@@ -483,7 +483,7 @@ test('fixture battery: pca matches numpy', () => {
 - Produces: `VIRIDIS` (10 hex stops dark→light), `bandLevel(v,min,max,levels)` → int 0..levels-1, `bandColor(level,levels)` → hex, `contrastInk(level,levels)` → `'#111111' | '#f5f5f5'` (contour/label ink readable on that band);
   `rowBands(grid, levels) -> [{i0,i1,j,level}]` (run-merged per row), `isoSegments(grid, level) -> [[x0,y0,x1,y1], …]` in grid coordinates (i along slope axis, j along intercept axis).
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
 
 ```js
 // test/plot.test.mjs
@@ -526,9 +526,9 @@ test('isoSegments on a paraboloid ring: nonempty, on-level, inside grid', () => 
 });
 ```
 
-- [ ] **Step 2: Run to verify failure.**
+- [x] **Step 2: Run to verify failure.**
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```js
 // js/lib/viridis.mjs
@@ -591,8 +591,8 @@ export function isoSegments(grid, level) {
 }
 ```
 
-- [ ] **Step 4: Run to verify pass.**
-- [ ] **Step 5: Commit** — `git commit -am "plot: quantised viridis + row-band fills + marching-squares contours"`
+- [x] **Step 4: Run to verify pass.**
+- [x] **Step 5: Commit** — `git commit -am "plot: quantised viridis + row-band fills + marching-squares contours"`
 
 ---
 
@@ -609,7 +609,7 @@ export function isoSegments(grid, level) {
   `mount(el, instrument, store, {actions} = {}) -> {rerender}` — renders `instrument.render(store.get())` + controls into `el`, binds: input events → `store.set({[id]: number})`; toggle click → flips boolean; action click → `actions[id](store)`; pointer drag on `[data-drag]` (setPointerCapture, client→viewBox via `svg.getScreenCTM().inverse()`) → `store.set(instrument.applyDrag(store.get(), {id, index, x, y}))`; keyboard on `[data-drag]` (tabindex=0, arrows nudge ±4 viewBox px, shift ±16) → same applyDrag path; store.subscribe → rerender (skips rerender while that mount itself is mid-drag-frame via a flag; uses `requestAnimationFrame` coalescing).
 - **Node-testable parts are pure:** `createStore`, `controlsMarkup`, `clientToViewBox(matrixLike, cx, cy)`. DOM binding is exercised in the browser at Task 10's verify step (accepted: no DOM emulator dependency).
 
-- [ ] **Step 1: Failing tests for the pure parts**
+- [x] **Step 1: Failing tests for the pure parts**
 
 ```js
 // test/hydrate.test.mjs
@@ -646,12 +646,12 @@ test('clientToViewBox inverts a scale+translate', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify failure.**
+- [x] **Step 2: Run to verify failure.**
 
-- [ ] **Step 3: Implement `js/lib/hydrate.mjs`.** Pure parts exactly as tested (`clientToViewBox` inverts the affine `{a,b,c,d,e,f}` by solving `x = (cx - e - c*y…)` — for the axis-aligned case used here: `x=(cx-e)/a`, `y=(cy-f)/d`, but implement the full 2×2 inverse so rotation never breaks it). `mount(el, instrument, store, {actions})`: build `<div class="instrument">` with the SVG (`render`) + `<div class="controls">` (`controlsMarkup`); one delegated `pointerdown` listener on the container finds `closest('[data-drag]')`, records `{id, index:+el.dataset.index||0}`, `setPointerCapture`, on `pointermove` converts coords and calls `store.set(instrument.applyDrag(store.get(), drag))`; `keydown` on focused `[data-drag]` synthesizes the same with the element's current center + arrow delta; store subscription rerenders via rAF coalescing, rebuilding innerHTML and restoring focus by `data-drag`+`data-index` match. ~120 lines; keep it boring.
+- [x] **Step 3: Implement `js/lib/hydrate.mjs`.** Pure parts exactly as tested (`clientToViewBox` inverts the affine `{a,b,c,d,e,f}` by solving `x = (cx - e - c*y…)` — for the axis-aligned case used here: `x=(cx-e)/a`, `y=(cy-f)/d`, but implement the full 2×2 inverse so rotation never breaks it). `mount(el, instrument, store, {actions})`: build `<div class="instrument">` with the SVG (`render`) + `<div class="controls">` (`controlsMarkup`); one delegated `pointerdown` listener on the container finds `closest('[data-drag]')`, records `{id, index:+el.dataset.index||0}`, `setPointerCapture`, on `pointermove` converts coords and calls `store.set(instrument.applyDrag(store.get(), drag))`; `keydown` on focused `[data-drag]` synthesizes the same with the element's current center + arrow delta; store subscription rerenders via rAF coalescing, rebuilding innerHTML and restoring focus by `data-drag`+`data-index` match. ~120 lines; keep it boring.
 
-- [ ] **Step 4: Run to verify pass** (pure parts).
-- [ ] **Step 5: Commit** — `git commit -am "lib: hydration runtime (store, controls, drag/keyboard plumbing)"`
+- [x] **Step 4: Run to verify pass** (pure parts).
+- [x] **Step 5: Commit** — `git commit -am "lib: hydration runtime (store, controls, drag/keyboard plumbing)"`
 
 ---
 
@@ -666,7 +666,7 @@ test('clientToViewBox inverts a scale+translate', () => {
   State shape (also consumed by loss-bowl wiring in Task 10):
   `{ idKey, xs, ys, slope, intercept, loss:'squared'|'absolute', truth:{slope,intercept}|null, showTruth:bool, labels:{x,y,title}, domain:{x0,x1,y0,y1}|null }`.
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
 
 ```js
 // test/instruments.test.mjs
@@ -728,9 +728,9 @@ test('applyDrag: points moves one data point', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify failure.**
+- [x] **Step 2: Run to verify failure.**
 
-- [ ] **Step 3: Implement `js/instruments/fit-scatter.mjs`.**
+- [x] **Step 3: Implement `js/instruments/fit-scatter.mjs`.**
 
 Key implementation requirements (write in full, ~170 lines):
 
@@ -762,8 +762,8 @@ export const posterState = null; // set per page in tools/poster.mjs configs
   - `line-move`: `{intercept: invY(y) - state.slope * invX(x)}`.
   - `line-rot`: anchor = the other handle's data coords (`ax = domain x0 + (index===0? 0.8:0.2)*(x1-x0)`, `ay = slope*ax+intercept`); `m=(invY(y)-ay)/(invX(x)-ax)` guarded `|dx|>1e-6`, clamp to ±30; return `{slope:m, intercept: ay - m*ax}`.
 
-- [ ] **Step 4: Run to verify pass.**
-- [ ] **Step 5: Commit** — `git commit -am "instrument: fit-scatter (dot-screen residual squares, drag line/points)"`
+- [x] **Step 4: Run to verify pass.**
+- [x] **Step 5: Commit** — `git commit -am "instrument: fit-scatter (dot-screen residual squares, drag line/points)"`
 
 ---
 
@@ -778,7 +778,7 @@ export const posterState = null; // set per page in tools/poster.mjs configs
 - Produces: exports `name='loss-bowl'`, `defaults`, `posterState=null`, `controls=[]` (driven entirely by drag + the linked fit-scatter), `ranges(state)` (exported: `{s0,s1,b0,b1}` centered on the OLS fit: `s0=fit.slope-1.5…`, `b0=fit.intercept-3*sdResid…`), `layout(state)`, `render(state)`, `applyDrag` (id `marker` → `{slope, intercept}` from inverse scales, clamped to ranges).
   State: `{ idKey, xs, ys, slope, intercept, loss, labels:{x:'slope',y:'intercept'} }`.
 
-- [ ] **Step 1: Failing tests (append)**
+- [x] **Step 1: Failing tests (append)**
 
 ```js
 import * as LB from '../js/instruments/loss-bowl.mjs';
@@ -814,9 +814,9 @@ test('loss-bowl surface markup is cached per (xs,ys,loss)', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify failure.**
+- [x] **Step 2: Run to verify failure.**
 
-- [ ] **Step 3: Implement `js/instruments/loss-bowl.mjs`.** Requirements:
+- [x] **Step 3: Implement `js/instruments/loss-bowl.mjs`.** Requirements:
   - `ranges(state)`: `const fit = ols(xs,ys)`; `sR = 1.5`, `bR = Math.max(2, 3*Math.sqrt(fit.sse/(xs.length-1)))`; return `{s0:fit.slope-sR, s1:fit.slope+sR, b0:fit.intercept-bR, b1:fit.intercept+bR}`.
   - Surface: `lossSurface(xs, ys, {…ranges, n:48, loss})`; 9 levels; **memoize the whole `<g data-role="surface">…</g>` string in a module-level `WeakMap` keyed on the `xs` array, inner key `${loss}`** (drag frames reuse it; new data object → recompute).
   - Bands: `rowBands` → one `<rect data-role="band">` per run, `fill=bandColor(level,9)`, cell size = plot/(n-1), positioned with a half-cell offset; `shape-rendering="crispEdges"`.
@@ -825,8 +825,8 @@ test('loss-bowl surface markup is cached per (xs,ys,loss)', () => {
   - Marker: crosshair lines spanning the plot + `<circle data-drag="marker" tabindex="0" r="8" fill="none" stroke="var(--bg)" stroke-width="5">` under a second stroke `var(--heading)` 2.5px (double-stroke = visible on any band, no hue meaning).
   - Readout top-right (mono, in-SVG): `SSE = ${sse(xs,ys,slope,intercept).toFixed(1)}` (or `Σ|r|`).
   - Axes: ticks + labels `slope` / `intercept` (or `state.labels`).
-- [ ] **Step 4: Run to verify pass.**
-- [ ] **Step 5: Commit** — `git commit -am "instrument: loss-bowl (quantised viridis bands, contours, draggable marker)"`
+- [x] **Step 4: Run to verify pass.**
+- [x] **Step 5: Commit** — `git commit -am "instrument: loss-bowl (quantised viridis bands, contours, draggable marker)"`
 
 ---
 
@@ -839,11 +839,11 @@ test('loss-bowl surface markup is cached per (xs,ys,loss)', () => {
 - Produces: `data/births.json`:
   `{ "source":"OpenIntro births14 (sample of 1,000 births from the 2014 NCHS natality public-use file)", "url":"https://www.openintro.org/data/csv/births14.csv", "license":"CC BY-SA 4.0 (OpenIntro data)", "retrieved":"2026-08-20", "n":400, "fields":{"x":"gestational age (weeks)","y":"birthweight (g)"}, "xs":[…], "ys":[…] }`
 
-- [ ] **Step 1: Download the CSV** — `curl -L -o work/births14.csv https://www.openintro.org/data/csv/births14.csv` (create `work/`, gitignored? No — keep raw CSV out of the repo: download to the scratchpad, not the repo tree). Inspect the header: expect columns `weeks` (gestational age) and `weight` (pounds).
-- [ ] **Step 2: Write `tools/make-births.mjs`** — Node script, no deps: reads the CSV path from `process.argv[2]`, parses (simple split — quote-free numeric columns), drops rows missing `weeks` or `weight`, converts pounds→grams (`*453.59237`, round to integer), seeded downsample to 400 via `mulberry32(20260820)` shuffle, writes `data/births.json` with the provenance block above (stamp `retrieved` from `process.argv[3]` — never from the clock — so reruns are reproducible).
-- [ ] **Step 3: Run it** — `node tools/make-births.mjs <scratchpad>/births14.csv 2026-08-20`; sanity-print n, weeks range (~20–45), weight range (~500–5500 g).
-- [ ] **Step 4: Write `data/README.md`** — provenance, license note, the exact command to regenerate, and the documented upgrade path (direct NCHS extract).
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "data: births (OpenIntro births14 / NCHS 2014), provenance + converter"`
+- [x] **Step 1: Download the CSV** — `curl -L -o work/births14.csv https://www.openintro.org/data/csv/births14.csv` (create `work/`, gitignored? No — keep raw CSV out of the repo: download to the scratchpad, not the repo tree). Inspect the header: expect columns `weeks` (gestational age) and `weight` (pounds).
+- [x] **Step 2: Write `tools/make-births.mjs`** — Node script, no deps: reads the CSV path from `process.argv[2]`, parses (simple split — quote-free numeric columns), drops rows missing `weeks` or `weight`, converts pounds→grams (`*453.59237`, round to integer), seeded downsample to 400 via `mulberry32(20260820)` shuffle, writes `data/births.json` with the provenance block above (stamp `retrieved` from `process.argv[3]` — never from the clock — so reruns are reproducible).
+- [x] **Step 3: Run it** — `node tools/make-births.mjs <scratchpad>/births14.csv 2026-08-20`; sanity-print n, weeks range (~20–45), weight range (~500–5500 g).
+- [x] **Step 4: Write `data/README.md`** — provenance, license note, the exact command to regenerate, and the documented upgrade path (direct NCHS extract).
+- [x] **Step 5: Commit** — `git add -A && git commit -m "data: births (OpenIntro births14 / NCHS 2014), provenance + converter"`
 - **Fallback if the download fails (offline):** skip Steps 1/3, still commit the converter + README, and in the checkpoint report state plainly that `births.json` is pending network — Task 10 then renders the clinical section from `synthLine` data with an explicit on-page `placeholder — real data pending` label. Do NOT silently substitute.
 
 ---
@@ -857,7 +857,7 @@ test('loss-bowl surface markup is cached per (xs,ys,loss)', () => {
 **Interfaces:**
 - Consumes: both instruments, `hydrate.mjs` (`createStore`, `mount`), `synthLine`, `ols`, `data/births.json` (fetch).
 
-- [ ] **Step 1: Build the page skeleton** — head boilerplate (fonts, css, title `least squares — shadowbox`), `.essay` main. Sections in order, each with real prose (drafted at execution; beats and load-bearing sentences fixed here):
+- [x] **Step 1: Build the page skeleton** — head boilerplate (fonts, css, title `least squares — shadowbox`), `.essay` main. Sections in order, each with real prose (drafted at execution; beats and load-bearing sentences fixed here):
   1. **Title + hook.** H1 `Least squares`. Opening line (verbatim): *“Before you trust any line through any scatter, you should get to choose one by hand and feel what ‘best’ costs.”*
   2. **`details.from-zero` — Start from zero:** what slope and intercept each do (two sentences each); what a prediction's error is (vertical gap). Self-contained; no instrument.
   3. **Instrument 1: fit-scatter (synthetic).** Mount `<div id="fs-syn">` wrapped by poster markers `<!-- poster:fit-scatter-synthetic -->…<!-- /poster:fit-scatter-synthetic -->`. Prose before it sets the task: drag until it looks right, watch `Σ squares`. Prose after names the trick: squares are literal; **the fit that wins is the one that spends the least ink.**
@@ -867,9 +867,9 @@ test('loss-bowl surface markup is cached per (xs,ys,loss)', () => {
   6. **Truth stage.** Prose + `show the true line` toggle + `resample`: the fit wobbles around a truth you can see, because you built it.
   7. **Clinical stage.** Second fit-scatter instance (idKey `fs-births`, markers `poster:fit-scatter-births`) on `data/births.json`: gestational age (weeks) vs birthweight (g). No truth toggle (`truth:null` — the control hides itself when `truth` is null; implement that in `controlsMarkup` consumption: filter `showTruth` control when `!state.truth`). Closing sting (verbatim): *“The machine happily fits a line whether or not a line is the right question. Nothing in the readout will tell you. The next two rungs build the eyes that do.”*
   8. Footer nav: ← shadowbox index · rung 2 (coming).
-- [ ] **Step 2: Wire the module script** (bottom of page, `type="module"`): build synthetic store from `synthLine({seed:11, n:12, slope:0.62, intercept:1.1, noise:0.9})` with initial slope/intercept = a deliberately-off line (`slope: 0.15, intercept: 3.2` — poster shows visible fat squares); `mount` fs-syn and lb-syn **on the same store** (shared keys: xs, ys, slope, intercept, loss) — linkage costs nothing more; `resample` action: bump seed (`store._seed = (store._seed||11)+1`), regenerate `synthLine`, `store.set({xs,ys})`. Births section: `fetch('data/births.json')` then mount its own store; on fetch failure leave the poster frame in place (static fallback works by construction).
-- [ ] **Step 3: Verify in the browser** — `python -m http.server 8000`; check: drag line (both handles + body), drag points, toggle absolute (squares→sticks, bowl creases), resample, truth toggle, marker drag drives the line and vice versa, keyboard: tab to a handle, arrows move it; births section loads; dark mode; print preview hides controls.
-- [ ] **Step 4: Commit** — `git add -A && git commit -m "rung 1: least-squares essay, linked instruments, staged data"`
+- [x] **Step 2: Wire the module script** (bottom of page, `type="module"`): build synthetic store from `synthLine({seed:11, n:12, slope:0.62, intercept:1.1, noise:0.9})` with initial slope/intercept = a deliberately-off line (`slope: 0.15, intercept: 3.2` — poster shows visible fat squares); `mount` fs-syn and lb-syn **on the same store** (shared keys: xs, ys, slope, intercept, loss) — linkage costs nothing more; `resample` action: bump seed (`store._seed = (store._seed||11)+1`), regenerate `synthLine`, `store.set({xs,ys})`. Births section: `fetch('data/births.json')` then mount its own store; on fetch failure leave the poster frame in place (static fallback works by construction).
+- [x] **Step 3: Verify in the browser** — `python -m http.server 8000`; check: drag line (both handles + body), drag points, toggle absolute (squares→sticks, bowl creases), resample, truth toggle, marker drag drives the line and vice versa, keyboard: tab to a handle, arrows move it; births section loads; dark mode; print preview hides controls.
+- [x] **Step 4: Commit** — `git add -A && git commit -m "rung 1: least-squares essay, linked instruments, staged data"`
 
 ---
 
@@ -882,7 +882,7 @@ test('loss-bowl surface markup is cached per (xs,ys,loss)', () => {
 **Interfaces:**
 - Produces: `injectPoster(html, key, svg) -> html` (pure, exported from `tools/poster.mjs`); CLI `node tools/poster.mjs` regenerates every configured poster.
 
-- [ ] **Step 1: Failing test**
+- [x] **Step 1: Failing test**
 
 ```js
 // test/poster.test.mjs
@@ -900,8 +900,8 @@ test('injectPoster replaces marker content idempotently', () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify failure.**
-- [ ] **Step 3: Implement `tools/poster.mjs`** — `injectPoster` via regex `new RegExp('<!-- poster:'+key+' -->[\\s\\S]*?<!-- /poster:'+key+' -->')` (throw if no match); poster configs:
+- [x] **Step 2: Run to verify failure.**
+- [x] **Step 3: Implement `tools/poster.mjs`** — `injectPoster` via regex `new RegExp('<!-- poster:'+key+' -->[\\s\\S]*?<!-- /poster:'+key+' -->')` (throw if no match); poster configs:
 
 ```js
 const CONFIGS = [{
@@ -923,9 +923,9 @@ const CONFIGS = [{
 ```
 
   Main: for each config, read file, for each poster `render(state())` → write `figures/${key}.svg` (with an added inline comment header `<!-- generated by tools/poster.mjs -->`) and `injectPoster` into the page; write page back. Guard: if `data/births.json` missing, render the births poster from a labeled synthetic substitute **with the on-page label ‘placeholder — real data pending’ inside the SVG title text**, and warn on stderr.
-- [ ] **Step 4: Run tests + the tool** — `node --test test/` PASS; `node tools/poster.mjs` twice; `git diff --stat` after second run shows no changes (idempotent in practice).
-- [ ] **Step 5: Verify no-JS teaching** — in the browser with JS disabled (or view-source), the page shows all three posters, prose intact.
-- [ ] **Step 6: Commit** — `git add -A && git commit -m "posters: committed static frames + idempotent injector"`
+- [x] **Step 4: Run tests + the tool** — `node --test test/` PASS; `node tools/poster.mjs` twice; `git diff --stat` after second run shows no changes (idempotent in practice).
+- [x] **Step 5: Verify no-JS teaching** — in the browser with JS disabled (or view-source), the page shows all three posters, prose intact.
+- [x] **Step 6: Commit** — `git add -A && git commit -m "posters: committed static frames + idempotent injector"`
 
 ---
 
@@ -936,12 +936,12 @@ const CONFIGS = [{
 
 **Steps:**
 
-- [ ] **Step 1: Full test run** — `node --test test/` → all green.
-- [ ] **Step 2: Browser QA sweep** (local server + Browser pane): light + dark mode; mobile width (375px — controls wrap, SVG scales); keyboard-only operation of both instruments; print preview (posters print, controls hidden).
-- [ ] **Step 3: Grayscale check** — screenshot rung 1, desaturate (any tool), confirm: fit vs truth distinguishable (solid vs dashed + labels), bands read as ordered luminance, marker visible on every band (double-stroke).
-- [ ] **Step 4: Write `README.md`** — what shadowbox is, the rungs (1 live, 2–3 next), how to run tests/posters/preview, link to spec. One screen.
-- [ ] **Step 5: Commit** — `git add -A && git commit -m "m2: polish pass, readme"`
-- [ ] **Step 6: CHECKPOINT — stop here.** Report to the owner: what shipped, test counts, any fallbacks taken (births download, tolerance widenings), and the decisions queued for him (publish to GitHub now or after rung 2; apps.html card timing; M3 next). Do not start M3.
+- [x] **Step 1: Full test run** — `node --test test/` → all green.
+- [x] **Step 2: Browser QA sweep** (local server + Browser pane): light + dark mode; mobile width (375px — controls wrap, SVG scales); keyboard-only operation of both instruments; print preview (posters print, controls hidden).
+- [x] **Step 3: Grayscale check** — screenshot rung 1, desaturate (any tool), confirm: fit vs truth distinguishable (solid vs dashed + labels), bands read as ordered luminance, marker visible on every band (double-stroke).
+- [x] **Step 4: Write `README.md`** — what shadowbox is, the rungs (1 live, 2–3 next), how to run tests/posters/preview, link to spec. One screen.
+- [x] **Step 5: Commit** — `git add -A && git commit -m "m2: polish pass, readme"`
+- [x] **Step 6: CHECKPOINT — stop here.** Report to the owner: what shipped, test counts, any fallbacks taken (births download, tolerance widenings), and the decisions queued for him (publish to GitHub now or after rung 2; apps.html card timing; M3 next). Do not start M3.
 
 ---
 

@@ -81,7 +81,7 @@ export function rotated(state) {
 
 function matrixPanel(st, R) {
   const sxx = variance(R.zx), syy = variance(R.zy), sxy = covariance(R.zx, R.zy);
-  const px = PANEL.x0 + 8, py = 132, colW = 66, rowH = 34;
+  const px = PANEL.x0 + 8, py = 146, colW = 66, rowH = 34;
   const parts = [];
   parts.push(`<text x="${px + colW}" y="${py - 44}" text-anchor="middle" font-size="12" fill="var(--text-light)">covariance in these directions</text>`);
   parts.push(`<path d="M${px - 10} ${py - 24}h-7v${rowH * 2 + 14}h7" stroke="var(--ink)" stroke-width="2" fill="none"/>`);
@@ -142,7 +142,7 @@ export function render(state) {
   parts.push(`<line x1="${F(L.cx)}" y1="${plot.y0}" x2="${F(L.cx)}" y2="${plot.y1}" stroke="var(--border)" stroke-width="1"/>`);
 
   // where the original axes went: a dashed cross turning with the cloud
-  const arm = L.half * 0.94;
+  const arm = L.half * 0.86;
   const c = Math.cos(R.phi), s = Math.sin(R.phi);
   const olds = [
     { key: 'x', vx: c, vy: s, label: labels.x },

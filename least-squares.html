@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>least squares — shadowbox</title>
-  <meta name="description" content="An interactive essay on least squares: drag the line, watch the squares, find the bottom of the bowl — then try it on real births.">
+  <meta name="description" content="An interactive essay on least squares: drag a line by hand, see squared error as literal ink, and fit 400 real births.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><rect x=%221%22 y=%221%22 width=%2214%22 height=%2214%22 fill=%22none%22 stroke=%22%231e4a7a%22 stroke-width=%222%22/><circle cx=%225%22 cy=%2211%22 r=%221.6%22 fill=%22%231e4a7a%22/><circle cx=%228%22 cy=%228%22 r=%221.6%22 fill=%22%231e4a7a%22/><circle cx=%2211%22 cy=%225%22 r=%221.6%22 fill=%22%231e4a7a%22/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,40 +16,41 @@
     <p class="kicker">shadowbox · rung 1</p>
     <h1>Least squares</h1>
 
-    <p>Before you trust any line through any scatter, you should get to choose one by
-    hand and feel what “best” costs.</p>
+    <p>A regression line looks like a measurement, but it’s really an answer to a
+    question, and the question could’ve been asked differently. The best way I
+    know to make that stick is to fit a few lines by hand, so that’s what this
+    page is.</p>
 
-    <p>Every regression figure in every paper is the output of a machine that was
-    handed a scatter of points and a definition of <em>best</em>, and returned a line.
-    This page opens that machine. You will drive it by hand first, see the definition
-    it optimizes drawn as literal ink on the page, and then watch the whole search
-    collapse into geometry — a bowl with a bottom. At the end you will run it on four
-    hundred real births, where the machine works perfectly and the more interesting
-    question — <em>should it?</em> — quietly appears.</p>
+    <p>Here’s the plan. You start with a dozen made-up points and a line you can
+    drag, and the squared errors are drawn right on the plot — actual squares,
+    actual ink. Then the same problem gets replotted so that hunting for the best
+    line turns into finding the bottom of a bowl (that’s where the textbook
+    formula comes from). And at the end there are four hundred real births from
+    the 2014 US natality file. Fitting a line to them is easy. Deciding whether a
+    line was the right model is the part that isn’t.</p>
 
     <details class="from-zero">
       <summary>Start from zero: lines and errors</summary>
       <p>A line is two decisions. The <strong>slope</strong> is how much the
-      prediction rises for each unit you move right — “about 190 extra grams per
+      prediction rises for each unit you move right: “about 190 extra grams per
       extra week,” say. The <strong>intercept</strong> is where the line sits when
-      the horizontal axis reads zero: raise it and the whole line moves up without
+      the horizontal axis reads zero. Raise it and the whole line moves up without
       tilting; it anchors the line’s height.</p>
-      <p>Once you have a line, it makes a promise at every point: <em>for this x, I
-      predict this y.</em> The <strong>error</strong> of that promise, called the
-      residual, is the vertical gap between the promise and what actually happened —
-      how far the real point sits above or below the line. A line fits well when its
-      gaps are collectively small. The entire question of this page is what
-      “collectively” should mean.</p>
+      <p>Once you have a line, it makes a prediction at every point: for this x,
+      expect this y. The <strong>error</strong> of that prediction, called the
+      residual, is the vertical gap between predicted and actual — how far the real
+      point sits above or below the line. A line fits well when its gaps are
+      collectively small. What “collectively” ought to mean is the real question,
+      and it’s less settled than you’d think.</p>
     </details>
 
-    <h2>The squares are not a metaphor</h2>
+    <h2>The squares are literal</h2>
 
-    <p>Below, twelve synthetic points and a line you control. Drag the line’s body to
-    slide it; drag its round handles to tilt it; drag the points themselves if you
-    want to make trouble. Each vertical gap has been squared — drawn as an actual
-    square whose side is the gap. The dots filling each square are laid on a fixed
-    grid, so <strong>bigger squares carry more dots</strong>, and the readout in the
-    corner is the total.</p>
+    <p>Below are twelve synthetic points and a line you control. Drag the line to
+    slide it, grab a round handle to tilt it, drag the points themselves if you
+    feel like making trouble. Each vertical gap gets squared and drawn on the plot
+    at full size, filled with a dot screen so the ink tracks the area. The readout
+    in the corner adds it all up.</p>
 
     <div class="instrument-mount" id="fs-syn">
 <!-- poster:fit-scatter-synthetic -->
@@ -119,19 +120,25 @@
 <!-- /poster:fit-scatter-synthetic -->
     </div>
 
-    <p>Try to make the total small. That instinct you are using — shrink the big
-    squares first, tolerate several small ones — is the definition. <em>Least
-    squares</em> is nothing more than the line that spends the least ink. Squaring is
-    why one huge gap costs more than four small ones: a gap twice as large buys a
-    square four times the area. The fit fears outliers because you drew the error as
-    an area, and areas grow fast.</p>
+    <p>Try to make the total small. You’ll notice you go after the big squares
+    first and mostly ignore the little ones. That instinct — big squares are the
+    expensive ones — is the actual definition. <em>Least squares</em> just means:
+    pick the line that spends the least ink. The readout starts at 29.5 in the
+    corner; the best these twelve points will ever allow is about 3.7, so there
+    is real room to win. And the squaring is doing something sneaky here. Double a gap and its square costs four times the area, so one bad
+    point can outshout half a dozen decent ones. People complain that least
+    squares is “sensitive to outliers” like it’s a bug. It isn’t, really. You drew
+    the error as an area, and areas grow fast.</p>
 
     <h2>Every line is a point somewhere else</h2>
 
-    <p>Your line has just two knobs — slope and intercept. So the whole universe of
-    candidate lines is a two-dimensional plane: slope across, intercept up. Every
-    line you tried above is one point in that plane, and the total ink it spent is a
-    height. Here is that landscape.</p>
+    <p>Now for the trick that makes the whole subject click. Your line has two
+    knobs — slope, intercept — which means any line you can draw is really just a
+    pair of numbers. A pair of numbers is a point on a plane. So there’s a plane
+    out there whose every point is one possible line, and each of those lines
+    spent some amount of ink on your data. Give every point a height equal to its
+    ink and you’ve built a landscape. The next figure is that landscape, drawn
+    from directly overhead.</p>
 
     <div class="instrument-mount" id="lb-syn">
 <!-- poster:loss-bowl-synthetic -->
@@ -1514,24 +1521,34 @@
 <!-- /poster:loss-bowl-synthetic -->
     </div>
 
-    <p>The two figures are one object. Drag the line above and this marker moves;
-    drag the marker and the line follows. The ink here means what it meant above:
-    the dots swell wherever lines waste it, and they thin out to bare paper at the
-    one spot that wastes least. The rings are contour lines crowding toward that
-    spot. The surface is a <strong>bowl</strong> — smooth, with no false valleys —
-    so the best line was never really a search through lines at all. It is the
-    bottom of the bowl, and everything rolls there.</p>
+    <p>The two figures are wired together, so drag the line above and watch this
+    marker scoot around; drag the marker and the line moves instead. Ink still
+    means error. Wherever the halftone dots run fat, the lines living there waste
+    a lot of it; near the one spot that wastes least, the paper goes almost bare.
+    The rings are contour lines, same as on a hiking map. Squint and you’ll see
+    the shape they’re wrapping: a <strong>bowl</strong>. One bottom, no false
+    valleys, nowhere to get stuck. For this dataset the bare spot sits near a
+    slope of 0.7 and an intercept of 0.4 — the same 3.7-ink line you may have
+    already found by hand above. So the hunt was never much of a hunt. Wherever
+    you start, downhill ends at the same spot.</p>
 
-    <p>Now press <em>absolute error</em> on the first figure. The squares become
-    sticks — gaps counted at face value instead of squared — and the bowl grows a
-    crease along its floor. “Squared” is not a law of nature. It is a choice, with
-    consequences: the smooth bowl gives calculus something to grip, and it is why
-    outliers pull so hard. Absolute error forgives outliers and creases the
-    landscape. Statistics is full of such choices dressed up as defaults.</p>
+    <p>Now hit <em>absolute error</em> on the first figure. The squares turn into
+    sticks — gaps counted at face value, no squaring — and over here the bowl
+    picks up a crease along its floor. I want to be clear about something: nobody
+    forced us to square the errors. It’s a choice. An old one, and it cuts both
+    ways — the squaring keeps this surface smooth, smooth is what lets calculus
+    jump straight to the bottom, and the very same squaring is why outliers yank
+    the fit around so hard. Absolute error goes easier on the outliers, and what
+    you pay is that crease, which is a genuinely annoying thing to optimize over.
+    An awful lot of standard statistics rests on choices like this one. This
+    particular choice is Legendre’s, published in 1805 — though Gauss spent years
+    insisting he’d been using it since 1795, and the fight over credit got
+    genuinely nasty — and two centuries later it sits in every stats package as
+    the default nobody re-litigates.</p>
 
-    <h2>The bottom can be solved, not searched</h2>
+    <h2>Solving for the bottom</h2>
 
-    <p>A smooth bowl has one bottom, and calculus finds it in closed form. For slope
+    <p>A smooth bowl has one bottom, and calculus will hand it to you directly. For slope
     <math><mover><mi>m</mi><mo>^</mo></mover></math> and intercept
     <math><mover><mi>b</mi><mo>^</mo></mover></math>:</p>
 
@@ -1555,30 +1572,36 @@
       </math>
     </p>
 
-    <p>Read it as geometry, not ceremony: the slope is how much x and y vary
-    <em>together</em> (their covariance, <math><msub><mi>S</mi><mrow><mi>x</mi><mi>y</mi></mrow></msub></math>)
-    divided by how much x varies <em>alone</em>
-    (<math><msub><mi>S</mi><mrow><mi>x</mi><mi>x</mi></mrow></msub></math>); the
-    intercept then slides the line through the cloud’s center of mass
+    <p>Both pieces have a geometric reading, and it’s worth saying out loud. The
+    slope is how much x and y vary <em>together</em> (that’s the covariance,
+    <math><msub><mi>S</mi><mrow><mi>x</mi><mi>y</mi></mrow></msub></math>) divided
+    by how much x varies <em>on its own</em>
+    (<math><msub><mi>S</mi><mrow><mi>x</mi><mi>x</mi></mrow></msub></math>). The
+    intercept isn’t even interesting — once the slope is set, it just slides the
+    line over to pass through the cloud’s center of mass
     (<math><mover><mi>x</mi><mo>¯</mo></mover></math>, <math><mover><mi>y</mi><mo>¯</mo></mover></math>).
-    Those two quantities — covariance and variance — are the entire machine, and
-    rung 2 is about seeing them as shapes.</p>
+    So covariance and variance are doing all the work. That’s really the punchline
+    of this whole rung, and it’s why the next one is entirely about those two
+    quantities.</p>
 
     <h2>When the truth is drawn on screen</h2>
 
-    <p>These twelve points are synthetic: they were manufactured by adding noise to a
-    line I know. Press <em>show the true line</em> above, then <em>resample</em> a
-    few times. The truth holds still; the fit wobbles around it, tugged by each new
-    draw of noise. That wobble is the whole subject of statistical inference — how
-    far a fit can stray from a truth — and here you can see it only because the
-    truth is drawn. Remember the feeling. You are about to lose it.</p>
+    <p>About those twelve points: they’re synthetic. I made them by adding noise
+    to a line I picked, which means that for once the truth is actually available.
+    So press <em>show the true line</em>, then <em>resample</em> a few times and
+    watch. The true line holds still. The fit wobbles around it, dragged by every
+    fresh draw of noise. Honestly, how far a fit strays from its truth is most of
+    what statistical inference is about — and the only reason you can see it
+    happen here is that I let you peek. Real data never does. Worth sitting with
+    that for a second before you scroll on.</p>
 
     <h2>Four hundred real births</h2>
 
-    <p>Same instrument, no tricks: 400 births sampled from the 2014 US natality
-    file — gestational age against birthweight. There is no <em>show the truth</em>
-    button now, because nobody has the truth. There is only the machine and its
-    definition of best.</p>
+    <p>Here’s the same instrument again, this time on 400 births from the 2014 US
+    natality file — gestational age on the bottom, birthweight up the side. One
+    button is missing now. There’s no <em>show the true line</em>, because nobody
+    knows the true line. You get the fitting machinery, the definition of best
+    you handed it, and that’s it.</p>
 
     <div class="instrument-mount" id="fs-births">
 <!-- poster:fit-scatter-births -->
@@ -2012,15 +2035,25 @@
 <!-- /poster:fit-scatter-births -->
     </div>
 
-    <p>The fitted slope is real knowledge: on the order of two hundred grams per
-    week, which is why a 36-weeker and a 40-weeker are different babies. But drag a
-    single extreme preemie and watch the fit barely move — then look at the left
-    edge, where the relationship visibly bends away from any straight line. Growth
-    is not linear across this range, and the machine does not care.</p>
+    <p>The fitted slope is genuinely useful. In this sample it lands near 125
+    grams per week of gestation, so the model separates a 36-weeker from a
+    40-weeker by about half a kilo. (If you learned third-trimester growth
+    velocities closer to 200 grams a week, notice what happened: serial growth
+    within pregnancies and a cross-section of deliveries are different questions,
+    and the babies who deliver early are not the babies who were growing
+    normally. The machine answers exactly the question you handed it.) But run
+    two experiments before you go. First, grab one of the extreme preemies and
+    drag it around — the fit barely twitches, since four hundred other points are
+    holding it down. Second, look hard at the left edge, below 32 weeks or so.
+    The cloud bends away from every straight line you could draw there, because
+    growth isn’t linear across a range this wide. The fit won’t mention that.
+    It’ll draw its best line through a curve as cheerfully as through a line, and
+    the readout will look exactly as confident.</p>
 
-    <p>The machine happily fits a line whether or not a line is the right question.
-    Nothing in the readout will tell you. The next two rungs build the eyes that
-    do.</p>
+    <p>So that’s least squares: it answers exactly the question you asked, whether
+    or not it was the right question to ask, and nothing anywhere in the output
+    warns you which case you’re in. Telling those cases apart is a different
+    skill. That one, the next two rungs try to build.</p>
 
     <footer>
       <a href="index.html">← shadowbox</a> · rung 2: covariance — coming

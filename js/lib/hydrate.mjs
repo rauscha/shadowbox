@@ -25,6 +25,8 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 export function controlsMarkup(controls, state) {
   const parts = [];
   for (const c of controls) {
+    // Controls that only make sense on synthetic data declare needsTruth.
+    if (c.needsTruth && !state.truth) continue;
     // A truth toggle has nothing to show when the dataset carries no truth.
     if (c.id === 'showTruth' && !state.truth) continue;
     // The residual toggle only earns its place on dense data; sparse data always draws them.
@@ -62,8 +64,16 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
     const svg = el.querySelector('svg');
     if (!svg) return;
 
+    // An instrument may export applyControl(state, id, value) to derive extra
+    // state from a control change (e.g. the rho dial also rewrites sxy).
+    const apply = (id, value) => {
+      const partial = instrument.applyControl
+        ? instrument.applyControl(full(), id, value)
+        : { [id]: value };
+      store.set(partial);
+    };
     el.querySelectorAll('input[data-control]').forEach(input => {
-      input.addEventListener('input', () => store.set({ [input.dataset.control]: Number(input.value) }));
+      input.addEventListener('input', () => apply(input.dataset.control, Number(input.value)));
     });
     el.querySelectorAll('button[data-control]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -71,7 +81,7 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
         const cur = store.get()[id];
         const onVal = btn.dataset.on === 'true' ? true : btn.dataset.on === 'false' ? false : btn.dataset.on;
         const offVal = btn.dataset.off === 'true' ? true : btn.dataset.off === 'false' ? false : btn.dataset.off;
-        store.set({ [id]: cur === onVal ? offVal : onVal });
+        apply(id, cur === onVal ? offVal : onVal);
       });
     });
     el.querySelectorAll('button[data-action]').forEach(btn => {

@@ -1,8 +1,8 @@
-// cloud-ellipse — a point cloud, its covariance ellipse, and the 2×2 covariance
+// cloud-ellipse - a point cloud, its covariance ellipse, and the 2×2 covariance
 // matrix as four live numbers, bidirectionally bound: drag the cloud's spread
 // or tilt and the numbers move; drag a matrix number and the cloud reshapes.
 // The base cloud is whitened (js/lib/cloud.mjs) so the displayed points carry
-// the dialed covariance exactly — the matrix, the ellipse, and the dots can
+// the dialed covariance exactly - the matrix, the ellipse, and the dots can
 // never disagree. Leave-behind: the covariance matrix IS an ellipse.
 // Isotropic mapping: one numeric unit is the same number of pixels on both
 // axes, so shape on screen is shape in the numbers.

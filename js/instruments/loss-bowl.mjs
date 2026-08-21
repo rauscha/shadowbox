@@ -1,10 +1,10 @@
-// loss-bowl — the (slope, intercept) plane with total error as a graduated
+// loss-bowl - the (slope, intercept) plane with total error as a graduated
 // ink halftone plus drawn contour rings: a bowl whose bottom is bare paper.
 // Dot area is linear in the loss, so this instrument and fit-scatter make the
 // same statement in the same ink: error is how much of the page you darken,
 // and the best line is the least-inked point. Linked to fit-scatter by
 // sharing slope/intercept in one store; the draggable marker IS the line.
-// The surface markup is memoised per dataset — drag frames only move overlays.
+// The surface markup is memoised per dataset - drag frames only move overlays.
 
 import { ols, sse, sae, lossSurface } from '../math/core.mjs';
 import { isoSegments } from '../lib/contours.mjs';
@@ -73,7 +73,7 @@ function surfaceMarkup(state, L) {
   const parts = [`<g data-role="surface">`];
 
   // graduated halftone: dot area linear in loss, bare paper at the minimum
-  parts.push(`<g fill="var(--ink)">`);
+  parts.push(`<g fill="var(--ink-dot)">`);
   for (const d of halftoneDots(grid, plot)) {
     parts.push(`<circle data-role="dot" cx="${F(d.x)}" cy="${F(d.y)}" r="${F(d.r)}"/>`);
   }
@@ -116,7 +116,7 @@ export function render(state) {
   const parts = [];
 
   parts.push(`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'IBM Plex Sans', Arial, sans-serif">`);
-  parts.push(`<title>The plane of all candidate lines: slope across, intercept up, total error as a halftone bowl — ink dots grow with the error, bare paper at the minimum — with contour rings. A draggable marker picks the line.</title>`);
+  parts.push(`<title>The plane of all candidate lines: slope across, intercept up, total error as a halftone bowl - ink dots grow with the error, bare paper at the minimum - with contour rings. A draggable marker picks the line.</title>`);
   parts.push(`<defs><clipPath id="${id('clip')}"><rect x="${plot.x0}" y="${plot.y0}" width="${plot.x1 - plot.x0}" height="${plot.y1 - plot.y0}"/></clipPath></defs>`);
 
   parts.push(`<g clip-path="url(#${id('clip')})">`);

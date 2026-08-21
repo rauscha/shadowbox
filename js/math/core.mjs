@@ -1,4 +1,4 @@
-// shadowbox math core — pure functions, no DOM, no dependencies.
+// shadowbox math core - pure functions, no DOM, no dependencies.
 // Convention: sample statistics everywhere (n-1), matching numpy ddof=1.
 // Pinned against reference/fixtures.py (numpy) via test/fixtures.json.
 

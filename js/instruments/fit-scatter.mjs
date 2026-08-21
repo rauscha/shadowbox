@@ -1,4 +1,4 @@
-// fit-scatter — a draggable line over a scatter, residuals drawn as literal
+// fit-scatter - a draggable line over a scatter, residuals drawn as literal
 // dot-screened squares. Total squared error = total ink: the dot pattern is
 // fixed in page units (userSpaceOnUse), so a bigger square carries more dots,
 // and dragging toward the best fit visibly de-inks the page.
@@ -71,7 +71,7 @@ export function render(state) {
   parts.push(`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'IBM Plex Sans', Arial, sans-serif">`);
   parts.push(`<title>Scatter plot with a draggable fitted line; residuals drawn as dotted squares whose total area is the squared error.</title>`);
   parts.push(`<defs>`
-    + `<pattern id="${id('dots')}" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.5" fill="var(--ink)"/></pattern>`
+    + `<pattern id="${id('dots')}" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.5" fill="var(--ink-dot)"/></pattern>`
     + `<clipPath id="${id('clip')}"><rect x="${plot.x0}" y="${plot.y0}" width="${plot.x1 - plot.x0}" height="${plot.y1 - plot.y0}"/></clipPath>`
     + `</defs>`);
 
@@ -91,7 +91,7 @@ export function render(state) {
   parts.push(`<text x="16" y="${(plot.y0 + plot.y1) / 2}" text-anchor="middle" font-size="13" fill="var(--text)" transform="rotate(-90 16 ${(plot.y0 + plot.y1) / 2})">${labels.y}</text>`);
   parts.push(`<text x="${plot.x0}" y="26" font-size="14" fill="var(--text)" font-family="'IBM Plex Serif', Georgia, serif" font-style="italic">${labels.title}</text>`);
 
-  // truth line (dashed + direct label — never hue alone)
+  // truth line (dashed + direct label - never hue alone)
   if (truth && showTruth) {
     const ty0 = L.y(truth.slope * d.x0 + truth.intercept);
     const ty1 = L.y(truth.slope * d.x1 + truth.intercept);
@@ -132,7 +132,7 @@ export function render(state) {
     parts.push(`<circle data-drag="line-rot" data-index="${idx}" tabindex="0" aria-label="line handle ${idx + 1}" cx="${F(L.x(hx))}" cy="${F(hy)}" r="8" fill="var(--accent)" stroke="var(--bg)" stroke-width="2"/>`);
   }
 
-  // data points (dense sets: smaller glyphs, not individually tabbable — tab exhaustion)
+  // data points (dense sets: smaller glyphs, not individually tabbable - tab exhaustion)
   const tab = xs.length <= 30 ? ' tabindex="0"' : '';
   const r = xs.length <= 60 ? 4.5 : 2.5;
   for (let i = 0; i < xs.length; i++) {

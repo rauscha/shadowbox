@@ -1,4 +1,4 @@
-// Regenerates data/biometry.json — a SIMULATED fetal biometry sample for
+// Regenerates data/biometry.json - a SIMULATED fetal biometry sample for
 // rungs 2–3. Hand-run:  node tools/make-biometry.mjs
 //
 // Construction (all sources on the record):
@@ -12,12 +12,12 @@
 // 2. EFW is COMPUTED from the simulated biometry with the Hadlock 1985
 //    three-parameter model (Hadlock et al., Am J Obstet Gynecol 1985;151:333-7):
 //    log10(W g) = 1.326 − 0.00326·AC·FL + 0.0107·HC + 0.0438·AC + 0.158·FL
-//    (AC, FL, HC in cm) — so the HC↔EFW correlation on the page is partly by
+//    (AC, FL, HC in cm) - so the HC↔EFW correlation on the page is partly by
 //    construction, exactly the honest aside the rung-2 essay makes (spec §7).
-// 3. Simulation parameters (choices, not published facts — owner may tune):
+// 3. Simulation parameters (choices, not published facts - owner may tune):
 //    GA ~ U(20, 40) weeks; each fetus gets a shared size z plus per-measure
 //    noise with within-GA cross-correlation RHO_WITHIN = 0.6; EFW carries
-//    multiplicative noise SD_LOG10_EFW = 0.031 (≈7.5% — the order of random
+//    multiplicative noise SD_LOG10_EFW = 0.031 (≈7.5% - the order of random
 //    error usually attributed to Hadlock EFW).
 
 import { writeFileSync } from 'node:fs';
@@ -60,9 +60,9 @@ function main() {
   }
   const out = {
     provenance: {
-      kind: 'SIMULATED from published parameters — not patient data',
+      kind: 'SIMULATED from published parameters - not patient data',
       centiles: 'INTERGROWTH-21st Fetal Growth Standards: Papageorghiou et al., Lancet 2014;384:869-79; per-week mean/SD transcribed from the official z-score tables at intergrowth21.com (© University of Oxford); cross-checked against Ohuma & Altman, Stat Med 2019 (doi:10.1002/sim.8018) and Wang et al., PLoS ONE 2016 (doi:10.1371/journal.pone.0159733)',
-      efw: 'Hadlock et al., Am J Obstet Gynecol 1985;151:333-7 — three-parameter model (HC, AC, FL); EFW is computed from the simulated biometry, so biometry↔EFW correlation is partly by construction',
+      efw: 'Hadlock et al., Am J Obstet Gynecol 1985;151:333-7 - three-parameter model (HC, AC, FL); EFW is computed from the simulated biometry, so biometry↔EFW correlation is partly by construction',
       simulationParameters: { n: N, seed: SEED, gaWeeks: [20, 40], rhoWithinGa: RHO_WITHIN, sdLog10Efw: SD_LOG10_EFW, note: 'these three are modeling choices, not published quantities; owner may tune' },
       generator: 'tools/make-biometry.mjs (deterministic; rerun to regenerate)',
       units: { ga: 'weeks', hc: 'mm', ac: 'mm', fl: 'mm', bpd: 'mm', efw: 'g' },

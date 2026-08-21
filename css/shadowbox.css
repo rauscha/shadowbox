@@ -11,7 +11,11 @@
   --heading:     #0d121b;
   --accent:      #1e4a7a;   /* Doppler blue  */
   --accent-warm: #c1272d;   /* Doppler red   */
-  --ink:         #1a1f2b;   /* halftone ink  */
+  --ink:         #1a1f2b;   /* structural ink: outlines, contours, rules */
+  --ink-dot:     #4a515c;   /* halftone dots only. Owner's note 2026-08-21:
+                               solid black reads as a dense black mass once the
+                               dots grow and fuse, so the screen runs a darker
+                               grey while outlines keep full weight. */
 
   --font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
   --font-sans:  'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -29,6 +33,7 @@
     --accent:      #7ea9d8;
     --accent-warm: #e06a6f;
     --ink:         #dfe4ec;  /* reverse halftone: light ink on dark ground */
+    --ink-dot:     #aeb7c4;  /* same softening, inverted */
   }
 }
 

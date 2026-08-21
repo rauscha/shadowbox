@@ -1,8 +1,8 @@
-// units-trap — the same cloud with a unit switch on each axis. Flip millimetres
+// units-trap - the same cloud with a unit switch on each axis. Flip millimetres
 // to centimetres and grams to kilograms: the covariance entries jump by whole
 // powers of ten while the correlation readout refuses to move. The plot is
 // numerically isotropic (one numeric unit = the same pixels on both axes), so
-// the unit choice literally reshapes the picture — that's the trap, drawn.
+// the unit choice literally reshapes the picture - that's the trap, drawn.
 // Runs twice on the page: linked to the synthetic cloud's store, and again on
 // the real biometry pair where the units aren't a gotcha, they're Tuesday.
 

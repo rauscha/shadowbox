@@ -2,8 +2,8 @@
 // the normalized value. Dot centres sit on an offset lattice (odd rows shifted
 // half a pitch, print-style); each dot's area πr² fills its P×P cell in the
 // same ratio as t = (v − min)/(max − min), so r(t) = P·sqrt(t/π) up to rMax.
-// The minimum is bare paper; the rim fuses toward solid ink. One channel —
-// ink density — carries the whole gradient, so it survives any color vision
+// The minimum is bare paper; the rim fuses toward solid ink. One channel
+// ink density - carries the whole gradient, so it survives any color vision
 // and both themes (ink/paper swap in dark mode).
 
 export const PITCH = 12;

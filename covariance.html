@@ -16,39 +16,75 @@
     <p class="kicker">shadowbox · rung 2</p>
     <h1>Covariance</h1>
 
-    <p>Rung 1 ended with covariance and variance doing all the work in the slope
-    formula, and I promised they had shapes. This page draws them, and then lets
-    you drag them around.</p>
+    <p>Rung 1 ended with the least-squares slope written as a covariance divided
+    by a variance. Those two quantities do all the work in that formula, and both
+    have a geometry that rarely gets shown. This page draws it.</p>
 
-    <p>The object to get comfortable with is the covariance matrix. Most people meet
-    it as a grid of numbers inside software, usually while trying to do something
-    else, and it stays abstract forever. That’s a shame, because a 2×2
-    covariance matrix is one picture: a tilted ellipse sitting over your data.
-    Numbers on one side, picture on the other, and below you can drag either one.</p>
+    <p>Variance already describes one variable: how far it spreads around its
+    mean. With two variables you want that, and one thing more. Do they move
+    together? When x comes in above its mean, does y usually come in above its
+    mean too? Covariance is the number that answers that question, and the
+    covariance matrix is the bookkeeping that holds all of it for a pair of
+    variables at once.</p>
 
     <details class="from-zero">
       <summary>Start from zero: mean and spread</summary>
-      <p>The <strong>mean</strong> of a batch of numbers is its balance point —
-      where the batch would sit level on a seesaw. With two variables at once, the
-      mean is a point in the plane, (x̄, ȳ): the cloud’s center of mass.</p>
-      <p><strong>Variance</strong> is how far the batch spreads around its mean,
-      measured in squared units. Squared for the same reasons rung 1 squared its
-      errors: it’s smooth, it adds nicely, and one far point counts a lot.
-      Its square root, the <strong>standard deviation</strong>, is back in ordinary
-      units, and it’s the honest “typical distance from the
-      middle.”</p>
+      <p>The <strong>mean</strong> of a batch of numbers is its balance point,
+      where the batch would sit level on a seesaw. With two variables at once the
+      mean is a point in the plane, (x̄, ȳ), the center of mass of the cloud.</p>
+      <p>A <strong>deviation</strong> is how far one measurement sits from the
+      mean, and it can be positive or negative. <strong>Variance</strong> is the
+      average of those deviations squared, so it comes out in squared units and is
+      always positive. Squaring is here for the same reason it was in rung 1: the
+      signs have to go before you can average. The square root of the variance is
+      the <strong>standard deviation</strong>, which is back in ordinary units and
+      reads as a typical distance from the middle.</p>
     </details>
 
-    <h2>The matrix is an ellipse</h2>
+    <h2>What covariance measures</h2>
 
-    <p>Below are eighty synthetic points. The heavy outline is the covariance
-    ellipse, drawn at two standard deviations, and the faint stripes inside it run
-    along its long axis. To the right sits the matrix. Grab a square handle to
-    stretch the cloud, the diamond to tilt it, or drag the underlined matrix
-    numbers themselves up and down. The ρ slider sets the correlation directly.
-    Full disclosure: these points are groomed so the sample matches the dial
-    exactly. Rung 1 already made you feel sampling wobble, so this page turns it
-    off and lets the geometry hold still.</p>
+    <p>Take one data point. Measure how far it sits from the mean in x, and how
+    far from the mean in y. Multiply those two deviations together. Do that for
+    every point and average the results. That average is the
+    <strong>covariance</strong>.</p>
+
+    <p>The multiplying is what makes it work. A point above average in both x and
+    y contributes positive times positive, so a positive product. A point below
+    average in both contributes negative times negative, also positive. But a
+    point that is above average in x and below average in y contributes a negative
+    product. So when the cloud tilts up to the right the positive products
+    dominate and the covariance comes out positive; when it tilts down, negative;
+    and when there is no tilt at all the two kinds of product roughly cancel and
+    the covariance sits near zero.</p>
+
+    <p>Variance is the same calculation with y replaced by x: the average of a
+    deviation times itself, which can never be negative. That’s why variance and
+    covariance belong in one object. For two variables there are four
+    combinations, x with x, x with y, y with x, and y with y, and stacking them in
+    a 2×2 grid gives the <strong>covariance matrix</strong>. The variances sit on
+    the diagonal and the covariance fills both off-diagonal slots, identical in
+    each, because multiplying two deviations does not care about the order. The
+    matrix is always symmetric.</p>
+
+    <h2>Why an ellipse?</h2>
+
+    <p>Those three distinct numbers, two variances and one covariance, pin down
+    the shape of the cloud. Not where the individual points are, but its overall
+    extent: how wide, how tall, and how tilted. The natural picture of how far
+    data spreads in every direction at once is an ellipse.</p>
+
+    <p>The one below is drawn at two standard deviations, so most of the cloud
+    falls inside it. Its long axis points along the direction in which the data
+    varies most, its short axis sits at right angles to that, and the length of
+    each axis is set by how much the data varies along it. Those two directions
+    come out of the matrix itself, and finding them is exactly what rung 3 does.</p>
+
+    <p>Below are eighty synthetic points, the ellipse, and the matrix. Grab a
+    square handle to stretch the cloud, the diamond to tilt it, or drag the
+    underlined matrix numbers up and down. The ρ slider sets the correlation
+    directly. One disclosure: these points are groomed so that the sample matches
+    the dial exactly. Rung 1 was where you felt sampling wobble, so this page
+    switches it off and lets the geometry hold still.</p>
 
     <div class="instrument-mount" id="ce-syn">
 <!-- poster:cloud-ellipse-synthetic -->
@@ -183,24 +219,24 @@
 <!-- /poster:cloud-ellipse-synthetic -->
     </div>
 
-    <p>Here’s how to read the four numbers. Top-left is the variance of x:
-    stretch the cloud sideways and it grows, along with the covariance, while
-    y’s variance sits still. Bottom-right is y’s. The two off-diagonal
-    entries are the same number written twice — the <strong>covariance</strong> —
-    and it’s the interesting one: positive when x above its mean tends to
-    arrive with y above its mean, negative when they seesaw, near zero when
-    knowing one tells you nothing straight-line about the other. Now drag the
-    tilt. All four numbers move at once, because tilt isn’t stored in any
-    single cell; it lives in the relationships between them. That’s the
-    sense in which the matrix <em>is</em> the ellipse: same object, two
-    notations.</p>
+    <p>Reading the four numbers: top-left is the variance of x, so stretching the
+    cloud sideways makes it grow while the variance of y, at bottom-right, sits
+    still. The covariance in the two off-diagonal slots moves whenever the tilt
+    or either spread changes.</p>
+
+    <p>Now drag the tilt handle and watch all four entries move together. This is
+    the part worth pausing on. Tilt is not stored in any one cell. It only exists
+    in the relationship between the covariance and the two variances, which is why
+    reading a covariance matrix entry by entry tells you so little, and why seeing
+    it as an ellipse tells you so much.</p>
 
     <h2>The units trap</h2>
 
-    <p>Now the trap. The next figure is the same cloud — literally the same points;
-    drag up there and it moves down here — except I’m now declaring x to be
-    a length in millimetres and y a weight in grams. The buttons switch units,
-    and that’s all they do.</p>
+    <p>There is a catch in all of this, and it matters as soon as the two
+    variables are measured in different things. The next figure holds the same
+    cloud, literally the same points, so dragging above moves it down here too.
+    The only change is that x is now a length in millimetres and y a weight in
+    grams. The buttons switch units, and that’s all they do.</p>
 
     <div class="instrument-mount" id="ut-syn">
 <!-- poster:units-trap-synthetic -->
@@ -320,18 +356,24 @@
 <!-- /poster:units-trap-synthetic -->
     </div>
 
-    <p>Flip x to centimetres and every entry with an x in it drops by a factor of
-    ten. Then send y to kilograms and its entries fall by a thousand. Do both and the
-    covariance shrinks ten-thousand-fold while the points sit there unchanged.
-    The plot, meanwhile, is drawn the only honest way a “numbers as
-    shape” plot can be — one numeric unit worth of x is the same number of
-    pixels as one numeric unit of y — so the cloud itself squashes flat when the
-    numbers do. None of this is a paradox. Covariance carries units (here,
-    mm·g), so changing units changes it, the same way switching from meters to
-    feet changes the number attached to your height without making you taller.</p>
+    <p>Switch x to centimetres and every entry involving x drops by a factor of
+    ten. Switch y to kilograms and its entries fall by a thousand. Do both and the
+    covariance shrinks ten-thousand-fold, while not one data point has moved.</p>
 
-    <p>The readout that refuses to move is <strong>r</strong>, the correlation:
-    covariance divided by both standard deviations,</p>
+    <p>The picture squashes too, and that is deliberate. This plot gives one
+    numeric unit of x the same number of pixels as one numeric unit of y, which is
+    the only way a plot can show you the numbers honestly. Most software instead
+    rescales each axis to fill the frame, which quietly hides the whole effect.</p>
+
+    <p>None of this is a paradox. Covariance carries units, here millimetre-grams,
+    so changing the units has to change the number, the same way quoting a height
+    in feet instead of metres changes the number without making anyone taller. The
+    practical consequence is the important part: the size of a covariance means
+    nothing on its own. You cannot look at 12,500 and say whether that is a strong
+    relationship or a weak one.</p>
+
+    <p>What survives the unit change is <strong>r</strong>, the correlation, which
+    is the covariance divided by both standard deviations:</p>
 
     <p style="text-align:center">
       <math display="block">
@@ -345,22 +387,29 @@
       </math>
     </p>
 
-    <p>so every unit cancels. It’s the covariance with the units wrung out:
-    pure shape, no scale. That makes it the number to reach for whenever
-    “how tight is this relationship” has to mean the same thing in
-    millimetres as in centimetres. Keep it in your pocket; rung 3 will need it.</p>
+    <p>The standard deviation of x carries the units of x, and the standard
+    deviation of y carries the units of y, so dividing by both cancels everything
+    and leaves a pure number. Dividing by the spreads also bounds it: r can only
+    run from −1 to +1, where ±1 means the points sit exactly on a straight line
+    and 0 means no straight-line relationship at all. That’s why r is the number
+    to quote when you want “how tight is this” to mean the same thing in
+    millimetres as in centimetres.</p>
 
-    <h2>A pair from the scanner</h2>
+    <p>Worth being clear about what r does not do. It measures straight-line
+    association only, so a strong curved relationship can produce a small r, and
+    it says nothing about the slope. A steep relationship and a shallow one can
+    both have r = 0.9.</p>
 
-    <p>Here’s the pair the way it shows up at work: head circumference in
+    <h2>Head circumference and fetal weight</h2>
+
+    <p>Here is a pair in the units it actually arrives in: head circumference in
     millimetres against estimated fetal weight in grams. These 350 scans are
     <strong>simulated from the published INTERGROWTH-21st centiles</strong>
-    (Papageorghiou 2014) rather than pulled from patients; the figure says so on
-    its face, and the data folder carries the full recipe. Millimetres on one
-    axis and grams on the other isn’t a contrived gotcha here; on an ultrasound
-    report it’s just Tuesday. The covariance lands in the tens of thousands
-    of millimetre-grams, a quantity nobody on earth has intuition for, while the
-    correlation, for what that’s worth, comes out at 0.93.</p>
+    (Papageorghiou 2014) rather than taken from patients. The figure says so on
+    its face, and the data folder carries the full recipe. Millimetres against
+    grams is not a contrived example here, it’s what an ultrasound report looks
+    like. The covariance comes out in the tens of thousands of millimetre-grams,
+    a quantity nobody has intuition for. The correlation is 0.93.</p>
 
     <div class="instrument-mount" id="ut-bio">
 <!-- poster:units-trap-biometry -->
@@ -369,7 +418,7 @@
 <title>The same point cloud under switchable units: covariance entries leap by powers of ten, the correlation holds still, and the numerically true aspect ratio squashes the cloud flat.</title>
 <defs><clipPath id="sb-ut-bio-clip"><rect x="64" y="44" width="346" height="368"/></clipPath></defs>
 <rect x="64" y="44" width="346" height="368" fill="none" stroke="var(--border)" stroke-width="1.5"/>
-<text x="64" y="26" font-size="14" fill="var(--text)" font-family="'IBM Plex Serif', Georgia, serif" font-style="italic">350 simulated scans — INTERGROWTH-21st centiles, not patients</text>
+<text x="64" y="26" font-size="14" fill="var(--text)" font-family="'IBM Plex Serif', Georgia, serif" font-style="italic">350 simulated scans - INTERGROWTH-21st centiles, not patients</text>
 <line x1="97.55" y1="412" x2="97.55" y2="417" stroke="var(--border)" stroke-width="1.5"/>
 <text x="97.55" y="431" text-anchor="middle" font-size="11" fill="var(--text-light)">-2000</text>
 <line x1="220.53" y1="412" x2="220.53" y2="417" stroke="var(--border)" stroke-width="1.5"/>
@@ -752,21 +801,24 @@
 <!-- /poster:units-trap-biometry -->
     </div>
 
-    <p>One honest asterisk, because this audience would catch it anyway: estimated
-    fetal weight isn’t measured. It’s computed: the machine plugs
-    head circumference, abdominal circumference, and femur length into a
-    regression (usually Hadlock’s, from 1985) and reports the answer. So
-    when HC and EFW correlate at 0.93, some of that is biology and, honestly, a
-    good chunk is arithmetic: HC sits inside the EFW formula by construction. In this simulated
-    dataset that’s literally how the EFW column was made. Derived variables
-    always correlate with their ingredients. Before admiring any correlation,
-    it’s worth a moment to ask whether one of your variables is secretly made
-    out of the other.</p>
+    <p>That 0.93 needs an asterisk, and it is the kind worth internalising.
+    Estimated fetal weight isn’t measured. It’s computed: the machine takes head
+    circumference, abdominal circumference and femur length, puts them into a
+    regression equation (usually Hadlock’s, from 1985), and reports the result.
+    So when HC and EFW correlate at 0.93, part of that is fetal biology and part
+    of it is arithmetic, because HC is one of the inputs to EFW. In this simulated
+    dataset that’s literally how the EFW column was produced.</p>
 
-    <p>So: the matrix is an ellipse, the ellipse changes costume when the units
-    change, and r is what survives the costume change. Rung 3 needs all three
-    ideas at once — it goes hunting for the directions a cloud genuinely spreads
-    along, and the first thing it has to decide is what units to hunt in.</p>
+    <p>A variable computed from another will always correlate with it, and the
+    correlation tells you about the formula as much as about the patient. Before
+    reading anything into a correlation, it’s worth checking whether one of the
+    two variables is partly made out of the other.</p>
+
+    <p>Three things to carry into rung 3. A covariance matrix is a shape. Its
+    numbers depend on the units, so their size means nothing by itself. And r is
+    what is left once the units are divided out. Rung 3 goes looking for the
+    directions a cloud genuinely spreads along, and the first decision it has to
+    make is which units to look in.</p>
 
     <footer>
       <a href="index.html">← shadowbox</a> ·

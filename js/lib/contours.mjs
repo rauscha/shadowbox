@@ -1,5 +1,5 @@
 // Marching squares, segments only. Grid values[j][i]; segments in grid coords.
-// Bowl surfaces are convex — the saddle cases never fire in anger; pair as-is.
+// Bowl surfaces are convex - the saddle cases never fire in anger; pair as-is.
 export function isoSegments(grid, level) {
   const { values } = grid;
   const segs = [];

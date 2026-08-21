@@ -51,11 +51,11 @@ const CONFIGS = [{
           b = JSON.parse(readFileSync(inRepo('data/births.json'), 'utf8'));
         } catch {
           // offline fallback: labeled placeholder, never a silent substitution
-          console.error('warning: data/births.json missing — births poster uses a labeled placeholder');
+          console.error('warning: data/births.json missing - births poster uses a labeled placeholder');
           const d = synthLine({ seed: 99, n: 60, slope: 190, intercept: -3600, noise: 420, xMin: 30, xMax: 42 });
           return { ...fitScatter.defaults, idKey: 'fs-births', xs: d.xs, ys: d.ys, residuals: false,
             ...ols(d.xs, d.ys),
-            labels: { x: 'gestational age (weeks)', y: 'birthweight (g)', title: 'placeholder — real data pending' } };
+            labels: { x: 'gestational age (weeks)', y: 'birthweight (g)', title: 'placeholder - real data pending' } };
         }
         const fit = ols(b.xs, b.ys);
         return { ...fitScatter.defaults, idKey: 'fs-births', xs: b.xs, ys: b.ys, residuals: false,
@@ -84,7 +84,7 @@ const CONFIGS = [{
         const d = JSON.parse(readFileSync(inRepo('data/biometry.json'), 'utf8'));
         return { ...unitsTrap.defaults, idKey: 'ut-bio', xs: d.hc, ys: d.efw,
           xName: 'head circumference', yName: 'estimated fetal weight',
-          labels: { title: '350 simulated scans — INTERGROWTH-21st centiles, not patients' } };
+          labels: { title: '350 simulated scans - INTERGROWTH-21st centiles, not patients' } };
       },
     },
   ],

@@ -3,7 +3,7 @@
 <title>The same point cloud under switchable units: covariance entries leap by powers of ten, the correlation holds still, and the numerically true aspect ratio squashes the cloud flat.</title>
 <defs><clipPath id="sb-ut-bio-clip"><rect x="64" y="44" width="346" height="368"/></clipPath></defs>
 <rect x="64" y="44" width="346" height="368" fill="none" stroke="var(--border)" stroke-width="1.5"/>
-<text x="64" y="26" font-size="14" fill="var(--text)" font-family="'IBM Plex Serif', Georgia, serif" font-style="italic">350 simulated scans — INTERGROWTH-21st centiles, not patients</text>
+<text x="64" y="26" font-size="14" fill="var(--text)" font-family="'IBM Plex Serif', Georgia, serif" font-style="italic">350 simulated scans - INTERGROWTH-21st centiles, not patients</text>
 <line x1="97.55" y1="412" x2="97.55" y2="417" stroke="var(--border)" stroke-width="1.5"/>
 <text x="97.55" y="431" text-anchor="middle" font-size="11" fill="var(--text-light)">-2000</text>
 <line x1="220.53" y1="412" x2="220.53" y2="417" stroke="var(--border)" stroke-width="1.5"/>

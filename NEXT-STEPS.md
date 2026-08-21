@@ -3,8 +3,8 @@
 (Newly created this session — no prior next-steps doc existed in this repo.)
 
 ## Decisions waiting on Andrew
-- [ ] **Create the GitHub repo + push** (this is also the laptop-sync gate). Private now
-      and public later is fine; Pages goes live at andrewrausch.com/shadowbox/ when public.
+- [x] ~~Create the GitHub repo + push~~ — done 2026-08-20: https://github.com/rauscha/shadowbox (private)
+- [ ] **Flip public + enable Pages** when ready — that's what puts it at andrewrausch.com/shadowbox/.
 - [ ] apps.html card on andrewrausch.com — recommend waiting until the site is public.
 - [ ] Eyeball rung 1, including a desaturated/grayscale glance (the one un-automated QA step).
 

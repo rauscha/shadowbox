@@ -9,9 +9,9 @@
 - [ ] Eyeball rung 1, including a desaturated/grayscale glance (the one un-automated QA step).
 
 ## Build queue (spec §13)
-- [ ] **M3 — rung 2, covariance**: plan then build. cloud-ellipse (live 2×2 matrix ↔ ellipse)
-      + units-trap (mm↔cm, g↔kg; correlation invariant). Biometry pair simulated from
-      published centiles, labeled as such (spec §8) — include the EFW-circularity aside (§7).
+- [x] ~~**M3 — rung 2, covariance**~~ — done overnight 2026-08-20/21: cloud-ellipse +
+      units-trap linked, INTERGROWTH-simulated biometry pair (labeled), EFW aside,
+      posters, 46/46 tests, browser-QA'd light+dark. Awaiting Andrew's eyeball.
 - [ ] **M4 — rung 3, PCA**: axis-projector (variance vs perpendicular error, twin readouts),
       three-lines (y~x / x~y / PC1, stripe orientations), basis-spin, scree with the
       4-variable BPD/HC/AC/FL payoff (PC1 = size, PC2 = proportion) + raw-vs-standardized toggle.
@@ -21,8 +21,13 @@
       iterative-optimization "start from zero" blocks, precomputed embeddings.
 
 ## Loose threads
-- [ ] Background task "Fix stale font claim in rauscha.github.io CLAUDE.md" (Lato → IBM Plex)
-      shows no commit in that repo yet — finish or re-run it.
+- [x] ~~Stale font claim in rauscha.github.io CLAUDE.md~~ — fixed and pushed
+      overnight 2026-08-21 (7e574d7): Lato → IBM Plex Serif/Sans/Mono, verified
+      against stylesheet.css and index.html first.
+- [ ] (optional, noticed in passing) index.html blurb still has two slogan-y
+      AI-ish closers ("These pages let you move the light." / "The contrast is
+      the lesson.") — left alone since they read as deliberate site voice;
+      Andrew judges.
 
 ## Done (this session, 2026-08-20)
 - [x] Spec + M1/M2 plan (docs/superpowers/)

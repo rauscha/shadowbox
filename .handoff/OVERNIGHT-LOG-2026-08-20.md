@@ -43,5 +43,36 @@ CLAUDE.md (says Lato; site uses IBM Plex) — one-line fix + push, end of night.
   recheck tomorrow). qwen3:14b used as local judge; ZeroGPT tested and discarded
   (rated the VERY-AI original '0% AI' — no discrimination).
 
+- **T3 committed (a0aeab4, 3db7e5c, 9f08edf): M3 — rung 2 is live.** Plan written
+  (docs/superpowers/plans/2026-08-20-shadowbox-m3.md), then TDD build:
+  - js/lib/cloud.mjs: 2×2 Cholesky + exact whitening, so the displayed cloud carries
+    the dialed covariance to machine precision — dial, matrix, ellipse can't disagree.
+  - cloud-ellipse: bidirectional matrix ↔ ellipse (drag spread/tilt/underlined matrix
+    numbers; ρ dial; PD clamp; isotropic mapping so shape on screen IS the numbers).
+  - units-trap: unit toggles, covariance entries jump by exact powers of ten, r pinned;
+    numerically-true aspect squashes the cloud into the needle that makes the point.
+  - data/biometry.json: 350 SIMULATED scans. Centiles transcribed from the official
+    INTERGROWTH-21st z-score tables (Papageorghiou, Lancet 2014, via intergrowth21.com
+    PDFs), cross-checked against equations reproduced in Ohuma & Altman 2019
+    (doi:10.1002/sim.8018) and Wang 2016 (doi:10.1371/journal.pone.0159733) — found
+    via PubMed/Europe PMC tonight, no constants from memory. EFW computed with
+    Hadlock 1985, so HC↔EFW r=0.927 is partly by construction = the EFW-circularity
+    aside made literal. Simulation-only knobs disclosed in provenance.
+  - covariance.html essay written in the human register from the start (lint: 0
+    stings, 1 hedge, 0.84 dashes/100w); posters ×3; index + rung-1 footer linked.
+  - Browser-QA'd in Chrome: tilt drag rewrites both linked figures, unit toggle
+    scaled var(x) 1,680→16.8 and cov 12,500→1,250 with r frozen at 0.475, dark mode
+    inverts. 46/46 tests.
+- **T4: rung 2 de-AI check.** qwen3:14b judge: "mostly reads human." Sapling on the
+  densest chunk: 79.7% (vs 95-100% for rung 1's pre-rewrite chunks) — consistent with
+  the explainer-prose floor documented in T2. One sentence split on the judge's best
+  nit. GPTZero re-verdict still blocked by anon quota.
+- **T5 committed+pushed in rauscha.github.io (7e574d7): font doc fix.** CLAUDE.md
+  claimed Lato; stylesheet + index.html prove IBM Plex Serif/Sans/Mono. One line.
+
 ## Deferred / waiting on Andrew
-- (nothing yet)
+- See .handoff/PENDING-DECISIONS.md (5 cards): eyeball both rungs (incl. grayscale
+  glance), prose verdict (+ optional GPTZero re-run when quota resets), biometry
+  simulation knobs, public+Pages flip, and go/no-go on M4 (PCA).
+- Preview: `python -m http.server 8000` in the repo → localhost:8000 (rung 2 at
+  /covariance.html). Local server from tonight's QA may still be on port 8000.

@@ -7,6 +7,8 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import * as fitScatter from '../js/instruments/fit-scatter.mjs';
 import * as lossBowl from '../js/instruments/loss-bowl.mjs';
+import * as cloudEllipse from '../js/instruments/cloud-ellipse.mjs';
+import * as unitsTrap from '../js/instruments/units-trap.mjs';
 import { synthLine, ols } from '../js/math/core.mjs';
 
 export function injectPoster(html, key, svg) {
@@ -59,6 +61,30 @@ const CONFIGS = [{
         return { ...fitScatter.defaults, idKey: 'fs-births', xs: b.xs, ys: b.ys, residuals: false,
           slope: fit.slope, intercept: fit.intercept,
           labels: { x: 'gestational age (weeks)', y: 'birthweight (g)', title: 'every birth is a point. the line is a choice.' } };
+      },
+    },
+  ],
+}, {
+  file: 'covariance.html',
+  posters: [
+    {
+      key: 'cloud-ellipse-synthetic', instrument: cloudEllipse,
+      state: () => ({ ...cloudEllipse.defaults, idKey: 'ce-syn',
+        labels: { x: 'x', y: 'y', title: 'drag the cloud. or drag the matrix.' } }),
+    },
+    {
+      key: 'units-trap-synthetic', instrument: unitsTrap,
+      state: () => ({ ...unitsTrap.defaults, idKey: 'ut-syn',
+        xName: 'length', yName: 'weight',
+        labels: { title: 'same cloud. new units. watch the matrix.' } }),
+    },
+    {
+      key: 'units-trap-biometry', instrument: unitsTrap,
+      state: () => {
+        const d = JSON.parse(readFileSync(inRepo('data/biometry.json'), 'utf8'));
+        return { ...unitsTrap.defaults, idKey: 'ut-bio', xs: d.hc, ys: d.efw,
+          xName: 'head circumference', yName: 'estimated fetal weight',
+          labels: { title: '350 simulated scans — INTERGROWTH-21st centiles, not patients' } };
       },
     },
   ],

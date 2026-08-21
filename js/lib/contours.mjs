@@ -1,20 +1,3 @@
-import { bandLevel } from './viridis.mjs';
-
-// Run-merge each grid row into same-level bands: [{i0, i1, j, level}].
-export function rowBands(grid, levels) {
-  const out = [];
-  const { values, min, max } = grid;
-  for (let j = 0; j < values.length; j++) {
-    const row = values[j];
-    let i0 = 0, cur = bandLevel(row[0], min, max, levels);
-    for (let i = 1; i <= row.length; i++) {
-      const lv = i < row.length ? bandLevel(row[i], min, max, levels) : -1;
-      if (lv !== cur) { out.push({ i0, i1: i - 1, j, level: cur }); i0 = i; cur = lv; }
-    }
-  }
-  return out;
-}
-
 // Marching squares, segments only. Grid values[j][i]; segments in grid coords.
 // Bowl surfaces are convex — the saddle cases never fire in anger; pair as-is.
 export function isoSegments(grid, level) {

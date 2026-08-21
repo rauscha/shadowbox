@@ -1,11 +1,14 @@
-// loss-bowl — the (slope, intercept) plane with total error as a quantised
-// viridis surface plus drawn contour rings: a bowl. Linked to fit-scatter by
+// loss-bowl — the (slope, intercept) plane with total error as a graduated
+// ink halftone plus drawn contour rings: a bowl whose bottom is bare paper.
+// Dot area is linear in the loss, so this instrument and fit-scatter make the
+// same statement in the same ink: error is how much of the page you darken,
+// and the best line is the least-inked point. Linked to fit-scatter by
 // sharing slope/intercept in one store; the draggable marker IS the line.
 // The surface markup is memoised per dataset — drag frames only move overlays.
 
 import { ols, sse, sae, lossSurface } from '../math/core.mjs';
-import { bandLevel, bandColor, contrastInk } from '../lib/viridis.mjs';
-import { rowBands, isoSegments } from '../lib/contours.mjs';
+import { isoSegments } from '../lib/contours.mjs';
+import { halftoneDots } from '../lib/halftone.mjs';
 
 export const name = 'loss-bowl';
 
@@ -22,7 +25,6 @@ export const controls = [];          // driven by drag + the linked fit-scatter
 
 const W = 640, H = 460;
 const MARGIN = { l: 64, r: 14, t: 44, b: 48 };
-const LEVELS = 9;
 const GRID_N = 48;
 
 export function ranges(state) {
@@ -70,36 +72,35 @@ function surfaceMarkup(state, L) {
   const gy = j => plot.y1 - j * cellH;                     // grid j -> px (intercept axis, j up)
   const parts = [`<g data-role="surface">`];
 
-  // quantised bands, run-merged per row, half-cell centred on grid points
-  for (const b of rowBands(grid, LEVELS)) {
-    const x = gx(b.i0) - cellW / 2;
-    const w = (b.i1 - b.i0 + 1) * cellW;
-    const y = gy(b.j) - cellH / 2;
-    parts.push(`<rect data-role="band" x="${F(x)}" y="${F(y)}" width="${F(w)}" height="${F(cellH)}" fill="${bandColor(b.level, LEVELS)}" shape-rendering="crispEdges"/>`);
+  // graduated halftone: dot area linear in loss, bare paper at the minimum
+  parts.push(`<g fill="var(--ink)">`);
+  for (const d of halftoneDots(grid, plot)) {
+    parts.push(`<circle data-role="dot" cx="${F(d.x)}" cy="${F(d.y)}" r="${F(d.r)}"/>`);
   }
+  parts.push(`</g>`);
 
-  // contour rings crowding the bottom of the bowl (t^2 spacing), ink matched to band
+  // contour rings crowding the bottom of the bowl (t^2 spacing); paper casing
+  // under ink line keeps them legible on light and fused ground alike
   const ts = [0.15, 0.3, 0.5, 0.7, 0.9];
   for (const t of ts) {
     const level = grid.min + (grid.max - grid.min) * t * t;
     const segs = isoSegments(grid, level);
     if (!segs.length) continue;
-    const ink = contrastInk(bandLevel(level, grid.min, grid.max, LEVELS), LEVELS);
     const dpath = segs.map(([x0, y0, x1, y1]) =>
       `M${F(gx(x0))} ${F(gy(y0))}L${F(gx(x1))} ${F(gy(y1))}`).join('');
-    parts.push(`<path data-role="contour" d="${dpath}" stroke="${ink}" stroke-width="1.25" fill="none"/>`);
+    parts.push(`<path d="${dpath}" stroke="var(--bg)" stroke-width="3.25" fill="none"/>`);
+    parts.push(`<path data-role="contour" d="${dpath}" stroke="var(--ink)" stroke-width="1.25" fill="none"/>`);
     if (t >= 0.7) {
       const [sx, sy] = segs[0];
       const label = level >= 100 ? Math.round(level) : +level.toFixed(1);
-      parts.push(`<text x="${F(gx(sx) + 4)}" y="${F(gy(sy) - 4)}" font-size="11" font-family="'IBM Plex Mono', Consolas, monospace" fill="${ink}">${label}</text>`);
+      parts.push(`<text x="${F(gx(sx) + 4)}" y="${F(gy(sy) - 4)}" font-size="11" font-family="'IBM Plex Mono', Consolas, monospace" fill="var(--ink)" stroke="var(--bg)" stroke-width="3" paint-order="stroke">${label}</text>`);
     }
   }
 
-  // the true minimum: x glyph + welded label (never hue alone)
+  // the true minimum: x glyph + welded label on the bare-paper basin
   const mx = L.x(grid.minAt[0]), my = L.y(grid.minAt[1]);
-  const inkMin = contrastInk(0, LEVELS);
-  parts.push(`<path data-role="minimum" d="M${F(mx - 6)} ${F(my - 6)}L${F(mx + 6)} ${F(my + 6)}M${F(mx - 6)} ${F(my + 6)}L${F(mx + 6)} ${F(my - 6)}" stroke="${inkMin}" stroke-width="2.5" fill="none"/>`);
-  parts.push(`<text x="${F(mx + 10)}" y="${F(my + 4)}" font-size="12" fill="${inkMin}">bottom of the bowl</text>`);
+  parts.push(`<path data-role="minimum" d="M${F(mx - 6)} ${F(my - 6)}L${F(mx + 6)} ${F(my + 6)}M${F(mx - 6)} ${F(my + 6)}L${F(mx + 6)} ${F(my - 6)}" stroke="var(--ink)" stroke-width="2.5" fill="none"/>`);
+  parts.push(`<text x="${F(mx + 10)}" y="${F(my + 4)}" font-size="12" fill="var(--ink)" stroke="var(--bg)" stroke-width="3" paint-order="stroke">bottom of the bowl</text>`);
 
   parts.push(`</g>`);
   const markup = parts.join('\n');
@@ -115,7 +116,7 @@ export function render(state) {
   const parts = [];
 
   parts.push(`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'IBM Plex Sans', Arial, sans-serif">`);
-  parts.push(`<title>The plane of all candidate lines: slope across, intercept down, total error as a shaded bowl with contour rings. A draggable marker picks the line.</title>`);
+  parts.push(`<title>The plane of all candidate lines: slope across, intercept up, total error as a halftone bowl — ink dots grow with the error, bare paper at the minimum — with contour rings. A draggable marker picks the line.</title>`);
   parts.push(`<defs><clipPath id="${id('clip')}"><rect x="${plot.x0}" y="${plot.y0}" width="${plot.x1 - plot.x0}" height="${plot.y1 - plot.y0}"/></clipPath></defs>`);
 
   parts.push(`<g clip-path="url(#${id('clip')})">`);

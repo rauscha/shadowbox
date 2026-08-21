@@ -56,11 +56,14 @@ test('applyDrag: points moves one data point', () => {
   assert.equal(out.xs.length, s.xs.length);
 });
 
-test('loss-bowl renders bands, contours, ols minimum and a draggable marker', () => {
+test('loss-bowl renders a graduated halftone, contours, minimum and marker', () => {
   const s = state();
   const svg = LB.render({ ...LB.defaults, idKey: 'b1', xs: s.xs, ys: s.ys, slope: s.slope, intercept: s.intercept, loss: 'squared' });
   assert.match(svg, /^<svg[^>]*viewBox="0 0 640 460"/);
-  assert.ok((svg.match(/data-role="band"/g) || []).length > 20);
+  const radii = [...svg.matchAll(/data-role="dot"[^>]*? r="([0-9.]+)"/g)].map(m => +m[1]);
+  assert.ok(radii.length > 300);
+  assert.ok(new Set(radii.map(r => r.toFixed(1))).size > 15);  // graduated, not a uniform screen
+  assert.ok(!svg.includes('data-role="band"'));                // viridis bands retired
   assert.ok((svg.match(/data-role="contour"/g) || []).length >= 4);
   assert.ok(svg.includes('data-drag="marker"'));
   assert.ok(svg.includes('data-role="minimum"'));

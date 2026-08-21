@@ -30,9 +30,10 @@ on screen, then on real clinical data where no one has the truth.
 - **Static-first:** every figure ships as a committed SVG poster frame inlined in the
   page; JS upgrades it to a live instrument. With JS off the page still teaches and
   prints.
-- **Colorblind-safe by construction:** no meaning rides on hue alone. Ben-Day dot
-  screens carry magnitude, stripe orientation carries direction, heavy outlines carry
-  structure; surfaces are quantized viridis with drawn contour lines.
+- **Colorblind-safe by construction:** no meaning rides on hue alone. Dot screens
+  carry magnitude, stripe orientation carries direction, heavy outlines carry
+  structure; surfaces are graduated ink halftone — dot area linear in the value,
+  bare paper at the minimum — with drawn contour lines.
 - **Numerics pinned:** the JS math core is tested against numpy fixtures
   (`reference/fixtures.py` → `test/fixtures.json`), with dual eigensolvers
   cross-checked on every 2×2 case.

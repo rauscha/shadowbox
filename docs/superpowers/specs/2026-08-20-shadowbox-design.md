@@ -248,9 +248,18 @@ solids, separated by heavy outlines, each with a different job):
   teaches the projection geometry.
 - **Solids + heavy outlines carry structure** ("what it is"): points, fitted lines,
   the ellipse.
-- **Surfaces** (loss bowl, any heatmap): **viridis** — perceptually uniform, so the
+- **Surfaces** (loss bowl, any heatmap): ~~**viridis** — perceptually uniform, so the
   information rides on luminance — with **drawn contour lines** on top, so the surface
-  reads as topography rather than a color wash.
+  reads as topography rather than a color wash.~~
+  **AMENDED 2026-08-20 (owner art direction, evening):** surfaces are **graduated ink
+  halftone** — dot area linear in the normalized value (`js/lib/halftone.mjs`), bare
+  paper at the minimum, dots fusing toward solid at the maximum — with the same drawn
+  contour lines on top. Andrew's rule, from the Reflections-series reference he sent:
+  dots that show a **gradient must vary in size/weight** (true Lichtenstein
+  gradation); dots that merely fill a counted area stay a **fine uniform screen**
+  ("you can just see the area"). Information still rides on luminance — ink coverage —
+  so the encoding remains colorblind-safe and inverts cleanly in dark mode. Viridis
+  retired from the codebase with this change.
 - Lines: distinct dash patterns AND direct labels welded to line ends — no
   cross-referenced legends. Point classes: distinct glyph shapes, not hue.
 - Hue, when used, comes from Okabe-Ito (blue #0072B2 / vermillion #D55E00 first), and

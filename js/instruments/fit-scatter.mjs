@@ -71,7 +71,7 @@ export function render(state) {
   parts.push(`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'IBM Plex Sans', Arial, sans-serif">`);
   parts.push(`<title>Scatter plot with a draggable fitted line; residuals drawn as dotted squares whose total area is the squared error.</title>`);
   parts.push(`<defs>`
-    + `<pattern id="${id('dots')}" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="3" fill="var(--ink)"/></pattern>`
+    + `<pattern id="${id('dots')}" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.5" fill="var(--ink)"/></pattern>`
     + `<clipPath id="${id('clip')}"><rect x="${plot.x0}" y="${plot.y0}" width="${plot.x1 - plot.x0}" height="${plot.y1 - plot.y0}"/></clipPath>`
     + `</defs>`);
 

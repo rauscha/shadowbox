@@ -82,7 +82,7 @@
     <p>Below are eighty synthetic points, the ellipse, and the matrix. Grab a
     square handle to stretch the cloud, the diamond to tilt it, or drag the
     underlined matrix numbers up and down. The ρ slider sets the correlation
-    directly. One disclosure: these points are groomed so that the sample matches
+    directly. One disclosure: these points are constructed so that the sample matches
     the dial exactly. Rung 1 was where you felt sampling wobble, so this page
     switches it off and lets the geometry hold still.</p>
 
@@ -235,7 +235,7 @@
     <p>There is a catch in all of this, and it matters as soon as the two
     variables are measured in different things. The next figure holds the same
     cloud, literally the same points, so dragging above moves it down here too.
-    The only change is that x is now a length in millimetres and y a weight in
+    The only change is that x is now a length in millimeters and y a weight in
     grams. The buttons switch units, and that’s all they do.</p>
 
     <div class="instrument-mount" id="ut-syn">
@@ -356,7 +356,7 @@
 <!-- /poster:units-trap-synthetic -->
     </div>
 
-    <p>Switch x to centimetres and every entry involving x drops by a factor of
+    <p>Switch x to centimeters and every entry involving x drops by a factor of
     ten. Switch y to kilograms and its entries fall by a thousand. Do both and the
     covariance shrinks ten-thousand-fold, while not one data point has moved.</p>
 
@@ -365,9 +365,9 @@
     the only way a plot can show you the numbers honestly. Most software instead
     rescales each axis to fill the frame, which quietly hides the whole effect.</p>
 
-    <p>None of this is a paradox. Covariance carries units, here millimetre-grams,
+    <p>None of this is a paradox. Covariance carries units, here millimeter-grams,
     so changing the units has to change the number, the same way quoting a height
-    in feet instead of metres changes the number without making anyone taller. The
+    in feet instead of meters changes the number without making anyone taller. The
     practical consequence is the important part: the size of a covariance means
     nothing on its own. You cannot look at 12,500 and say whether that is a strong
     relationship or a weak one.</p>
@@ -393,7 +393,7 @@
     run from −1 to +1, where ±1 means the points sit exactly on a straight line
     and 0 means no straight-line relationship at all. That’s why r is the number
     to quote when you want “how tight is this” to mean the same thing in
-    millimetres as in centimetres.</p>
+    millimeters as in centimeters.</p>
 
     <p>Worth being clear about what r does not do. It measures straight-line
     association only, so a strong curved relationship can produce a small r, and
@@ -403,12 +403,12 @@
     <h2>Head circumference and fetal weight</h2>
 
     <p>Here is a pair in the units it actually arrives in: head circumference in
-    millimetres against estimated fetal weight in grams. These 350 scans are
+    millimeters against estimated fetal weight in grams. These 350 scans are
     <strong>simulated from the published INTERGROWTH-21st centiles</strong>
     (Papageorghiou 2014) rather than taken from patients. The figure says so on
-    its face, and the data folder carries the full recipe. Millimetres against
+    its face, and the data folder carries the full recipe. Millimeters against
     grams is not a contrived example here, it’s what an ultrasound report looks
-    like. The covariance comes out in the tens of thousands of millimetre-grams,
+    like. The covariance comes out in the tens of thousands of millimeter-grams,
     a quantity nobody has intuition for. The correlation is 0.93.</p>
 
     <div class="instrument-mount" id="ut-bio">
@@ -801,7 +801,7 @@
 <!-- /poster:units-trap-biometry -->
     </div>
 
-    <p>That 0.93 needs an asterisk, and it is the kind worth internalising.
+    <p>That 0.93 needs an asterisk, and it is the kind worth internalizing.
     Estimated fetal weight isn’t measured. It’s computed: the machine takes head
     circumference, abdominal circumference and femur length, puts them into a
     regression equation (usually Hadlock’s, from 1985), and reports the result.

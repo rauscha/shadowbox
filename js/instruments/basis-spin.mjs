@@ -151,7 +151,8 @@ export function render(state) {
   for (const o of olds) {
     const ex = L.cx + o.vx * arm * L.s, ey = L.cy - o.vy * arm * L.s;
     parts.push(`<line data-role="old-axis-${o.key}" x1="${F(L.cx - o.vx * arm * L.s)}" y1="${F(L.cy + o.vy * arm * L.s)}" x2="${F(ex)}" y2="${F(ey)}" stroke="var(--text-light)" stroke-width="1.5" stroke-dasharray="7 5"/>`);
-    parts.push(`<text x="${F(ex + 7 * o.vx)}" y="${F(ey - 7 * o.vy + 4)}" text-anchor="middle" font-size="12" fill="var(--text-light)" stroke="var(--bg)" stroke-width="3" paint-order="stroke">${o.label}</text>`);
+    // 16 px clear of the tip, so the drag handle never sits on the label
+    parts.push(`<text x="${F(ex + 16 * o.vx)}" y="${F(ey - 16 * o.vy + 4)}" text-anchor="middle" font-size="12" fill="var(--text-light)" stroke="var(--bg)" stroke-width="3" paint-order="stroke">${o.label}</text>`);
   }
 
   // the ellipse, drawn throughout: it straightens as the frame catches up

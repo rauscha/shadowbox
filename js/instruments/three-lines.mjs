@@ -129,9 +129,9 @@ export function render(state) {
   // Each family gets its own stroke, dash and error-mark orientation. Three
   // channels, so none of them has to be hue.
   const families = [
-    { ln: LN.yx, on: st.showYX !== false, stroke: 'var(--heading)', dash: '10 4', width: 2.6 },
-    { ln: LN.xy, on: st.showXY !== false, stroke: 'var(--heading)', dash: '2 4', width: 2.6 },
-    { ln: LN.pc1, on: st.showPC1 !== false, stroke: 'var(--accent)', dash: 'none', width: 3.4 },
+    { ln: LN.yx, on: st.showYX !== false, stroke: 'var(--heading)', dash: '10 4', width: 2.6, markDash: 'none' },
+    { ln: LN.xy, on: st.showXY !== false, stroke: 'var(--heading)', dash: '2 4', width: 2.6, markDash: '3 2.5' },
+    { ln: LN.pc1, on: st.showPC1 !== false, stroke: 'var(--accent)', dash: 'none', width: 3.4, markDash: 'none' },
   ].filter(f => f.on);
 
   const idx = tickIndices(xs.length);
@@ -142,7 +142,7 @@ export function render(state) {
     for (const f of families) {
       for (const i of idx) {
         const [qx, qy] = markFor(f.ln.orient, xs[i], ys[i], f.ln, LN);
-        parts.push(`<line data-role="mark-${f.ln.key}" data-orient="${f.ln.orient}" x1="${F(L.x(xs[i]))}" y1="${F(L.y(ys[i]))}" x2="${F(L.x(qx))}" y2="${F(L.y(qy))}" stroke="${f.stroke}" stroke-width="1.4"/>`);
+        parts.push(`<line data-role="mark-${f.ln.key}" data-orient="${f.ln.orient}" x1="${F(L.x(xs[i]))}" y1="${F(L.y(ys[i]))}" x2="${F(L.x(qx))}" y2="${F(L.y(qy))}" stroke="${f.stroke}" stroke-width="1.4" stroke-dasharray="${f.markDash}"/>`);
       }
     }
   }
@@ -166,6 +166,7 @@ export function render(state) {
 
   // the mean: the one point all three lines agree on
   parts.push(`<circle data-role="centroid" cx="${F(L.x(LN.mx))}" cy="${F(L.y(LN.my))}" r="5.5" fill="var(--bg)" stroke="var(--ink)" stroke-width="2.5"/>`);
+  parts.push(`<text x="${F(L.x(LN.mx) - 10)}" y="${F(L.y(LN.my) + 20)}" text-anchor="end" font-size="11" fill="var(--ink)" stroke="var(--bg)" stroke-width="3" paint-order="stroke">the mean</text>`);
   parts.push(`</g>`);
 
   // welded end labels in the right gutter, pushed apart so none overlap

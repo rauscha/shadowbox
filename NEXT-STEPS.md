@@ -17,8 +17,15 @@
 - [x] ~~**M4 - lesson 3, PCA**~~ - done 2026-08-22. `pca.html` live with all four
       instruments plus a fifth figure (scree on GA-adjusted residuals). Every
       number in the prose is pinned by `test/pca-claims.test.mjs`.
-- [ ] **M5 - polish + publish**: trellis nav, print + grayscale + keyboard passes,
-      apps card.
+- [x] ~~**M5 - polish**~~ - done 2026-08-22. Trellis nav across all three lessons
+      (current page marked by glyph + weight + luminance, never colour). Real
+      print stylesheet: tokens collapse to ink on white, controls and nav hidden,
+      collapsibles forced open via a beforeprint handler, figures and headings
+      protected from page breaks, footer links print their URLs. Keyboard was
+      already built (tabindex, aria-labels, keydown, focus restored across
+      re-render) and is verified. Grayscale verified: `--accent-warm` is used by
+      no instrument, and the three line families in three-lines carry distinct
+      dash patterns, so nothing depends on hue.
 - [ ] Lesson 4 (next slice, own spec addendum): UMAP - high-dimensional distance +
       iterative-optimization "start from zero" blocks, precomputed embeddings.
 

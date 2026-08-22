@@ -146,3 +146,21 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
   rerender();
   return { rerender };
 }
+
+// Collapsibles are optional on screen and part of the text on paper. CSS alone
+// cannot reliably force a closed <details> open for printing, so open them at
+// beforeprint and put them back afterwards.
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeprint', () => {
+    for (const d of document.querySelectorAll('details:not([open])')) {
+      d.dataset.printOpened = '1';
+      d.open = true;
+    }
+  });
+  window.addEventListener('afterprint', () => {
+    for (const d of document.querySelectorAll('details[data-print-opened]')) {
+      d.open = false;
+      delete d.dataset.printOpened;
+    }
+  });
+}

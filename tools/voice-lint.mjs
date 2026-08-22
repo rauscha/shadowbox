@@ -18,6 +18,18 @@
 // step, answer the obvious objection. Clarity first; everything below is a
 // guardrail against known tics, not a style to write toward.
 //
+// SUBJECT-MIX RULE IS INVERTED FOR THIS GENRE (2026-08-22). The corpus is
+// we-dominant (109/30/17) because slide decks address a room. The best
+// interactive stats explainers on the web are emphatically you-dominant, and
+// they contract constantly. Measured from the sources themselves:
+//   setosa Explained Visually  "your job is to choose betas ... That's OLS!"
+//                              "At some point, you probably asked your parents"
+//   rpsychologist correlation  "By moving the slider you will see how the shape
+//                              of the data changes"
+//   r2d3 visual intro to ML    "you could argue that a home above 240 ft ..."
+// So a high you-count on these pages is CORRECT and the we-dominant warning
+// should be ignored here. The contraction warning is real: this genre is spoken.
+//
 // Also corrected by the owner: the voice-profile claim that he shouts in caps
 // instead of bolding is WRONG. He uses bold. The all-caps in his chat messages
 // is only because chat has no bold or italic. In HTML, use <strong>.

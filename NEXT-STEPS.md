@@ -14,23 +14,22 @@
 
 ## Build queue (spec §13)
 - [x] ~~**M3 — rung 2, covariance**~~ — done 2026-08-20/21.
-- [ ] **M4 — rung 3, PCA** — *instruments built, page not written.*
-      `axis-projector`, `three-lines`, `basis-spin`, `scree` are committed and their
-      tests pass (suite is 65 green). Still to do: write `pca.html`, wire the mounts,
-      add the poster configs to `tools/poster.mjs`, run `node tools/poster.mjs`,
-      link it from index.html + the rung-2 footer. **Do not write its prose until
-      Andrew rules on the rung 1/2 rewrite.**
+- [x] ~~**M4 - rung 3, PCA**~~ - done 2026-08-22. `pca.html` live with all four
+      instruments plus a fifth figure (scree on GA-adjusted residuals). Every
+      number in the prose is pinned by `test/pca-claims.test.mjs`.
 - [ ] **M5 — polish + publish**: trellis nav, print + grayscale + keyboard passes,
       apps card.
 - [ ] Rung 4 (next slice, own spec addendum): UMAP — high-dimensional distance +
       iterative-optimization "start from zero" blocks, precomputed embeddings.
 
 ## Loose threads
-- [ ] The PCA subagent's written report never arrived before the session ended.
-      Its code is committed and green, but **its measured PCA numbers were never
-      reported** — so the claim "PC1 = overall size, PC2 = head-vs-body proportion"
-      on the 4-variable biometry data is *not yet verified by me*. Re-measure before
-      putting that claim in prose.
+- [x] ~~PCA claim unverified~~ - measured 2026-08-22. "PC1 = overall size" holds
+      (97.98% raw / 97.53% standardized). **"PC2 = head-vs-body proportion" does
+      not** - it is head-vs-abdomen only in raw mm, becomes abdomen-vs-rest when
+      standardized, and is ~1% of the variance either way. The page teaches the
+      flip instead of asserting either reading. The real finding: all six
+      pairwise correlations are 0.958-0.972 because gestational age drives all
+      four measurements, so PC1 is GA in disguise.
 - [ ] Empty leftover worktree in the site repo:
       `C:/rauscha.github.io/.claude/worktrees/objective-mcclintock-817c73`.
       Verified clean and at the same commit as master — nothing stranded, safe to

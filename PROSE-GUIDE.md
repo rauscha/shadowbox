@@ -74,6 +74,46 @@ obvious options are..." Not "The obvious move is" / "There are two natural ways.
 **9. One thought, one paragraph.** He merged two of mine that were split for
 pacing.
 
+**10. Cut the scaffolding verb phrase.** From his 2026-08-22 edit of the PCA
+opening:
+
+> he wrote: "Principal component analysis finds the directions a cloud of data points actually spreads along"
+> I had written: "Principal component analysis is a method for finding the directions a cloud of data actually spreads along"
+
+"X is a method for finding Y" is "X finds Y" with padding. Same for "is what
+happens when you", "is the number that answers", "is the bookkeeping that holds".
+
+**11. Gloss with a parenthetical, not a sentence.** "(typically written PCA)"
+beats "It is almost always shortened to PCA." A whole sentence spent on an
+abbreviation is a whole sentence the reader has to carry.
+
+**12. Nothing the main line depends on may live in a collapsible.** This is what
+broke the first PCA draft. The projection/shadow idea was defined inside the
+"start from zero" block, then the body said "the line whose shadows are spread
+out" as though it had been established. His note: *"here your point about shadows
+is NOT hinted at at all and I don't follow what you're talking about."* The
+start-from-zero blocks are for readers who want more background, never for a term
+the body is about to use.
+
+**13. Name the frame of reference.** He *added* "in your coordinate system" to
+"figures out which way the ellipse is pointing". Pointing relative to what was
+missing, and it is the whole content of the sentence.
+
+## Process: outline, then one bullet at a time
+
+His instruction after the first PCA draft lost the thread halfway down:
+
+> "Rather than writing the text all as one (where you're losing the thread),
+> write your terse outline of points first, based on the guides of the example
+> websites you showed me before. Then instead of writing this all at once, write
+> each bullet of your outline separately. You can then read over it all again
+> together and see how you would like to better connect the sections."
+
+So: outline first, in bullets, checked. Then draft each bullet on its own. Then
+read the whole thing straight through and fix the joins. Writing 1,900 words in
+one pass is how a page ends up with a section that assumes a term the previous
+section never introduced.
+
 ## Interaction copy
 
 Imperative plus consequence, always naming the control and what it does:

@@ -1,6 +1,6 @@
 // three-lines - the same cloud, three lines, three different questions.
-// OLS y on x minimises vertical error; OLS x on y minimises horizontal error;
-// PC1 minimises perpendicular error. They are not competing estimates of one
+// OLS y on x minimizes vertical error; OLS x on y minimizes horizontal error;
+// PC1 minimizes perpendicular error. They are not competing estimates of one
 // true line, they are answers to three questions, and the picture says which
 // by the orientation of its error marks: vertical combs, horizontal combs,
 // perpendicular combs. All three pass through the mean, and PC1 always lies

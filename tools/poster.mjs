@@ -9,7 +9,11 @@ import * as fitScatter from '../js/instruments/fit-scatter.mjs';
 import * as lossBowl from '../js/instruments/loss-bowl.mjs';
 import * as cloudEllipse from '../js/instruments/cloud-ellipse.mjs';
 import * as unitsTrap from '../js/instruments/units-trap.mjs';
-import { synthLine, ols } from '../js/math/core.mjs';
+import * as axisProjector from '../js/instruments/axis-projector.mjs';
+import * as threeLines from '../js/instruments/three-lines.mjs';
+import * as basisSpin from '../js/instruments/basis-spin.mjs';
+import * as scree from '../js/instruments/scree.mjs';
+import { synthLine, ols, detrend, standardize } from '../js/math/core.mjs';
 
 export function injectPoster(html, key, svg) {
   const re = new RegExp(`<!-- poster:${key} -->[\\s\\S]*?<!-- /poster:${key} -->`);
@@ -85,6 +89,51 @@ const CONFIGS = [{
         return { ...unitsTrap.defaults, idKey: 'ut-bio', xs: d.hc, ys: d.efw,
           xName: 'head circumference', yName: 'estimated fetal weight',
           labels: { title: '350 simulated scans - INTERGROWTH-21st centiles, not patients' } };
+      },
+    },
+  ],
+}, {
+  file: 'pca.html',
+  posters: [
+    {
+      key: 'axis-projector-synthetic', instrument: axisProjector,
+      // angle 0 on purpose: the poster should open on a bad line, with fat drops
+      state: () => ({ ...axisProjector.defaults, idKey: 'ap-syn', angleDeg: 0,
+        labels: { x: 'x', y: 'y', title: 'turn the line. the two numbers trade.' } }),
+    },
+    {
+      key: 'three-lines-synthetic', instrument: threeLines,
+      state: () => ({ ...threeLines.defaults, idKey: 'tl-syn',
+        labels: { x: 'x', y: 'y', title: 'three lines through the same points.' } }),
+    },
+    {
+      key: 'basis-spin-synthetic', instrument: basisSpin,
+      // t = 1: the poster shows the destination, axes already spun onto PC1/PC2
+      state: () => ({ ...basisSpin.defaults, idKey: 'bs-syn', t: 1,
+        labels: { x: 'x', y: 'y', pc1: 'PC1', pc2: 'PC2', title: 'same cloud. new pair of directions.' } }),
+    },
+    {
+      key: 'scree-biometry', instrument: scree,
+      state: () => {
+        const d = JSON.parse(readFileSync(inRepo('data/biometry.json'), 'utf8'));
+        return { ...scree.defaults, idKey: 'sc-bio',
+          columns: [d.bpd, d.hc, d.ac, d.fl], names: ['BPD', 'HC', 'AC', 'FL'],
+          standardize: false, unit: 'mm squared',
+          note: '350 simulated scans, 20-40 weeks',
+          labels: { title: 'four measurements. how the spread divides.' } };
+      },
+    },
+    {
+      key: 'scree-biometry-adjusted', instrument: scree,
+      state: () => {
+        const d = JSON.parse(readFileSync(inRepo('data/biometry.json'), 'utf8'));
+        // same detrend the page runs client-side, so poster and hydrated view agree
+        const cols = [d.bpd, d.hc, d.ac, d.fl].map(c => standardize(detrend(c, d.ga, 2)));
+        return { ...scree.defaults, idKey: 'sc-bioz',
+          columns: cols, names: ['BPD', 'HC', 'AC', 'FL'],
+          standardize: true, unit: '',
+          note: 'same scans, gestational age removed first',
+          labels: { title: 'size for dates. the spread divides differently.' } };
       },
     },
   ],

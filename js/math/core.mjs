@@ -103,6 +103,41 @@ export function pca(X, { standardize: std = false } = {}) {
 
 // ---- seeded randomness + synthetic generators (truth always carried) ----
 
+// detrend - least-squares polynomial fit of ys on xs, returning the residuals.
+// Used to take a known driver out of a set of measurements before looking at
+// what is left: on fetal biometry, every measurement is largely a function of
+// gestational age, so the interesting structure only appears once that shared
+// trend is removed. degree 2 because growth curves bend.
+export function detrend(ys, xs, degree = 2) {
+  const d = degree + 1;
+  const A = Array.from({ length: d }, () => new Array(d + 1).fill(0));
+  for (let i = 0; i < ys.length; i++) {
+    const pow = new Array(d);
+    pow[0] = 1;
+    for (let k = 1; k < d; k++) pow[k] = pow[k - 1] * xs[i];
+    for (let a = 0; a < d; a++) {
+      for (let b = 0; b < d; b++) A[a][b] += pow[a] * pow[b];
+      A[a][d] += pow[a] * ys[i];
+    }
+  }
+  for (let c = 0; c < d; c++) {                       // Gauss-Jordan with partial pivoting
+    let piv = c;
+    for (let r = c + 1; r < d; r++) if (Math.abs(A[r][c]) > Math.abs(A[piv][c])) piv = r;
+    [A[c], A[piv]] = [A[piv], A[c]];
+    for (let r = 0; r < d; r++) {
+      if (r === c) continue;
+      const f = A[r][c] / A[c][c];
+      for (let k = c; k <= d; k++) A[r][k] -= f * A[c][k];
+    }
+  }
+  const beta = A.map((row, i) => row[d] / row[i]);
+  return ys.map((y, i) => {
+    let fit = 0, xp = 1;
+    for (let k = 0; k < d; k++) { fit += beta[k] * xp; xp *= xs[i]; }
+    return y - fit;
+  });
+}
+
 export function mulberry32(seed) {
   let a = seed >>> 0;
   return function () {

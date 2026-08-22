@@ -3,8 +3,8 @@
 // the line, and the total squared distance ACROSS to it. Turn the line and one
 // number climbs exactly as fast as the other falls, because they are the two
 // shares of a fixed budget: var(along) + var(across) = var(x) + var(y), always.
-// So the angle that maximises the first is forced to be the angle that
-// minimises the second. They are not two criteria that happen to agree - they
+// So the angle that maximizes the first is forced to be the angle that
+// minimizes the second. They are not two criteria that happen to agree - they
 // are one criterion seen from two sides, and that angle is PC1.
 // Pure: render(state) -> SVG string; applyDrag(state, drag) -> partial state.
 
@@ -222,7 +222,7 @@ export function render(state) {
 }
 
 // One handle, one meaning: wherever the pointer goes, the line points at it.
-// Keyboard nudges arrive here too (hydrate feeds the handle's moved centre).
+// Keyboard nudges arrive here too (hydrate feeds the handle's moved center).
 export function applyDrag(state, { id, x, y }) {
   if (id !== 'angle') return {};
   const st = { ...defaults, ...state };

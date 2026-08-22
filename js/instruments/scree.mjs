@@ -4,7 +4,7 @@
 // copy of it.
 // The standardize toggle is where rung 2 comes home to roost: on raw fetal
 // biometry the answer is dominated by whichever measurement happens to be
-// numerically biggest (abdominal circumference, in millimetres); give every
+// numerically biggest (abdominal circumference, in millimeters); give every
 // variable the same spread first and the same data answers differently. Neither
 // answer is wrong. The units were a decision, and this is the decision showing.
 // Pure: render(state) -> SVG string.

@@ -309,7 +309,7 @@ test('scree: loadings are drawn with sign on two channels, not one', () => {
 
 // --------------------------------------------------------------------- all four
 
-test('every rung-3 instrument prefixes its ids and keeps the house punctuation', () => {
+test('every lesson-3 instrument prefixes its ids and keeps the house punctuation', () => {
   const cases = [
     ['ap', AP, { ...AP.defaults, idKey: 'ap', showBest: true, angleDeg: 61 }],
     ['tl', TL, { ...TL.defaults, idKey: 'tl' }],
@@ -335,7 +335,7 @@ test('every rung-3 instrument prefixes its ids and keeps the house punctuation',
   }
 });
 
-test('the rung-3 sources are free of em-dashes too', () => {
+test('the lesson-3 sources are free of em-dashes too', () => {
   const files = ['js/instruments/axis-projector.mjs', 'js/instruments/three-lines.mjs',
     'js/instruments/basis-spin.mjs', 'js/instruments/scree.mjs', 'js/lib/frame.mjs'];
   for (const f of files) {

@@ -20,7 +20,7 @@ the file itself. Instruments never fetch anything external.
   (multi-GB download) can replace this file without touching any instrument -
   keep the same JSON shape (`xs`, `ys`, provenance block).
 
-## biometry.json (rungs 2–3)
+## biometry.json (lessons 2–3)
 
 - **What:** 350 SIMULATED fetal scans - gestational age (weeks) plus HC, AC, FL,
   BPD (mm) and EFW (g). **Not patient data**, and labeled as simulated on-page.
@@ -34,7 +34,7 @@ the file itself. Instruments never fetch anything external.
 - **EFW:** computed from the simulated HC/AC/FL with the Hadlock three-parameter
   model (Hadlock et al., *Am J Obstet Gynecol* 1985;151:333-7), then given
   multiplicative noise. Because EFW is *derived from* biometry, part of the
-  HC↔EFW correlation is by construction - that is the point the rung-2 essay
+  HC↔EFW correlation is by construction - that is the point the lesson-2 essay
   makes out loud.
 - **Simulation parameters** (choices, not published facts; tune in the tool):
   GA ~ U(20, 40); within-GA cross-correlation of biometry z-scores 0.6;

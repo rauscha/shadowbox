@@ -4,11 +4,11 @@ Interactive visual statistics explainers. Every method on the ladder - least squ
 covariance, PCA, eventually UMAP - casts a shadow of the data and asks you to judge
 the object from it. These pages let you move the light.
 
-Each rung is an essay built from **instruments**: pure `render(state) → SVG` modules
+Each lesson is an essay built from **instruments**: pure `render(state) → SVG` modules
 you drag, with every idea taught twice - first on synthetic data with the truth drawn
 on screen, then on real clinical data where no one has the truth.
 
-## Rungs
+## Lessons
 
 1. **[Least squares](least-squares.html)** - residuals as literal dot-screened
    squares (*the best fit spends the least ink*), the loss landscape as a bowl you

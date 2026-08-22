@@ -1,6 +1,6 @@
-// Shared plotting frame for the rung-3 cloud instruments. One numeric unit is
+// Shared plotting frame for the lesson-3 cloud instruments. One numeric unit is
 // the same number of pixels on both axes, so an angle on screen is the angle in
-// the numbers - which is the whole point of a rung about directions. The
+// the numbers - which is the whole point of a lesson about directions. The
 // half-extent is *radial* (max distance from the sample mean), a quantity a
 // rotation cannot change, so basis-spin can turn the cloud all the way into PC
 // coordinates without the frame breathing under it.

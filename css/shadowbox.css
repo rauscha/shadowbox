@@ -144,10 +144,10 @@ svg [data-drag]:focus-visible { outline: 3px solid var(--accent); outline-offset
 
 /* ---- footer nav ---- */
 
-.rungs { list-style: none; padding: 0; }
-.rungs li { margin: 0.6rem 0; }
-.rungs .coming { color: var(--text-light); }
-.rungs .coming::after { content: " · coming"; font-family: var(--font-mono); font-size: 0.8em; }
+.lessons { list-style: none; padding: 0; }
+.lessons li { margin: 0.6rem 0; }
+.lessons .coming { color: var(--text-light); }
+.lessons .coming::after { content: " · coming"; font-family: var(--font-mono); font-size: 0.8em; }
 
 footer {
   margin-top: 3.5rem;

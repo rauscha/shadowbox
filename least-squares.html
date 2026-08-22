@@ -13,7 +13,7 @@
 </head>
 <body>
   <main class="essay">
-    <p class="kicker">shadowbox · rung 1</p>
+    <p class="kicker">shadowbox · lesson 1</p>
     <h1>Least squares</h1>
 
     <p>Least squares is a method of fitting the best line to a set of data
@@ -37,9 +37,7 @@
       <p>Given a line, every data point has a <strong>residual</strong>: the
       vertical distance from the point to the line, measured as the actual y minus
       the y the line predicts. Points above the line have positive residuals,
-      points below have negative ones. Note that this distance is vertical, not
-      perpendicular to the line. That choice matters more than it looks, and rung
-      3 comes back to it.</p>
+      points below have negative ones.</p>
     </details>
 
     <h2>Why squares?</h2>
@@ -133,6 +131,12 @@
     more than several slightly missed ones. <strong>Least squares</strong> is the
     line that makes that total area as small as possible, and that is the entire
     definition.</p>
+
+    <p>One detail in that picture matters later. Each gap is measured straight up
+    and down, from the point to the line, not at right angles to the line itself.
+    That is a choice, and it follows from treating x as known and y as the thing
+    being predicted. Lesson 3 measures it the other way and gets a different
+    line.</p>
 
     <p>This is also the whole content of the complaint that least squares is
     sensitive to outliers. There is no bug to fix. We chose to measure error as
@@ -1595,7 +1599,7 @@
     point, whatever the data.</p>
 
     <p>So the whole method reduces to two quantities: covariance and variance.
-    That is why the next rung is about nothing else.</p>
+    That is why the next lesson is about nothing else.</p>
 
     <h2>How much does the fit wobble?</h2>
 
@@ -2069,11 +2073,11 @@
 
     <p>That is least squares. It answers the question you set, and it does not
     tell you whether that was the right question. Judging the question is a
-    separate skill, and it is what the next two rungs are for.</p>
+    separate skill, and it is what the next two lessons are for.</p>
 
     <footer>
-      <a href="index.html">← shadowbox</a> · <a href="covariance.html">rung 2: covariance</a> ·
-      <a href="pca.html">rung 3: PCA</a>
+      <a href="index.html">← shadowbox</a> · <a href="covariance.html">lesson 2: covariance</a> ·
+      <a href="pca.html">lesson 3: PCA</a>
     </footer>
   </main>
 

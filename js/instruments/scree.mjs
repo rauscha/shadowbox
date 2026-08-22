@@ -2,7 +2,7 @@
 // carry their own number in text, plus the loadings that say what the first two
 // components actually are. The bar is a picture of a number, never the only
 // copy of it.
-// The standardize toggle is where rung 2 comes home to roost: on raw fetal
+// The standardize toggle is where lesson 2 comes home to roost: on raw fetal
 // biometry the answer is dominated by whichever measurement happens to be
 // numerically biggest (abdominal circumference, in millimeters); give every
 // variable the same spread first and the same data answers differently. Neither

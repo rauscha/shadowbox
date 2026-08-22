@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PCA - shadowbox</title>
-  <meta name="description" content="An interactive essay on principal component analysis: one line turned by hand, three lines that disagree, a cloud spun into its own axes, and what happens when PCA rediscovers gestational age.">
+  <meta name="description" content="An interactive essay on principal component analysis: shadows on a line, two scoring rules that turn out to be one, three lines that disagree, and what happens when PCA rediscovers gestational age.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><rect x=%221%22 y=%221%22 width=%2214%22 height=%2214%22 fill=%22none%22 stroke=%22%231e4a7a%22 stroke-width=%222%22/><circle cx=%225%22 cy=%2211%22 r=%221.6%22 fill=%22%231e4a7a%22/><circle cx=%228%22 cy=%228%22 r=%221.6%22 fill=%22%231e4a7a%22/><circle cx=%2211%22 cy=%225%22 r=%221.6%22 fill=%22%231e4a7a%22/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
 </head>
 <body>
   <main class="essay">
-    <p class="kicker">shadowbox &middot; rung 3</p>
+    <p class="kicker">shadowbox &middot; lesson 3</p>
     <h1>Principal components</h1>
 
     <p>Principal component analysis (typically written <strong>PCA</strong>)
@@ -27,39 +27,63 @@
     coordinate system.</p>
 
     <details class="from-zero">
-      <summary>Start from zero: projection and spread</summary>
-      <p>To <strong>project</strong> a point onto a line, drop a perpendicular
-      from the point down to the line and mark where it lands. The line acts like
-      a wall and the point casts a shadow onto it. Every point in a cloud casts
-      one, so a two-dimensional cloud becomes a scatter of marks strung along a
-      single line, and each point has gone from two numbers to one.</p>
-      <p>Two things about that shadow are worth tracking. How spread out the
-      shadows are along the line, which is a variance in the sense of rung 2. And
-      how far each point had to travel to reach the line, which is a distance;
-      square those and add them up and you have a total error in the sense of
-      rung 1.</p>
+      <summary>Start from zero: variance, in one sentence</summary>
+      <p>The <strong>variance</strong> of a set of numbers is the average of
+      their squared distances from the mean. It measures how spread out they are:
+      a batch of nearly identical values has a small variance, and a batch that
+      ranges all over has a large one. Lesson 2 has the longer version.</p>
     </details>
 
-    <h2>One line, two numbers</h2>
+    <h2>Casting a shadow</h2>
 
-    <p>A cloud has infinitely many lines through it, so PCA needs a rule for
-    picking one, exactly as least squares did. Two different rules suggest
-    themselves, and at first they look like they are asking for different
-    things.</p>
+    <p>Start with any straight line drawn through the cloud. Not the best one
+    yet, just any one.</p>
 
-    <p>The first rule is to pick the line whose shadows are spread out as much as
-    possible. A line running along the length of the cloud gives shadows that fan
-    out across the whole length. A line running across the cloud crushes them
-    into a clump. Spread-out shadows keep more of the difference between the
-    points.</p>
+    <p>Take a single data point and think of that line as the ground, with the
+    sun directly overhead. The point casts a shadow straight down onto the line.
+    Where that shadow lands is the point's <strong>projection</strong> onto the
+    line. In geometric terms you get to it by walking from the point to the line
+    at right angles.</p>
 
-    <p>The second rule is to pick the line the points sit closest to: add up the
-    squared perpendicular distances from every point to the line and make that
-    total as small as possible.</p>
+    <p>Now do it for every point at once. The whole cloud collapses onto the line
+    and becomes a row of shadows, and each shadow needs only one number to place
+    it: how far along the line it sits. Every point has gone from two numbers to
+    one.</p>
 
-    <p>Turn the line below with the angle slider and watch both numbers at once.
-    They move in opposite directions, and not approximately. Their sum never
-    changes.</p>
+    <p>That collapse is the point of the exercise. A growth scan gives you four
+    measurements, a blood panel gives you fifteen, a gene expression study gives
+    you twenty thousand, and none of those can be plotted or held in your head at
+    once. Projecting the data down onto one line, or onto a flat plane made from
+    two, cuts it to something you can actually look at. The cost is that shadows
+    throw information away: two points at different heights above the ground cast
+    the same shadow, and from the shadow alone you cannot tell them apart. So the
+    question is which line to use, because the choice decides what survives the
+    collapse.</p>
+
+    <h2>Two rules</h2>
+
+    <p>Lesson 1 had this same problem. Infinitely many candidate lines, and a
+    need for a rule that scores each one so a winner can be picked. The rule
+    there was to add up the squared distances from the points to the line and
+    keep the line with the smallest total.</p>
+
+    <p>That rule works here too, with one change. Lesson 1 measured each distance
+    straight up and down. Here we measure it at right angles to the line, which
+    is the direction the shadow travels. Call this <strong>rule A</strong>: score
+    every line by the total squared perpendicular distance from the points to it,
+    and keep the smallest. It is least squares with the ruler turned.</p>
+
+    <p>There is a second rule, and it looks like a completely different idea.
+    Instead of measuring the distances down to the line, look at the shadows
+    themselves. A line running along the length of the cloud gives shadows that
+    fan out across the whole length. A line running across the cloud crushes them
+    into a tight clump, and points that were far apart end up almost on top of
+    each other. Fanned-out shadows keep the points distinguishable, so
+    <strong>rule B</strong> says score every line by the variance of its shadows
+    and keep the largest.</p>
+
+    <p>Rule A wants a minimum. Rule B wants a maximum, of a different quantity.
+    Turn the line below and watch both numbers.</p>
 
     <div class="instrument-mount" id="ap-syn">
 <!-- poster:axis-projector-synthetic -->
@@ -348,34 +372,42 @@
 <!-- /poster:axis-projector-synthetic -->
     </div>
 
-    <p>The sum is fixed because of a right triangle. For any one point, the
-    distance along the line and the distance across to it are the two legs, and
-    the distance from the center of the cloud out to the point is the hypotenuse.
-    Pythagoras forces the two squared legs to add up to a squared hypotenuse that
-    doesn't depend on the angle at all. Add that up over every point and the
+    <p>At every angle the two numbers move in opposite directions, and their sum
+    never changes. On this cloud it is 2.50, whatever you do to the line.</p>
+
+    <p>A right triangle is why. Take one point and measure from the center of the
+    cloud. The distance along the line and the distance across to it are the two
+    legs of a right triangle whose hypotenuse is the straight-line distance from
+    the center out to the point. That hypotenuse does not depend on the angle of
+    the line at all, so by Pythagoras the two squared legs have to add up to the
+    same thing however the line is turned. Add that across every point and the
     variance along the line plus the variance across it always equals the total
     variance of the cloud.</p>
 
-    <p>So the two rules are not two rules. Spreading the shadows out as far as
-    possible and pulling the line as close to the points as possible are one
-    instruction approached from two sides, and the angle that satisfies it is
-    <strong>PC1</strong>. On this cloud PC1 sits at about 34 degrees and carries
-    2.16 out of a total variance of 2.50, which is 86 percent of it. The
-    direction at right angles to PC1 is <strong>PC2</strong>, and it gets the
+    <p>So the two scores are not independent quantities. They are two shares of a
+    fixed budget, and making one of them large is the same act as making the
+    other small. Turn the line all the way around scoring by rule A and note the
+    winning angle, then do it again scoring by rule B, and the winning angle is
+    the same number. On this cloud that number is about 34 degrees, where the
+    shadows carry 2.16 of the total 2.50 and the distances across account for the
     remaining 0.34.</p>
+
+    <p>That winning angle is <strong>PC1</strong>, the first principal component.
+    The direction at right angles to it is <strong>PC2</strong>, and it gets
+    whatever variance PC1 left behind.</p>
 
     <h2>Three lines, three questions</h2>
 
-    <p>Rung 1 had a note in it saying that a residual is measured vertically
-    rather than perpendicular to the line, and that the choice mattered more than
-    it looked. This is where it matters.</p>
+    <p>Lesson 1 noted, beside its figure of squares, that the gaps there were
+    measured straight up and down rather than at right angles, and that this was
+    a choice rather than a fact. Rule A above makes the other choice. The two
+    produce different lines through identical points.</p>
 
-    <p>Least squares of y on x minimizes vertical error, because it treats x as
-    known and y as the thing being predicted. Least squares of x on y minimizes
-    horizontal error, because it swaps those two roles. PC1 minimizes
-    perpendicular error, because it treats both variables as measurements and has
-    nothing it is trying to predict. One cloud, three lines, and they don't
-    agree.</p>
+    <p>There are three lines worth drawing, not two. Least squares of y on x
+    minimizes vertical error, treating x as known and y as the thing being
+    predicted. Least squares of x on y minimizes horizontal error, swapping those
+    two roles. PC1 minimizes perpendicular error, treating both variables as
+    measurements with nothing being predicted at all.</p>
 
     <div class="instrument-mount" id="tl-syn">
 <!-- poster:three-lines-synthetic -->
@@ -547,35 +579,36 @@
 <!-- /poster:three-lines-synthetic -->
     </div>
 
-    <p>On this cloud the slopes come out at 0.53 for y on x, 1.07 for x on y and
-    0.67 for PC1, so the two regressions differ from each other by a factor of
-    two. Which one is correct depends entirely on the question being asked, and
-    none of them is a true line that the other two are failing to reach. The
-    error marks say which question each line answered: vertical combs, horizontal
-    combs, perpendicular combs. Switch the families on and off to see them
-    separately.</p>
+    <p>The error marks say which question each line answered: vertical combs,
+    horizontal combs, perpendicular combs. Switch the families on and off to see
+    them one at a time.</p>
 
-    <p>Two things are always true here. All three lines pass through the mean of
-    the cloud, which rung 1 showed for the least-squares line and which holds for
-    all of them. And PC1 always lies between the two regressions. Raise the
-    correlation and the three lines converge; lower it and they fan apart. A
-    paper that reports <em>the</em> regression line between two noisy
-    measurements has quietly chosen one of the three.</p>
+    <p>The slopes come out at 0.53 for y on x, 1.07 for x on y and 0.67 for PC1,
+    so the two regressions differ from each other by a factor of two on the same
+    eighty points. None of them is a true line that the other two are failing to
+    reach. They are answers to three different questions.</p>
 
-    <h2>Same cloud, new axes</h2>
+    <p>Two things hold whatever the cloud looks like. All three lines pass
+    through the mean, which lesson 1 showed for the least-squares line. And PC1
+    always lands between the two regressions. Raise the correlation and the three
+    converge; lower it and they fan apart. A paper reporting <em>the</em>
+    regression line between two noisy measurements has quietly picked one of the
+    three, usually without saying which.</p>
 
-    <p>Everything so far has been about a single line. PCA uses both
-    directions.</p>
+    <h2>Using both directions</h2>
 
-    <p>PC1 and PC2 are at right angles to each other, which means they can serve
-    as a new pair of axes. Rewriting every point's coordinates in those axes
-    changes nothing about the data. No point moves relative to any other, no
-    distance between points changes, and the total variance is identical. The
-    only thing that changes is the pair of directions the numbers are quoted
-    in.</p>
+    <p>Everything so far has used a single line. PCA uses both of them.</p>
 
-    <p>Slide below from data coordinates into PC coordinates and watch the
-    covariance matrix in the corner. The off-diagonal entry falls to zero.</p>
+    <p>PC1 and PC2 sit at right angles to each other, which is exactly the
+    relationship the original x and y axes had, so they can serve as axes
+    instead. Rewriting every point's coordinates in terms of PC1 and PC2 is a
+    change of frame of reference and nothing more. No point moves relative to any
+    other, no distance between points changes, and the total variance is
+    untouched. The only thing that changes is which pair of directions the
+    numbers are quoted in.</p>
+
+    <p>Slide from data coordinates into PC coordinates and watch the covariance
+    matrix in the corner.</p>
 
     <div class="instrument-mount" id="bs-syn">
 <!-- poster:basis-spin-synthetic -->
@@ -718,25 +751,32 @@
 <!-- /poster:basis-spin-synthetic -->
     </div>
 
-    <p>That zero is most of what PCA is for. A covariance of zero means the two
-    new coordinates carry no straight-line information about each other, so the
-    tilt that rung 2 spent a whole section on has gone, not because the cloud
-    changed but because it is now being described along its own axes instead of
-    along the ones the measuring equipment happened to use. The two variances
-    left on the diagonal are the eigenvalues, and they are the spread along each
-    new direction.</p>
+    <p>The off-diagonal entry falls to zero, and that zero is most of what PCA is
+    for. Covariance measures whether two coordinates move together, so a
+    covariance of zero means these two carry no straight-line information about
+    each other. The tilt that lesson 2 spent a whole section on has gone, and
+    nothing was done to the cloud to remove it. The tilt was never really a
+    property of the data. It was a property of the axes the data happened to be
+    measured against, and changing the frame of reference made it disappear.</p>
 
-    <h2>More than two variables</h2>
+    <p>The two numbers left on the diagonal are the variances along PC1 and PC2.
+    Those are the <strong>eigenvalues</strong> of the original covariance matrix,
+    and the two directions are its eigenvectors, which is where the linear
+    algebra name in the first paragraph comes from.</p>
 
-    <p>Two variables can simply be plotted, so PCA has not earned much yet. It
-    earns its keep when there are more variables than a plot can hold.</p>
+    <h2>Four variables</h2>
+
+    <p>With two variables you can just plot the data, so PCA has not earned much
+    yet. It earns its keep when there are more variables than a plot can hold,
+    which is most of the time.</p>
 
     <p>A routine growth scan measures four things: biparietal diameter, head
     circumference, abdominal circumference and femur length, all in millimeters.
-    Four variables give a 4&times;4 covariance matrix, four principal components
-    and four eigenvalues. The bars below show how the total spread divides among
-    them, with the loadings that say what the first two components are made
-    of.</p>
+    Four variables give a 4&times;4 covariance matrix and four principal
+    components instead of two. The same logic runs: find the direction of
+    greatest spread, then the direction of greatest spread among whatever is
+    left, and so on. The bars below show how the total spread divides among the
+    four, with the weights that say what each component is made of.</p>
 
     <div class="instrument-mount" id="sc-bio">
 <!-- poster:scree-biometry -->
@@ -804,26 +844,28 @@
 <!-- /poster:scree-biometry -->
     </div>
 
-    <p>Read the loadings on PC1 in raw millimeters. Abdominal circumference gets
+    <p>Read the weights on PC1 in raw millimeters. Abdominal circumference gets
     +0.75 and head circumference +0.62, while biparietal diameter gets +0.18 and
-    femur length +0.15. PC1 is being described mostly as abdomen and head.</p>
+    femur length +0.15. Read as a sentence, PC1 is mostly abdomen and head.</p>
 
-    <p>Now press <em>standardize each variable</em>. The four loadings become
-    +0.50, +0.50, +0.50 and +0.50, weighted essentially equally.</p>
+    <p>Now press <em>standardize each variable</em>. The four weights become
+    +0.50, +0.50, +0.50 and +0.50, which is four measurements counting
+    equally.</p>
 
-    <p>Nothing about the fetuses changed. AC and HC dominated the first version
-    because they are the numerically biggest measurements: abdominal
-    circumference has a variance of about 3,500 mm&sup2; where femur length has
-    about 140. PCA maximizes variance, variance is in squared units, and so the
-    variable carrying the largest numbers wins by default. This is rung 2's units
-    trap with consequences attached. There, changing the units changed a number
-    nobody was going to interpret. Here, changing the units changes which
-    variables the method says the data is about.</p>
+    <p>Nothing about the fetuses changed between those two readings. AC and HC
+    dominated the first one because they are the numerically biggest
+    measurements: abdominal circumference has a variance of about 3,500
+    mm&sup2; where femur length has about 140. PCA maximizes variance, variance
+    is in squared units, and so the variable carrying the largest numbers wins by
+    default. This is lesson 2's units trap with consequences attached. There,
+    changing the units changed a number nobody was going to interpret. Here,
+    changing the units changes which variables the method says your data is
+    about.</p>
 
-    <p>Standardising first is the usual fix, and it's what a lot of software
-    does without saying so. It isn't automatically the right call. It declares
+    <p>Standardizing first is the usual fix, and it's what a lot of software does
+    without mentioning it. It isn't automatically the right call. It declares
     that a millimeter of femur matters as much as a millimeter of abdomen, which
-    is a decision about the biology rather than about the arithmetic.</p>
+    is a claim about biology rather than about arithmetic.</p>
 
     <h2>Why is PC1 so large?</h2>
 
@@ -837,9 +879,9 @@
     not subtle. These scans span 20 to 40 weeks, and everything about a fetus
     gets bigger across that range. Gestational age is driving all four
     measurements at once, so a single everything-is-large direction absorbs
-    almost all of the spread. PC1 here is gestational age wearing a disguise, and
-    it took a 4&times;4 matrix to rediscover a number already printed at the top
-    of the report.</p>
+    almost all the spread. PC1 here is gestational age wearing a disguise, and it
+    took a 4&times;4 matrix to rediscover a number already printed at the top of
+    the report.</p>
 
     <p>So what about the 2 percent left over? In raw millimeters PC2 is head
     against abdomen, HC +0.75 against AC &minus;0.65. That is a tempting story,
@@ -849,11 +891,18 @@
     decision apart, tells two different stories about a component holding around
     one percent of the variance. Neither belongs in a manuscript.</p>
 
-    <p>The fix is to take out the driver you already know about. Fit each
-    measurement against gestational age, keep the residual, and standardize it,
-    so that each fetus is described by how large every part is <em>for its
-    dates</em> rather than by how far along it is. Those four columns are what
-    the figure below runs PCA on.</p>
+    <h2>Size for dates</h2>
+
+    <p>None of that makes PCA the wrong tool here. It makes raw millimeters the
+    wrong input. Gestational age is not a discovery, it is the one thing already
+    known about every scan on the list, so it should come out before the method
+    is asked what else is going on.</p>
+
+    <p>The recipe is short. Fit each measurement against gestational age, keep
+    the residual, and standardize it. Each fetus is then described by how large
+    every part is <em>for its dates</em> rather than by how far along it is,
+    which is the same move a centile chart makes. Those four columns are what the
+    figure below runs PCA on.</p>
 
     <div class="instrument-mount" id="sc-bioz">
 <!-- poster:scree-biometry-adjusted -->
@@ -922,42 +971,49 @@
     </div>
 
     <p>The correlations fall from about 0.96 to about 0.3, and the spread divides
-    49, 19, 17 and 16 percent instead of 98, 2, 0 and 0. PC1 is still a size
-    component, four positive loadings all near 0.5, but it now means
-    large-for-dates instead of late-in-gestation, which is the version worth
-    having.</p>
+    49, 19, 17 and 16 percent instead of 98, 2, 0 and 0. PC1 survives as a size
+    component, four positive weights all near 0.5, but it now means
+    large-for-dates instead of late-in-gestation, which is the version a
+    clinician would recognize.</p>
 
     <p>The last three components are a trap of a different kind. They hold 19, 17
-    and 16 percent, which are close enough to call equal, and when eigenvalues
-    are equal their directions are not determined: any rotation inside that space
-    fits the data exactly as well. In this simulated dataset they are equal by
+    and 16 percent, close enough to call equal, and when eigenvalues are equal
+    their directions are not determined: any rotation inside that space fits the
+    data exactly as well. In this simulated dataset they are equal by
     construction, because each fetus was given a shared size factor plus
-    independent noise of the same size on every measurement. The loadings printed
+    independent noise of the same size on every measurement. The weights printed
     for PC2, PC3 and PC4 are therefore a portrait of the random seed. Real data
-    never comes with that fact attached, which is why deciding how many
+    never arrives with that fact attached, which is why deciding how many
     components are real is its own literature and not something the bar chart
     answers.</p>
 
-    <h2>Where that leaves us</h2>
+    <h2>Recap</h2>
 
-    <p>PCA finds the directions a cloud spreads along and reports how the spread
-    divides among them. Every step of it is honest arithmetic, and none of it
-    knows what the variables mean. It found gestational age because gestational
-    age was the biggest thing in the room, and it named abdominal circumference
-    as the lead variable because abdominal circumference had the biggest numbers.
-    Hand it standardized residuals instead and it answers a different question,
-    correctly, and still says nothing about which question was worth asking.</p>
+    <p>A projection is a shadow: every point dropped onto a line at right angles,
+    two numbers becoming one. PCA picks which line by scoring every angle, and
+    the two obvious ways of scoring turn out to be one, because the variance
+    along a line and the distance across to it are two shares of a fixed budget.
+    The winning direction is PC1 and the perpendicular one is PC2. Using both as
+    axes is a change of frame of reference that leaves the data untouched while
+    driving the covariance between the new coordinates to zero.</p>
 
-    <p>That has been the pattern for three rungs. Rung 1 fit a straight line
+    <p>All of that is honest arithmetic, and none of it knows what the variables
+    mean. It found gestational age because gestational age was the biggest thing
+    in the room, and it named abdominal circumference as the lead variable
+    because abdominal circumference had the biggest numbers. Hand it standardized
+    residuals instead and it answers a different question, correctly, and still
+    says nothing about which question was worth asking.</p>
+
+    <p>That has been the pattern for three lessons. Lesson 1 fit a straight line
     through a curve and reported it with the same confidence as any other fit.
-    Rung 2 produced a covariance that moved by a factor of ten thousand when the
-    units changed. Rung 3 rediscovered gestational age. The method never fails,
-    and choosing what to ask it is the part that is not automatic.</p>
+    Lesson 2 produced a covariance that moved by a factor of ten thousand when
+    the units changed. Lesson 3 rediscovered gestational age. The method never
+    fails, and choosing what to ask it is the part that is not automatic.</p>
 
     <footer>
       <a href="index.html">&larr; shadowbox</a> &middot;
-      <a href="least-squares.html">rung 1: least squares</a> &middot;
-      <a href="covariance.html">rung 2: covariance</a>
+      <a href="least-squares.html">lesson 1: least squares</a> &middot;
+      <a href="covariance.html">lesson 2: covariance</a>
     </footer>
   </main>
 

@@ -1,5 +1,5 @@
 // Regenerates data/biometry.json - a SIMULATED fetal biometry sample for
-// rungs 2–3. Hand-run:  node tools/make-biometry.mjs
+// lessons 2–3. Hand-run:  node tools/make-biometry.mjs
 //
 // Construction (all sources on the record):
 // 1. Per-week medians and SDs for HC, AC, FL, BPD (mm) are the INTERGROWTH-21st
@@ -13,7 +13,7 @@
 //    three-parameter model (Hadlock et al., Am J Obstet Gynecol 1985;151:333-7):
 //    log10(W g) = 1.326 − 0.00326·AC·FL + 0.0107·HC + 0.0438·AC + 0.158·FL
 //    (AC, FL, HC in cm) - so the HC↔EFW correlation on the page is partly by
-//    construction, exactly the honest aside the rung-2 essay makes (spec §7).
+//    construction, exactly the honest aside the lesson-2 essay makes (spec §7).
 // 3. Simulation parameters (choices, not published facts - owner may tune):
 //    GA ~ U(20, 40) weeks; each fetus gets a shared size z plus per-measure
 //    noise with within-GA cross-correlation RHO_WITHIN = 0.6; EFW carries

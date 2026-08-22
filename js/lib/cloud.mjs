@@ -1,4 +1,4 @@
-// Shared cloud/ellipse geometry for rung 2+. The trick that makes the matrix
+// Shared cloud/ellipse geometry for lesson 2+. The trick that makes the matrix
 // readout honest: the base cloud is *whitened* (exact sample mean 0, exact
 // identity sample covariance, n-1 convention), so transforming it by the
 // Cholesky factor of a target Σ produces points whose sample covariance IS Σ,

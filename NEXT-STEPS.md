@@ -2,9 +2,9 @@
 
 ## Decisions waiting on Andrew
 - [ ] **Read the rewritten prose and rule on it.** Specifically the "Why squares?"
-      section of rung 1 and the covariance definition in rung 2. Previous three
+      section of lesson 1 and the covariance definition in lesson 2. Previous three
       attempts failed; this one is written to a different brief (see Watch out for).
-      That verdict gates writing rung 3's prose.
+      That verdict gates writing lesson 3's prose.
 - [ ] apps.html card on andrewrausch.com - now unblocked, the site is public.
 - [x] ~~Flip public + enable Pages~~ - done 2026-08-21. Live at
       https://andrewrausch.com/shadowbox/ (HTTPS enforced, custom domain automatic).
@@ -13,13 +13,13 @@
       worthwhile study question, can just show association").
 
 ## Build queue (spec §13)
-- [x] ~~**M3 - rung 2, covariance**~~ - done 2026-08-20/21.
-- [x] ~~**M4 - rung 3, PCA**~~ - done 2026-08-22. `pca.html` live with all four
+- [x] ~~**M3 - lesson 2, covariance**~~ - done 2026-08-20/21.
+- [x] ~~**M4 - lesson 3, PCA**~~ - done 2026-08-22. `pca.html` live with all four
       instruments plus a fifth figure (scree on GA-adjusted residuals). Every
       number in the prose is pinned by `test/pca-claims.test.mjs`.
 - [ ] **M5 - polish + publish**: trellis nav, print + grayscale + keyboard passes,
       apps card.
-- [ ] Rung 4 (next slice, own spec addendum): UMAP - high-dimensional distance +
+- [ ] Lesson 4 (next slice, own spec addendum): UMAP - high-dimensional distance +
       iterative-optimization "start from zero" blocks, precomputed embeddings.
 
 ## Loose threads

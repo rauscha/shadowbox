@@ -4,7 +4,7 @@
 // true line, they are answers to three questions, and the picture says which
 // by the orientation of its error marks: vertical combs, horizontal combs,
 // perpendicular combs. All three pass through the mean, and PC1 always lies
-// between the two regressions - the bridge back to rung 1.
+// between the two regressions - the bridge back to lesson 1.
 // Pure: render(state) -> SVG string.
 
 import { mean, variance, covariance, ols, eigSym2 } from '../math/core.mjs';

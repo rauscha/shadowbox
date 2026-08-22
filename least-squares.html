@@ -16,22 +16,20 @@
     <p class="kicker">shadowbox · rung 1</p>
     <h1>Least squares</h1>
 
-    <p>Fitting a line to data means picking one line out of infinitely many. To
-    pick, you need a rule that scores every candidate line so you can take the
-    winner. Least squares is one such rule. It’s so standard that most software
-    applies it without mentioning it, which makes it worth seeing what the rule
-    actually does and what it costs you.</p>
+    <p>Least squares is a method of fitting the best line to a set of data
+    points. We need a rule (a statistical method) to compare each candidate line
+    and rank one as “best.” Least squares is probably the most common one out
+    there, so common that it gets applied without even being named as least
+    squares. In statistical contexts it’s also called <strong>ordinary least
+    squares</strong>, or OLS.</p>
 
-    <p>This page builds it up in pieces. First you fit a line by hand and watch
-    the score change. Then we plot the score itself, which turns the search for
-    the best line into a much easier picture, and that picture is what the
-    textbook formula solves. At the end we run the whole thing on 400 real
-    births, where the method works exactly as designed and still gives a
+    <p>This page builds it up in pieces and ends by running the whole thing on
+    400 real births, where the method works exactly as designed and still gives a
     misleading answer.</p>
 
     <details class="from-zero">
-      <summary>Start from zero: lines and errors</summary>
-      <p>A line is two decisions. The <strong>slope</strong> is how much the
+      <summary>Start from zero: slope, intercept, residual</summary>
+      <p>A straight line is fixed by two numbers. The <strong>slope</strong> is how much the
       prediction rises per unit you move right - “about 190 extra grams per extra
       week,” say. The <strong>intercept</strong> is where the line sits when the
       horizontal axis reads zero. Raise it and the whole line moves up without
@@ -46,18 +44,19 @@
 
     <h2>Why squares?</h2>
 
-    <p>We want a single number that says how badly a line misses, so that two
-    lines can be compared. The obvious move is to add up the residuals, and it
-    fails immediately: a residual of +10 and one of −10 cancel, so a line
-    can score zero while missing every point badly. The signs have to go.</p>
+    <p>The most obvious option would be to just take the difference from each
+    data point to the candidate line (the <strong>residual</strong>) and add them
+    up. This quickly falls apart: a residual of +10 would immediately cancel the
+    next residual of −10, so even a very bad line that balances its badness
+    could have a low score.</p>
 
-    <p>There are two natural ways to remove them. Take the absolute value of each
-    residual, or square each one. Squaring is what gives us least squares, and the
-    figure below draws that literally. Each residual becomes a square whose side
-    is the gap, so the score is a total <em>area</em>. The dot screen inside each
-    square keeps the ink proportional to that area, and the corner keeps the
-    running total. Drag the line to slide it, the round handles to tilt it, and
-    the points themselves if you want to make trouble.</p>
+    <p>The next obvious options are using absolute values, or just taking the
+    square of the residual, and minimizing that. Squaring is what gives us least
+    squares, and the figure below draws it literally. Each residual becomes a
+    square whose side is the gap, so the score is a total <em>area</em>. The dot
+    screen inside each square keeps the ink proportional to that area, and the
+    corner keeps the running total. Drag the line to slide it, the round handles
+    to tilt it, and the points themselves if you want to make trouble.</p>
 
     <div class="instrument-mount" id="fs-syn">
 <!-- poster:fit-scatter-synthetic -->
@@ -136,8 +135,8 @@
     definition.</p>
 
     <p>This is also the whole content of the complaint that least squares is
-    sensitive to outliers. Nothing went wrong when it happened. We decided to
-    measure error as an area, and areas grow fast.</p>
+    sensitive to outliers. There is no bug to fix. We chose to measure error as
+    an area, and areas grow fast.</p>
 
     <h2>Every line as a point</h2>
 
@@ -1552,10 +1551,11 @@
     the tradeoff on screen. Squaring buys a smooth bowl, which calculus can solve
     in a single step, and the same squaring is what makes outliers so influential.
     Absolute error is much less sensitive to outliers and gives up the smoothness,
-    which makes it harder to optimize. Legendre published the squared version in
-    1805, Gauss claimed he had been using it since 1795, and the priority fight
-    between them was bitter. Two centuries later it is the default in every
-    statistics package.</p>
+    which makes it harder to optimize.</p>
+
+    <p>Legendre published the squared version in 1805, Gauss claimed he had been
+    using it since 1795, and the priority fight between them was bitter. Two
+    centuries later it is the default in every statistics package.</p>
 
     <h2>Solving it</h2>
 

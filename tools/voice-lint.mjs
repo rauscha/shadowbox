@@ -10,6 +10,10 @@
 // em-dash rate of 0-2%. The one deck confirmed AI-generated ran 84%. So the
 // em-dash is a hard fail here, not a density score.
 //
+// READ PROSE-GUIDE.md FIRST. That file is the target for these pages; this
+// linter is only a tripwire for known tics. The guide is derived from an edit
+// Andrew actually made, so it beats anything measured from the deck corpus.
+//
 // IMPORTANT SCOPE NOTE (owner correction, 2026-08-21). These pages are teaching
 // chapters, not slides, and the deck voice is NOT the target. Chasing it
 // produced prose he called "nearly incomprehensible... forcing a tone/style

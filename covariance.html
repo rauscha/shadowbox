@@ -71,9 +71,10 @@
     <p>Those three distinct numbers, two variances and one covariance, pin down
     the shape of the cloud. They do not say where any individual point sits, only
     the overall extent: how wide, how tall, and how tilted. A shape with one
-    width, one height and one tilt, symmetric about its center, is an
-    ellipse. That is all three numbers can buy, and it is exactly what they
-    buy.</p>
+    width, one height and one tilt, symmetric about its center, is an ellipse.
+    It takes three numbers to draw one and the matrix holds exactly three, so the
+    ellipse is not a summary of the matrix but the same information drawn rather
+    than listed.</p>
 
     <p>The one below is drawn at two standard deviations, so most of the cloud
     falls inside it. Its long axis points along the direction in which the data
@@ -229,8 +230,7 @@
     <p>Now drag the tilt handle and watch all four entries move together. Tilt is
     not stored in any one cell. It only exists
     in the relationship between the covariance and the two variances, which is why
-    reading a covariance matrix entry by entry tells you so little, and why seeing
-    it as an ellipse tells you so much.</p>
+    reading a covariance matrix one cell at a time misses it entirely.</p>
 
     <h2>The units trap</h2>
 

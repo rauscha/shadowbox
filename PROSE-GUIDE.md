@@ -56,6 +56,18 @@ His says *why* it happens. Mine only says *that* it happens.
 sentence that exists for cadence rather than information gets cut. This is the
 single most reliable tell in my failed drafts.
 
+**7b. No balanced pairs either.** Same species as rule 7, caught 2026-08-22.
+Antithesis and chiasmus are cadence, not information. Both of these were cut on
+sight:
+
+> "That is all three numbers can buy, and it is exactly what they buy."
+> "reading a covariance matrix entry by entry tells you so little, and why seeing it as an ellipse tells you so much"
+
+A balanced pair is fine only when the two halves are genuinely two different
+things being reported, not one thing said twice in mirror. "part of that is fetal
+biology and part of it is arithmetic" stays, because there really are two
+sources.
+
 **8. Plain sequencing words.** "The most obvious option would be..." / "The next
 obvious options are..." Not "The obvious move is" / "There are two natural ways."
 

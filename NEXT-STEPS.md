@@ -1,10 +1,10 @@
 # shadowbox - next steps
 
 ## Decisions waiting on Andrew
-- [ ] **Read the rewritten prose and rule on it.** Specifically the "Why squares?"
-      section of lesson 1 and the covariance definition in lesson 2. Previous three
-      attempts failed; this one is written to a different brief (see Watch out for).
-      That verdict gates writing lesson 3's prose.
+- [x] ~~Read the rewritten prose and rule on it~~ - done 2026-08-22. He rewrote
+      lesson 1's opening himself, scored lesson 2 ("these actually look pretty
+      good", one flourish cut), and scored lesson 3's outline before it was
+      written. Nine rules plus 7b and 10-13 are in PROSE-GUIDE.md.
 - [ ] apps.html card on andrewrausch.com - now unblocked, the site is public.
 - [x] ~~Flip public + enable Pages~~ - done 2026-08-21. Live at
       https://andrewrausch.com/shadowbox/ (HTTPS enforced, custom domain automatic).

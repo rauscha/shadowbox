@@ -16,16 +16,16 @@
     <p class="kicker">shadowbox · rung 2</p>
     <h1>Covariance</h1>
 
-    <p>Rung 1 ended with the least-squares slope written as a covariance divided
-    by a variance. Those two quantities do all the work in that formula, and both
-    have a geometry that rarely gets shown. This page draws it.</p>
+    <p>Covariance is a single number that says whether two measurements move
+    together: when x comes in above its average, does y tend to come in above its
+    average too? Variance is the same idea for one variable on its own, describing
+    how far it spreads around its average. Hold both in one object and you have
+    the <strong>covariance matrix</strong>, also called the variance-covariance
+    matrix and usually written &Sigma;.</p>
 
-    <p>Variance already describes one variable: how far it spreads around its
-    mean. With two variables you want that, and one thing more. Do they move
-    together? When x comes in above its mean, does y usually come in above its
-    mean too? Covariance is the number that answers that question, and the
-    covariance matrix is the bookkeeping that holds all of it for a pair of
-    variables at once.</p>
+    <p>That pair is where rung 1 left off. The least-squares slope turned out to
+    be a covariance divided by a variance, so between the two of them they do all
+    the work in probably the most-used formula in statistics.</p>
 
     <details class="from-zero">
       <summary>Start from zero: mean and spread</summary>
@@ -44,11 +44,11 @@
     <h2>What covariance measures</h2>
 
     <p>Take one data point. Measure how far it sits from the mean in x, and how
-    far from the mean in y. Multiply those two deviations together. Do that for
-    every point and average the results. That average is the
-    <strong>covariance</strong>.</p>
+    far from the mean in y. Those two distances are its <strong>deviations</strong>.
+    Multiply them together. Do that for every point and average the results. That
+    average is the <strong>covariance</strong>.</p>
 
-    <p>The multiplying is what makes it work. A point above average in both x and
+    <p>The multiplying is what produces the sign. A point above average in both x and
     y contributes positive times positive, so a positive product. A point below
     average in both contributes negative times negative, also positive. But a
     point that is above average in x and below average in y contributes a negative
@@ -69,9 +69,11 @@
     <h2>Why an ellipse?</h2>
 
     <p>Those three distinct numbers, two variances and one covariance, pin down
-    the shape of the cloud. Not where the individual points are, but its overall
-    extent: how wide, how tall, and how tilted. The natural picture of how far
-    data spreads in every direction at once is an ellipse.</p>
+    the shape of the cloud. They do not say where any individual point sits, only
+    the overall extent: how wide, how tall, and how tilted. A shape with one
+    width, one height and one tilt, symmetric about its center, is an
+    ellipse. That is all three numbers can buy, and it is exactly what they
+    buy.</p>
 
     <p>The one below is drawn at two standard deviations, so most of the cloud
     falls inside it. Its long axis points along the direction in which the data
@@ -82,7 +84,7 @@
     <p>Below are eighty synthetic points, the ellipse, and the matrix. Grab a
     square handle to stretch the cloud, the diamond to tilt it, or drag the
     underlined matrix numbers up and down. The ρ slider sets the correlation
-    directly. One disclosure: these points are constructed so that the sample matches
+    directly. Worth knowing: these points are constructed so that the sample matches
     the dial exactly. Rung 1 was where you felt sampling wobble, so this page
     switches it off and lets the geometry hold still.</p>
 
@@ -224,16 +226,17 @@
     still. The covariance in the two off-diagonal slots moves whenever the tilt
     or either spread changes.</p>
 
-    <p>Now drag the tilt handle and watch all four entries move together. This is
-    the part worth pausing on. Tilt is not stored in any one cell. It only exists
+    <p>Now drag the tilt handle and watch all four entries move together. Tilt is
+    not stored in any one cell. It only exists
     in the relationship between the covariance and the two variances, which is why
     reading a covariance matrix entry by entry tells you so little, and why seeing
     it as an ellipse tells you so much.</p>
 
     <h2>The units trap</h2>
 
-    <p>There is a catch in all of this, and it matters as soon as the two
-    variables are measured in different things. The next figure holds the same
+    <p>A covariance changes value when you change the units, which matters as
+    soon as the two variables are measured in different things. The next figure
+    holds the same
     cloud, literally the same points, so dragging above moves it down here too.
     The only change is that x is now a length in millimeters and y a weight in
     grams. The buttons switch units, and that’s all they do.</p>
@@ -365,15 +368,16 @@
     the only way a plot can show you the numbers honestly. Most software instead
     rescales each axis to fill the frame, which quietly hides the whole effect.</p>
 
-    <p>None of this is a paradox. Covariance carries units, here millimeter-grams,
-    so changing the units has to change the number, the same way quoting a height
+    <p>Covariance carries its units with it, here millimeter-grams, so changing
+    the units has to change the number, the same way quoting a height
     in feet instead of meters changes the number without making anyone taller. The
     practical consequence is the important part: the size of a covariance means
     nothing on its own. You cannot look at 12,500 and say whether that is a strong
     relationship or a weak one.</p>
 
-    <p>What survives the unit change is <strong>r</strong>, the correlation, which
-    is the covariance divided by both standard deviations:</p>
+    <p>What survives the unit change is <strong>r</strong>, the correlation
+    coefficient, written out in full as Pearson&rsquo;s r. It is the covariance
+    divided by both standard deviations:</p>
 
     <p style="text-align:center">
       <math display="block">
@@ -814,9 +818,9 @@
     reading anything into a correlation, it’s worth checking whether one of the
     two variables is partly made out of the other.</p>
 
-    <p>Three things to carry into rung 3. A covariance matrix is a shape. Its
-    numbers depend on the units, so their size means nothing by itself. And r is
-    what is left once the units are divided out. Rung 3 goes looking for the
+    <p>Three things are worth carrying into rung 3: a covariance matrix is a
+    shape, its numbers depend on the units so their size means nothing by itself,
+    and r is what is left once the units are divided out. Rung 3 goes looking for the
     directions a cloud genuinely spreads along, and the first decision it has to
     make is which units to look in.</p>
 

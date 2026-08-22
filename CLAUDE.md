@@ -9,11 +9,11 @@ served at andrewrausch.com/shadowbox/. Spec: docs/superpowers/specs/.
 - Zero runtime dependencies, no node_modules, no build step. Hand-run scripts with
   committed output only (`tools/poster.mjs`, `reference/fixtures.py`).
 - Tests: `node --test` (Node 24). Fixtures: `uv run --with numpy python reference/fixtures.py`.
-- Preview: `python -m http.server 8000` (ES modules — file:// won't work).
+- Preview: `python -m http.server 8000` (ES modules - file:// won't work).
 - Owner is colorblind: no meaning on hue alone, ever. Dots carry magnitude, stripe
   orientation carries direction, heavy outline carries structure; surfaces are
   graduated ink halftone (js/lib/halftone.mjs: dot area linear in value, bare paper
-  at the minimum — owner's Lichtenstein note 2026-08-20: dots that show a *gradient*
+  at the minimum - owner's Lichtenstein note 2026-08-20: dots that show a *gradient*
   must vary in size; dots that merely fill a counted area stay a fine uniform screen)
   + drawn contours. No translucent fills for meaning.
 - Every SVG id is prefixed `sb-${idKey}-`; unique idKey per instrument instance per page.

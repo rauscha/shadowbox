@@ -31,7 +31,7 @@ test('halftone dots stay inside the plot and under the fuse radius', () => {
 test('halftone is graduated: radius rises with the field, bare at the minimum', () => {
   const g = bowlGrid();
   const dots = halftoneDots(g, PLOT);
-  // many distinct sizes — a gradient, not a uniform Ben-Day screen
+  // many distinct sizes - a gradient, not a uniform Ben-Day screen
   assert.ok(new Set(dots.map(d => d.r.toFixed(2))).size > 30);
   // no dot within a pitch of the minimum (bare paper at the bottom of the bowl)
   const mx = PLOT.x0 + (PLOT.x1 - PLOT.x0) * (g.minAt[0] - g.s0) / (g.s1 - g.s0);

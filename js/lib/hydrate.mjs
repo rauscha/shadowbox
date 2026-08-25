@@ -41,10 +41,19 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 
 // The control descriptors that actually render for a given state, in render
 // order. Shared by controlsMarkup (first render, poster hand-run scripts) and
-// updateControls (every render after that), so the two can never disagree
-// about what "the same set of controls" means.
+// updateControls (every render after that), so the two cannot disagree about
+// what "the same set of controls" means: the kind check below keeps this
+// filter's output restricted to exactly the kinds controlsMarkup knows how to
+// render, so the two always produce the same count for the same input.
 export function visibleControls(controls, state) {
   return controls.filter(c => {
+    // Keep this in sync with the kinds controlsMarkup renders below. A kind
+    // neither of them recognizes must be invisible to both, or visibleControls
+    // would count a control that never gets a DOM node, updateControls would
+    // never find enough nodes to match it, and the controls block would
+    // rebuild on every single render forever - silently reintroducing the
+    // exact bug this file exists to fix, for just that one instrument.
+    if (!['slider', 'toggle', 'action'].includes(c.kind)) return false;
     // Controls that only make sense on synthetic data declare needsTruth.
     if (c.needsTruth && !state.truth) return false;
     // A truth toggle has nothing to show when the dataset carries no truth.
@@ -82,8 +91,17 @@ export function updateControls(container, controls, state) {
   const nodes = container.querySelectorAll('[data-control],[data-action]');
   if (nodes.length !== visible.length) return false;
 
-  const keyOf = c => c.kind === 'action' ? `action:${c.id}` : `control:${c.id}`;
-  const nodeKeyOf = n => n.dataset.action ? `action:${n.dataset.action}` : `control:${n.dataset.control}`;
+  // Keyed on kind as well as id, not just id: a slider and a toggle both carry
+  // data-control, and a repeated id with a different kind (never seen today,
+  // but nothing forbids it in a future instrument) must count as a mismatch
+  // rather than matching a <button> against a slider descriptor and writing
+  // .value onto it. The node's own kind comes from its tag, since a plain
+  // object has no dataset.kind to read.
+  const keyOf = c => `${c.kind}:${c.id}`;
+  const nodeKeyOf = n => {
+    if (n.dataset.action) return `action:${n.dataset.action}`;
+    return `${n.tagName === 'INPUT' ? 'slider' : 'toggle'}:${n.dataset.control}`;
+  };
   for (let i = 0; i < visible.length; i++) {
     if (nodeKeyOf(nodes[i]) !== keyOf(visible[i])) return false;
   }
@@ -125,13 +143,17 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
     return `${instrument.render(state)}\n<div class="controls">${controlsMarkup(instrument.controls, state)}</div>`;
   }
 
-  // Attaches listeners to whatever is currently inside .controls. Called only
+  // Attaches listeners to whatever is currently inside controlsEl. Called only
   // right after those nodes were just built (first render, or a controls
   // rebuild below) - never on an in-place value update, because those nodes
   // already carry listeners from the render that created them; reattaching on
   // every render would stack a second, third, ... handler on any control a
-  // reader never stops touching.
-  function bindControls() {
+  // reader never stops touching. Scoped to controlsEl rather than el: no
+  // instrument's SVG emits [data-control] or [data-action] today, but if one
+  // ever did, querying el would both re-listen it on every controls rebuild
+  // and silently drop its listener on every in-place update (the SVG is
+  // replaced by outerHTML on a path that never calls this function again).
+  function bindControls(controlsEl) {
     // An instrument may export applyControl(state, id, value) to derive extra
     // state from a control change (e.g. the rho dial also rewrites sxy).
     const apply = (id, value) => {
@@ -140,10 +162,10 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
         : { [id]: value };
       store.set(partial);
     };
-    el.querySelectorAll('input[data-control]').forEach(input => {
+    controlsEl.querySelectorAll('input[data-control]').forEach(input => {
       input.addEventListener('input', () => apply(input.dataset.control, Number(input.value)));
     });
-    el.querySelectorAll('button[data-control]').forEach(btn => {
+    controlsEl.querySelectorAll('button[data-control]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.control;
         const cur = store.get()[id];
@@ -152,7 +174,7 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
         apply(id, cur === onVal ? offVal : onVal);
       });
     });
-    el.querySelectorAll('button[data-action]').forEach(btn => {
+    controlsEl.querySelectorAll('button[data-action]').forEach(btn => {
       btn.addEventListener('click', () => { const fn = actions[btn.dataset.action]; if (fn) fn(store); });
     });
   }
@@ -166,7 +188,16 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
       const t = ev.target.closest('[data-drag]');
       if (!t) return;
       dragging = { id: t.dataset.drag, index: Number(t.dataset.index || 0) };
-      el.setPointerCapture(ev.pointerId);
+      try {
+        el.setPointerCapture(ev.pointerId);
+      } catch {
+        // The browser can refuse a pointer id it does not consider active
+        // (real-world: none observed; reproduced only by a synthetically
+        // dispatched PointerEvent in testing). dragging is already set above,
+        // so the drag still proceeds through the delegated pointermove on el
+        // either way - this only keeps preventDefault below from being
+        // skipped by a throw it has nothing to do with.
+      }
       ev.preventDefault();
     });
     el.addEventListener('pointermove', ev => {
@@ -210,7 +241,7 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
       // static poster svg). Build both halves and wire the controls that just
       // appeared.
       el.innerHTML = markup();
-      bindControls();
+      bindControls(el.querySelector('.controls'));
     } else {
       // instrument.render always hands back a whole new <svg> string (see the
       // file header), so the svg keeps being replaced every render - that
@@ -223,7 +254,7 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
       if (svgEl) svgEl.outerHTML = instrument.render(state);
       if (!updateControls(controlsEl, instrument.controls, state)) {
         controlsEl.innerHTML = controlsMarkup(instrument.controls, state);
-        bindControls();
+        bindControls(controlsEl);
       }
     }
 

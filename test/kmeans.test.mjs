@@ -132,3 +132,34 @@ test('the core reproduces the probe on real data: births k=3 is 10 / 159 / 231',
   const sizes = [0, 1, 2].map(j => r.labels.filter(l => l === j).length).sort((p, q) => p - q);
   assert.deepEqual(sizes, [10, 159, 231]);
 });
+
+const blobs = () => JSON.parse(readFileSync(new URL('../data/blobs.json', import.meta.url), 'utf8'));
+
+test('blobs.json carries three configs, 150 points each, with truth where truth exists', () => {
+  const d = blobs();
+  assert.deepEqual(Object.keys(d.configs), ['blobs', 'crescents', 'uniform']);
+  for (const [name, c] of Object.entries(d.configs)) {
+    assert.equal(c.xs.length, 150, `${name} xs`);
+    assert.equal(c.ys.length, 150, `${name} ys`);
+    assert.ok(c.xs.every(Number.isFinite) && c.ys.every(Number.isFinite), `${name} has a non-finite value`);
+  }
+  assert.deepEqual([...new Set(d.configs.blobs.labels)].sort(), [0, 1, 2]);
+  assert.deepEqual([...new Set(d.configs.crescents.labels)].sort(), [0, 1]);
+  assert.equal(d.configs.uniform.labels, null, 'a uniform square has no ground truth to claim');
+  assert.deepEqual([d.configs.blobs.seed, d.configs.crescents.seed, d.configs.uniform.seed], [42, 43, 44]);
+  assert.deepEqual([d.configs.blobs.k, d.configs.crescents.k, d.configs.uniform.k], [3, 2, 3]);
+});
+
+test('blobs.json reproduces the reference generator exactly, or every restart number in the spec is wrong', () => {
+  // The probe's own generator, inlined, so a drift in core.mjs's rng or in the
+  // tool's draw order fails here rather than silently moving §7.
+  const g = r => { let u = 0, v = 0; while (!u) u = r(); while (!v) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  const r1 = mulberry32(42), ctr = [[-2.2, -1.4], [2.4, -1.0], [0.2, 2.6]];
+  const P = [];
+  for (let c = 0; c < 3; c++) for (let i = 0; i < 50; i++) P.push([ctr[c][0] + g(r1) * 0.55, ctr[c][1] + g(r1) * 0.55]);
+  const d = blobs().configs.blobs;
+  for (let i = 0; i < 150; i++) {
+    close(d.xs[i], P[i][0], 1e-12);
+    close(d.ys[i], P[i][1], 1e-12);
+  }
+});

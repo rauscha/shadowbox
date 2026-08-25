@@ -4,8 +4,25 @@
 //   - declarative controls (sliders / toggles / actions) below the SVG
 //   - pointer drags on [data-drag] elements, routed through instrument.applyDrag
 //   - keyboard drags (tab to a handle, arrows nudge, shift = coarse)
-// Pure helpers (createStore, controlsMarkup, clientToViewBox) are node-tested;
-// DOM binding is exercised in the browser QA pass.
+// Pure helpers (createStore, controlsMarkup, visibleControls, updateControls,
+// clientToViewBox) are node-tested; DOM binding is exercised in the browser QA
+// pass.
+//
+// rerender() calls instrument.render(state) on every state change, which hands
+// back a whole new <svg> string - every frame is a full re-render (see
+// PLAY_FPS below), and nothing here diffs it against the last one. That means
+// the <svg> element itself, and anything inside it, is a different node after
+// every render. So the pointer and keyboard drag listeners live on el - the
+// mount() container, the one node that is never replaced, only its contents
+// are - and are attached exactly once, not inside a function that runs on
+// every render. Anything that needs the current svg (getScreenCTM for a drag,
+// getBBox for a keyboard nudge) looks it up live via el.querySelector('svg')
+// rather than closing over a reference, because a closed-over one goes stale
+// the moment the next render lands. Native <input type="range"> drags are the
+// one exception this file cannot delegate its way out of: the browser binds
+// that drag to the specific node, so the controls block is the one part of
+// markup() that is updated in place rather than rebuilt on every render -
+// see updateControls.
 
 export function createStore(initial) {
   let state = { ...initial };
@@ -22,15 +39,25 @@ export function createStore(initial) {
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
+// The control descriptors that actually render for a given state, in render
+// order. Shared by controlsMarkup (first render, poster hand-run scripts) and
+// updateControls (every render after that), so the two can never disagree
+// about what "the same set of controls" means.
+export function visibleControls(controls, state) {
+  return controls.filter(c => {
+    // Controls that only make sense on synthetic data declare needsTruth.
+    if (c.needsTruth && !state.truth) return false;
+    // A truth toggle has nothing to show when the dataset carries no truth.
+    if (c.id === 'showTruth' && !state.truth) return false;
+    // The residual toggle only earns its place on dense data; sparse data always draws them.
+    if (c.id === 'residuals' && (!state.xs || state.xs.length <= 60)) return false;
+    return true;
+  });
+}
+
 export function controlsMarkup(controls, state) {
   const parts = [];
-  for (const c of controls) {
-    // Controls that only make sense on synthetic data declare needsTruth.
-    if (c.needsTruth && !state.truth) continue;
-    // A truth toggle has nothing to show when the dataset carries no truth.
-    if (c.id === 'showTruth' && !state.truth) continue;
-    // The residual toggle only earns its place on dense data; sparse data always draws them.
-    if (c.id === 'residuals' && (!state.xs || state.xs.length <= 60)) continue;
+  for (const c of visibleControls(controls, state)) {
     if (c.kind === 'slider') {
       parts.push(`<label>${esc(c.label)}<input type="range" data-control="${c.id}" min="${c.min}" max="${c.max}" step="${c.step}" value="${state[c.id]}"></label>`);
     } else if (c.kind === 'toggle') {
@@ -41,6 +68,36 @@ export function controlsMarkup(controls, state) {
     }
   }
   return parts.join('\n');
+}
+
+// Updates an already-rendered .controls container's nodes in place when the
+// visible control set (which ids, which kinds, in what order) has not
+// changed - only a control's *value* moves on most renders, and the node
+// carrying it is exactly what a native range-input drag is bound to. Returns
+// true when it updated in place. Returns false, having touched nothing, when
+// a control has appeared, disappeared, or reordered - the caller must rebuild
+// via controlsMarkup in that case, same as it always has.
+export function updateControls(container, controls, state) {
+  const visible = visibleControls(controls, state);
+  const nodes = container.querySelectorAll('[data-control],[data-action]');
+  if (nodes.length !== visible.length) return false;
+
+  const keyOf = c => c.kind === 'action' ? `action:${c.id}` : `control:${c.id}`;
+  const nodeKeyOf = n => n.dataset.action ? `action:${n.dataset.action}` : `control:${n.dataset.control}`;
+  for (let i = 0; i < visible.length; i++) {
+    if (nodeKeyOf(nodes[i]) !== keyOf(visible[i])) return false;
+  }
+
+  for (let i = 0; i < visible.length; i++) {
+    const c = visible[i], node = nodes[i];
+    if (c.kind === 'slider') {
+      node.value = String(state[c.id]);
+    } else if (c.kind === 'toggle') {
+      node.setAttribute('aria-pressed', String(state[c.id] === c.on));
+    }
+    // action buttons carry no per-render state to sync.
+  }
+  return true;
 }
 
 // Invert an affine screen CTM {a,b,c,d,e,f}: client px -> viewBox units.
@@ -68,10 +125,13 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
     return `${instrument.render(state)}\n<div class="controls">${controlsMarkup(instrument.controls, state)}</div>`;
   }
 
-  function bind() {
-    const svg = el.querySelector('svg');
-    if (!svg) return;
-
+  // Attaches listeners to whatever is currently inside .controls. Called only
+  // right after those nodes were just built (first render, or a controls
+  // rebuild below) - never on an in-place value update, because those nodes
+  // already carry listeners from the render that created them; reattaching on
+  // every render would stack a second, third, ... handler on any control a
+  // reader never stops touching.
+  function bindControls() {
     // An instrument may export applyControl(state, id, value) to derive extra
     // state from a control change (e.g. the rho dial also rewrites sxy).
     const apply = (id, value) => {
@@ -95,26 +155,35 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
     el.querySelectorAll('button[data-action]').forEach(btn => {
       btn.addEventListener('click', () => { const fn = actions[btn.dataset.action]; if (fn) fn(store); });
     });
+  }
 
-    svg.addEventListener('pointerdown', ev => {
+  // Pointer and keyboard drag listeners live on el and are attached exactly
+  // once, here, never inside rerender() or bindControls(). el is the only
+  // node mount() never replaces (see the file header): a listener attached to
+  // the svg itself, or reattached on every render, is the mobile drag bug.
+  function bindDrag() {
+    el.addEventListener('pointerdown', ev => {
       const t = ev.target.closest('[data-drag]');
       if (!t) return;
       dragging = { id: t.dataset.drag, index: Number(t.dataset.index || 0) };
-      svg.setPointerCapture(ev.pointerId);
+      el.setPointerCapture(ev.pointerId);
       ev.preventDefault();
     });
-    svg.addEventListener('pointermove', ev => {
+    el.addEventListener('pointermove', ev => {
       if (!dragging) return;
-      const m = svg.getScreenCTM();
+      // Looked up live, not closed over: the svg render() handed back last
+      // frame is not the one that exists now.
+      const svg = el.querySelector('svg');
+      const m = svg && svg.getScreenCTM();
       if (!m) return;
       const p = clientToViewBox(m, ev.clientX, ev.clientY);
       store.set(instrument.applyDrag(full(), { ...dragging, x: p.x, y: p.y }));
     });
     const end = () => { dragging = null; };
-    svg.addEventListener('pointerup', end);
-    svg.addEventListener('pointercancel', end);
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
 
-    svg.addEventListener('keydown', ev => {
+    el.addEventListener('keydown', ev => {
       const t = ev.target.closest('[data-drag]');
       if (!t) return;
       const step = ev.shiftKey ? 16 : 4;
@@ -129,12 +198,35 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
   }
 
   function rerender() {
-    // Preserve keyboard focus across the innerHTML swap.
+    // Preserve keyboard focus across whatever DOM surgery happens below.
     const focused = document.activeElement && el.contains(document.activeElement)
       ? { drag: document.activeElement.dataset?.drag, index: document.activeElement.dataset?.index }
       : null;
-    el.innerHTML = markup();
-    bind();
+
+    const state = full();
+    const controlsEl = el.querySelector('.controls');
+    if (!controlsEl) {
+      // Nothing built yet (the very first render: el still holds only the
+      // static poster svg). Build both halves and wire the controls that just
+      // appeared.
+      el.innerHTML = markup();
+      bindControls();
+    } else {
+      // instrument.render always hands back a whole new <svg> string (see the
+      // file header), so the svg keeps being replaced every render - that
+      // part of the bug is fixed by bindDrag() above, not by preserving this
+      // node. Only .controls gets the cheaper path: same control set updates
+      // in place (this is what lets a mid-drag <input type="range"> survive
+      // its own oninput-triggered rerender); a changed set rebuilds and
+      // rebinds, same as it always has.
+      const svgEl = el.querySelector('svg');
+      if (svgEl) svgEl.outerHTML = instrument.render(state);
+      if (!updateControls(controlsEl, instrument.controls, state)) {
+        controlsEl.innerHTML = controlsMarkup(instrument.controls, state);
+        bindControls();
+      }
+    }
+
     if (focused && focused.drag) {
       const again = el.querySelector(`[data-drag="${focused.drag}"][data-index="${focused.index ?? 0}"]`)
         || el.querySelector(`[data-drag="${focused.drag}"]`);
@@ -183,6 +275,7 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
     raf = schedule(() => { raf = 0; rerender(); });
   });
 
+  bindDrag();
   rerender();
   maybePlay();
   return { rerender };

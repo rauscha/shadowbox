@@ -336,3 +336,21 @@ test('a dataset with no ground truth renders no purity at all', () => {
   assert.equal(roles(svg, 'panel-purity'), 0);
   assert.equal(roles(svg, 'panel'), 6);
 });
+
+test('each panel draws ITS OWN partition, not one panel repeated six times', () => {
+  // distinctAnswers proves panels() COMPUTES different answers. This proves
+  // render actually DRAWS them. A render loop that reused one panel's geometry
+  // for all six, while cost, rank, seed and the agreement line stayed correct,
+  // would pass every other test in this file and leave six identical drawings
+  // with six different numbers stapled on.
+  // Measured: with random seeding the divergent start draws a visibly different
+  // partition (wall counts 78 78 78 91 78 78); with ++ all six agree and all six
+  // draw 78.
+  const perPanel = svg => svg.split(/(?=<g data-role="panel")/).slice(1)
+    .map(p => (p.match(/data-role="wall"/g) || []).length);
+  const rand = perPanel(RR.render(rrState()));
+  assert.equal(rand.length, 6);
+  assert.equal(new Set(rand).size, 2, `wall counts per panel: ${rand}`);
+  const pp = perPanel(RR.render(rrState({ plusplus: true })));
+  assert.equal(new Set(pp).size, 1, `++ draws one partition six times: ${pp}`);
+});

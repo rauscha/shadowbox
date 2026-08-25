@@ -1437,8 +1437,12 @@ const blobState = (over = {}) => {
 };
 
 test('kmeans-step draws every point, every center, and a partition wall', () => {
-  const st = KS.restart(blobState(), 1);
-  const svg = KS.render({ ...blobState(), ...st });
+  // Stepped once on purpose. A wall only exists once membership does, and the
+  // very next test pins that a fresh restart draws no wall at all.
+  const base = blobState();
+  let s = { ...base, ...KS.restart(base, 1) };
+  s = { ...s, ...KS.step(s) };
+  const svg = KS.render(s);
   assert.match(svg, /^<svg[^>]*viewBox="0 0 640 460"/);
   assert.match(svg, /<\/svg>\s*$/);
   assert.equal(roles(svg, 'pt'), 150);
@@ -1485,11 +1489,15 @@ test('the cost readout falls on every recompute and is never negative', () => {
 });
 
 test('every cluster gets its own mark, and the legend names all of them', () => {
-  const s = { ...blobState({ k: 6 }), ...KS.restart(blobState({ k: 6 }), 5) };
-  const done = KS.render({ ...s, labels: KS.stats(s).labels });
-  assert.equal(roles(done, 'legend-mark'), 6);
-  const kinds = attrs(done, 'pt').map(a => a['data-mark']);
-  assert.ok(new Set(kinds).size > 1, 'membership must be visible as shape');
+  // Stepped once, so every cluster has members and every mark is on the page.
+  // Seed 5 at k=6 on blobs was measured to populate all six clusters.
+  const base = blobState({ k: 6 });
+  let s = { ...base, ...KS.restart(base, 5) };
+  s = { ...s, ...KS.step(s) };
+  const svg = KS.render(s);
+  assert.equal(roles(svg, 'legend-mark'), 6);
+  const kinds = attrs(svg, 'pt').map(a => a['data-mark']);
+  assert.equal(new Set(kinds).size, 6, 'membership must be visible as shape, one kind per cluster');
   for (const kind of new Set(kinds)) assert.ok(MARK_KINDS.includes(kind));
 });
 

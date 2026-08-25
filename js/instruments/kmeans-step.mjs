@@ -11,7 +11,7 @@ import { mulberry32 } from '../math/core.mjs';
 import {
   startState, kmeansStep, totalSquaredDistance, zscoreColumns,
 } from '../math/kmeans.mjs';
-import { markPath, markFor, partitionSegments, MAX_MARKS, MARK_KINDS } from '../lib/marks.mjs';
+import { markPath, markFor, partitionSegments, MAX_MARKS } from '../lib/marks.mjs';
 import { isoFrame, F } from '../lib/frame.mjs';
 
 export const name = 'kmeans-step';
@@ -124,7 +124,7 @@ export function stats(st) {
 // axis-projector): a plot on the left, a narrow column on the right. Nothing
 // here draws ticks or axis names - this figure is the mechanism, not the
 // numbers on either axis, and every reader-facing sentence below needs the
-// full canvas width anyway (PHASE_TEXT.update alone runs 85 characters, far
+// full canvas width anyway (PHASE_TEXT.update alone runs 82 characters, far
 // more than a 200px column could hold at a legible size).
 const W = 640, H = 460;
 const MARGIN = { l: 56, r: 200, t: 44, b: 48 };
@@ -215,7 +215,7 @@ export function render(state) {
   // the interaction sentence: names the move about to happen, not the one
   // just made. It and the note both run the full canvas width below the plot
   // rather than the narrow legend column, because the longest of the four
-  // fixed strings is 85 characters.
+  // fixed strings is 82 characters.
   const phaseKey = !S.assigned ? 'fresh' : st.done ? 'done' : st.phase;
   parts.push(`<text data-role="phase" x="32" y="424" font-size="12" fill="var(--heading)">${PHASE_TEXT[phaseKey]}</text>`);
   parts.push(`<text data-role="iter" x="32" y="440" font-size="11" fill="var(--text)">iteration ${st.iter}</text>`);

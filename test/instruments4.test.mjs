@@ -119,6 +119,9 @@ test('kmeans-step draws every point, every center, and a partition wall', () => 
   assert.equal(roles(svg, 'pt'), 150);
   assert.equal(roles(svg, 'center'), 3);
   assert.ok(roles(svg, 'wall') > 10, 'the partition must be drawn, not implied');
+  assert.equal(roles(KS.render({ ...s, showWall: false }), 'wall'), 0, 'the toggle must actually hide the wall, not just default to on');
+  assert.equal(texts(svg, 'cost')[0], 'total squared distance 744.8', 'render, not just stats(), must format the number');
+  assert.equal(texts(svg, 'iter')[0], 'iteration 0');
   assert.ok(svg.includes('sb-ks1-'), 'every id is namespaced to the instance');
 });
 
@@ -129,6 +132,18 @@ test('kmeans-step opens before the first Step with nothing assigned', () => {
   const svg = KS.render(s);
   assert.equal(texts(svg, 'phase')[0], 'press Step to assign every point to its nearest center');
   assert.equal(roles(svg, 'wall'), 0, 'no wall before anything is assigned');
+  assert.equal(roles(svg, 'pt'), 150);
+  const pts = attrs(svg, 'pt');
+  assert.ok(pts.every(a => a['data-cluster'] === '-1'), 'nothing is assigned yet, so every point is cluster -1');
+  assert.ok(pts.every(a => a['data-mark'] === 'circle'), 'unassigned points draw the plain circle, not a cluster shape');
+});
+
+test('the true-group ring is gated on both the toggle and the data, not either alone', () => {
+  const base = { ...blobState(), ...KS.restart(blobState(), 1) };
+  assert.equal(roles(KS.render(base), 'truth-ring'), 0, 'off by default, even though this dataset carries truth');
+  assert.equal(roles(KS.render({ ...base, showTruth: true }), 'truth-ring'), 150, 'on, with truth data: a ring behind every point');
+  assert.equal(roles(KS.render({ ...base, showTruth: true, truth: null }), 'truth-ring'), 0,
+    'on, but no truth data: still nothing to ring, which is what lets the uniform dataset render with no special case');
 });
 
 test('one Step assigns and freezes the centers; the next moves the centers and freezes membership', () => {

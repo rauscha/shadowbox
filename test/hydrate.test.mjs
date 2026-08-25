@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createStore, controlsMarkup, clientToViewBox } from '../js/lib/hydrate.mjs';
-import { playTick, PLAY_FPS } from '../js/lib/hydrate.mjs';
+import { playTick, PLAY_FPS, mount } from '../js/lib/hydrate.mjs';
 
 test('store merges, notifies, respects silent', () => {
   const s = createStore({ a: 1, b: 2 });
@@ -48,4 +48,38 @@ test('playTick fires immediately on the first frame after Play is pressed', () =
   // lastStep starts at -Infinity so the reader sees a move on the same tick they
   // clicked, rather than a quarter second of nothing.
   assert.equal(playTick(-Infinity, 0, PLAY_FPS), true);
+});
+
+test('the Play loop never leaves the same callback scheduled twice', () => {
+  // The scheduling slice of the loop is cheaply testable in node even though the
+  // rest of mount is not: it only references requestAnimationFrame and document,
+  // so stubbing those two exercises the real pump and maybePlay. Worth having,
+  // because the bug this pins produces no visible symptom - lastStep is shared,
+  // so the step rate stays correct while pending callbacks pile up - and a
+  // browser QA pass would not have caught it.
+  const pending = [];
+  const g = globalThis;
+  const savedRaf = g.requestAnimationFrame, savedDoc = g.document;
+  g.requestAnimationFrame = fn => pending.push(fn);
+  g.document = { hidden: false, activeElement: null };
+  try {
+    const el = { innerHTML: '', querySelector: () => null, querySelectorAll: () => [], contains: () => false };
+    const store = createStore({ play: true, i: 0 });
+    mount(el, {
+      controls: [], render: () => '<svg></svg>', applyDrag: () => ({}),
+      step: s => ({ i: s.i + 1 }),
+    }, store);
+    for (const now of [0, 300, 600, 900, 1200]) {
+      for (const fn of pending.splice(0, pending.length)) fn(now);
+      // pump is one stable reference; each rerender wrapper is a fresh closure.
+      // So a repeated reference is precisely a double-scheduled pump.
+      const seen = new Map();
+      for (const fn of pending) seen.set(fn, (seen.get(fn) || 0) + 1);
+      const worst = Math.max(0, ...seen.values());
+      assert.ok(worst <= 1, `at ${now}ms one callback is scheduled ${worst} times over`);
+    }
+  } finally {
+    g.requestAnimationFrame = savedRaf;
+    g.document = savedDoc;
+  }
 });

@@ -160,7 +160,14 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
       if (!next || !Object.keys(next).length) { store.set({ play: false }); return; }
       store.set(next);
     }
-    playRaf = requestAnimationFrame(pump);
+    // Guarded, and the guard is load-bearing. store.set notifies synchronously,
+    // the subscriber calls maybePlay, and playRaf is still 0 at that moment, so
+    // maybePlay schedules the next frame. Assigning unconditionally here would
+    // overwrite that schedule without cancelling it, leaving two pump callbacks
+    // pending and one more on every tick after. It has no visible symptom, since
+    // lastStep is shared and the step rate stays correct, which is exactly why
+    // it needs a test rather than a browser pass.
+    if (!playRaf) playRaf = requestAnimationFrame(pump);
   }
   function maybePlay() {
     if (!playRaf && instrument.step && full().play) playRaf = requestAnimationFrame(pump);

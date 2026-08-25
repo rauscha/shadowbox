@@ -1,44 +1,44 @@
-# Pending decisions — for Andrew (updated 2026-08-21, end of session)
+# Pending decisions - for Andrew (updated 2026-08-24, end of session)
 
-Most of the earlier overnight cards are now resolved. What's actually left:
+Everything from the 2026-08-21 list is now resolved. What is actually open:
 
-## 1. The prose — does it work now? (the only real blocker)
-Three attempts failed. Your verdict on the third was that it was "nearly
-incomprehensible" and "forcing a tone/style that is falling very, very flat."
+## 1. Read the lesson-4 spec and rule on it (blocking)
 
-The diagnosis that finally landed: it was never a tone problem. The pages toured
-their own figures and never taught the subject. Rung 1 never said what least
-squares *is* before showing widgets; rung 2 never defined covariance at all.
+`docs/superpowers/specs/2026-08-24-shadowbox-kmeans-design.md`, committed and pushed.
+Nothing gets built until you have read it. The implementation plan is the next step
+after your yes.
 
-Both are rewritten to a different brief: write what would get written if you'd
-asked "teach me how this works" in chat. Define terms when introduced, motivate
-each step, answer the obvious objection, let sentences carry information rather
-than rhythm.
+The two things most worth your eye:
 
-**Please read two things and rule:** the "Why squares?" section of
-least-squares.html, and the covariance definition in covariance.html. Both are
-live at https://andrewrausch.com/shadowbox/. If it still doesn't land, the next
-move is you talking through one section and me writing to that, rather than a
-fourth solo attempt.
+- **§3.4 `label-vs-truth`** is the clinical payoff, and it is measured, not expected:
+  cluster the four biometry variables and the labels account for 0.871 of the variation
+  in gestational age at k=3, climbing to 0.941 at k=5. Same punchline as PC1 in lesson
+  3, reached by unrelated machinery. You are the domain authority on whether that lands
+  as a lesson or as a curiosity.
+- **§8, what the lesson refuses to claim**, particularly the SGA/AGA/LGA line. Asked for
+  three groups, k-means on the births cloud returns 10 / 159 / 231 with heavily
+  overlapping gestational-age ranges, splitting mostly on weight. It does not recover
+  the clinical categories. I read that as the better lesson; you may read it differently.
 
-## 2. PCA claim needs verifying before it gets written
-The rung-3 instruments are built and green, but the agent that built them never
-filed its report, so the expected result (PC1 = overall fetal size, PC2 =
-head-vs-body proportion on BPD/HC/AC/FL) is **unverified**. It'll get measured and
-reported before it goes into any prose. Nothing needed from you unless the real
-numbers disagree with the textbook expectation, in which case you'll hear about it.
+## 2. The half-step decision in `kmeans-step`
 
-## 3. apps.html card — now unblocked
-The site is public, so the card on andrewrausch.com can go in whenever you want it.
-Say the word and it'll be drafted for your approval (the add-app-card skill shows
-you the diff before anything is pushed).
+Assign and recompute as two separate visible moves, or one combined step per click?
+Half-steps double the clicks to convergence but they are the actual mechanism, and
+mechanism-first was the brief. Specced as half-steps. You never ruled, and it is the one
+choice that changes how the core instrument feels to use.
+
+## 3. apps.html card on andrewrausch.com
+
+Still open, still unblocked, still never actioned - carried over since 2026-08-21. The
+site is public, so the card can go in whenever. Say the word and it gets drafted for
+your approval; the `add-app-card` flow shows you the diff before anything is pushed.
 
 ---
 
-## Resolved this session
-- **Lichtenstein dots** — you liked the look, wanted a lighter dot. Done: halftone
-  screens use a new grey `--ink-dot`; structural outlines keep full weight.
-- **Simulation parameters** — you accepted them as-is.
-- **Public + Pages** — done. Live, HTTPS enforced, custom domain working.
-- **Caps vs bold** — corrected everywhere, and recorded in memory so it doesn't
-  come back. The voice-profile file that claimed otherwise is now annotated.
+## Resolved since the last list
+- **The prose** - ruled on 2026-08-22. You rewrote lesson 1's opening yourself, scored
+  lesson 2, and scored lesson 3's outline before it was written. Rules 1 to 13 are in
+  `PROSE-GUIDE.md`.
+- **The PCA claim** - measured 2026-08-22. PC1 = overall size holds; PC2 = head-vs-body
+  proportion does not. The page teaches the flip instead of asserting either reading.
+- **Lesson 4's identity** - decided 2026-08-24. k-means, not UMAP. UMAP is lesson 5.

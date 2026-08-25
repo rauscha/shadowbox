@@ -1265,7 +1265,7 @@ MSG
 Append to `test/hydrate.test.mjs`:
 
 ```js
-import { playTick, PLAY_FPS } from '../js/lib/hydrate.mjs';
+import { playTick, PLAY_FPS, mount } from '../js/lib/hydrate.mjs';
 
 test('playTick gates the loop to the frame budget', () => {
   assert.equal(PLAY_FPS, 4);
@@ -1279,6 +1279,40 @@ test('playTick fires immediately on the first frame after Play is pressed', () =
   // lastStep starts at -Infinity so the reader sees a move on the same tick they
   // clicked, rather than a quarter second of nothing.
   assert.equal(playTick(-Infinity, 0, PLAY_FPS), true);
+});
+
+test('the Play loop never leaves the same callback scheduled twice', () => {
+  // The scheduling slice of the loop is cheaply testable in node even though the
+  // rest of mount is not: it only references requestAnimationFrame and document,
+  // so stubbing those two exercises the real pump and maybePlay. Worth having,
+  // because the bug this pins produces no visible symptom - lastStep is shared,
+  // so the step rate stays correct while pending callbacks pile up - and a
+  // browser QA pass would not have caught it.
+  const pending = [];
+  const g = globalThis;
+  const savedRaf = g.requestAnimationFrame, savedDoc = g.document;
+  g.requestAnimationFrame = fn => pending.push(fn);
+  g.document = { hidden: false, activeElement: null };
+  try {
+    const el = { innerHTML: '', querySelector: () => null, querySelectorAll: () => [], contains: () => false };
+    const store = createStore({ play: true, i: 0 });
+    mount(el, {
+      controls: [], render: () => '<svg></svg>', applyDrag: () => ({}),
+      step: s => ({ i: s.i + 1 }),
+    }, store);
+    for (const now of [0, 300, 600, 900, 1200]) {
+      for (const fn of pending.splice(0, pending.length)) fn(now);
+      // pump is one stable reference; each rerender wrapper is a fresh closure.
+      // So a repeated reference is precisely a double-scheduled pump.
+      const seen = new Map();
+      for (const fn of pending) seen.set(fn, (seen.get(fn) || 0) + 1);
+      const worst = Math.max(0, ...seen.values());
+      assert.ok(worst <= 1, `at ${now}ms one callback is scheduled ${worst} times over`);
+    }
+  } finally {
+    g.requestAnimationFrame = savedRaf;
+    g.document = savedDoc;
+  }
 });
 ```
 
@@ -1332,7 +1366,14 @@ Then add these two functions after `rerender()` is defined and before the `store
       if (!next || !Object.keys(next).length) { store.set({ play: false }); return; }
       store.set(next);
     }
-    playRaf = requestAnimationFrame(pump);
+    // Guarded, and the guard is load-bearing. store.set notifies synchronously,
+    // the subscriber calls maybePlay, and playRaf is still 0 at that moment, so
+    // maybePlay schedules the next frame. Assigning unconditionally here would
+    // overwrite that schedule without cancelling it, leaving two pump callbacks
+    // pending and one more on every tick after. It has no visible symptom, since
+    // lastStep is shared and the step rate stays correct, which is exactly why
+    // it needs a test rather than a browser pass.
+    if (!playRaf) playRaf = requestAnimationFrame(pump);
   }
   function maybePlay() {
     if (!playRaf && instrument.step && full().play) playRaf = requestAnimationFrame(pump);
@@ -1363,7 +1404,7 @@ Then change the existing subscribe body so it also starts the loop when `play` f
 node --test test/hydrate.test.mjs
 ```
 
-Expected: PASS, the two new tests plus the four already there.
+Expected: PASS. Task 5 adds 3 tests, so test/hydrate.test.mjs now holds 7.
 
 - [ ] **Step 6: Confirm the change really is additive**
 

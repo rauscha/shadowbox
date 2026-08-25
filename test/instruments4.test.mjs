@@ -231,3 +231,81 @@ test('kmeans-step carries no em-dash and never writes the acronym', () => {
   assert.ok(!svg.includes(EM_DASH));
   assert.ok(!/WCSS/i.test(svg), 'the page calls it the total squared distance, in words');
 });
+
+// -------------------------------------------------------- restart-roulette
+
+import * as RR from '../js/instruments/restart-roulette.mjs';
+
+const rrState = (over = {}) => {
+  const c = BLOBS.configs.blobs;
+  return { ...RR.defaults, idKey: 'rr1', dataset: 'blobs', xs: c.xs, ys: c.ys, truth: c.labels, k: 3, plusplus: false, ...over };
+};
+
+test('restart-roulette runs six initializations and ranks them by cost', () => {
+  const p = RR.panels(rrState());
+  assert.equal(p.length, 6);
+  const ranks = p.map(x => x.rank).sort((a, b) => a - b);
+  assert.deepEqual(ranks, [1, 2, 3, 4, 5, 6]);
+  const cheapest = p.find(x => x.rank === 1);
+  for (const other of p) assert.ok(cheapest.cost <= other.cost + 1e-9);
+});
+
+test('on blobs with random seeding, the six panels do not all agree', () => {
+  // This is the whole figure. If they ever all agree, the section is wrong.
+  const costs = RR.panels(rrState()).map(x => +x.cost.toFixed(2));
+  assert.ok(new Set(costs).size > 1, `all six restarts landed on ${costs[0]}`);
+});
+
+test('the six panels report the real divergence rate, one wrong in six, not a dramatised one', () => {
+  // Measured: 15 percent of starts land on a bad optimum across 60 seeds. Five
+  // panels at 89.67 and one at 506.8 is 17 percent, which reports that rate
+  // honestly. Six wrong out of six would oversell it, which spec §11 forbids;
+  // zero wrong out of six would teach the opposite of the figure's title.
+  const costs = RR.panels(rrState()).map(x => x.cost);
+  const best = Math.min(...costs);
+  assert.equal(costs.filter(c => c > best * 1.02).length, 1, `costs: ${costs.map(c => c.toFixed(1))}`);
+  assert.ok(Math.abs(best - 89.67) < 0.05);
+});
+
+test('k-means++ collapses the six panels onto one answer', () => {
+  const costs = RR.panels(rrState({ plusplus: true })).map(x => +x.cost.toFixed(2));
+  assert.equal(new Set(costs).size, 1, `++ on blobs should agree 6 of 6: ${costs}`);
+});
+
+test('crescents: all six agree and all six are 75 percent right', () => {
+  const c = BLOBS.configs.crescents;
+  const p = RR.panels(rrState({ dataset: 'crescents', xs: c.xs, ys: c.ys, truth: c.labels, k: 2, plusplus: true }));
+  const costs = p.map(x => +x.cost.toFixed(1));
+  assert.ok(Math.max(...costs) / Math.min(...costs) - 1 < 0.01, 'crescents restarts agree');
+  for (const panel of p) assert.ok(Math.abs(panel.purity - 0.75) < 0.02, `purity ${panel.purity}`);
+});
+
+test('purity is null wherever there is no ground truth to score against', () => {
+  const c = BLOBS.configs.uniform;
+  const p = RR.panels(rrState({ dataset: 'uniform', xs: c.xs, ys: c.ys, truth: null, k: 3 }));
+  for (const panel of p) assert.equal(panel.purity, null, 'a uniform square has no truth to be right about');
+});
+
+test('restart-roulette draws six labelled panels with every point in each', () => {
+  const svg = RR.render(rrState());
+  assert.match(svg, /^<svg[^>]*viewBox="0 0 640 460"/);
+  assert.equal(roles(svg, 'panel'), 6);
+  assert.equal(roles(svg, 'panel-cost'), 6);
+  assert.equal(roles(svg, 'panel-rank'), 6);
+  assert.equal(roles(svg, 'pt'), 900, 'six panels of 150 points, drawn honestly');
+  const seeds = attrs(svg, 'panel').map(a => a['data-seed']);
+  assert.equal(new Set(seeds).size, 6, 'each panel must be loadable into kmeans-step by its own seed');
+});
+
+test('the winning panel is marked by more than its position in the grid', () => {
+  const svg = RR.render(rrState());
+  const best = attrs(svg, 'panel').find(a => a['data-rank'] === '1');
+  assert.ok(best, 'rank 1 must be identifiable in the markup');
+  assert.equal(roles(svg, 'panel-best-mark'), 1, 'the cheapest answer carries a drawn mark, not a colour');
+});
+
+test('restart-roulette carries no em-dash and never writes the acronym', () => {
+  const svg = RR.render(rrState());
+  assert.ok(!svg.includes(EM_DASH));
+  assert.ok(!/WCSS/i.test(svg));
+});

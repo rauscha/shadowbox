@@ -1454,7 +1454,7 @@ MSG
 - Produces:
   - `name`, `defaults`, `posterState`, `controls`, `render(state)`, `applyDrag()` per the existing instrument contract
   - `step(state) -> partial` **the only instrument in this lesson that exports it**
-  - `stats(state) -> {X, centers, labels, cost, frame, k, phase, iter, done}`
+  - `stats(state) -> {X, k, centers, labels, phase, iter, done, assigned, cost}` where `cost` is null until something is assigned
   - `restart(state, seed) -> partial` fresh centers, cleared labels, phase back to `assign`
   - `setDataset(state, name) -> partial` swaps the data and restarts
 

@@ -5,11 +5,14 @@
       lesson 1's opening himself, scored lesson 2 ("these actually look pretty
       good", one flourish cut), and scored lesson 3's outline before it was
       written. Nine rules plus 7b and 10-13 are in PROSE-GUIDE.md.
-- [ ] **Read the lesson-4 spec and rule on it** - blocking. The implementation plan
-      waits on this. `docs/superpowers/specs/2026-08-24-shadowbox-kmeans-design.md`.
-- [ ] **Half-step decision in `kmeans-step`** - assign and recompute as two separate
-      visible moves (doubles the clicks to convergence, but it is the mechanism), or
-      one combined step. Specced as half-steps; never ruled on.
+- [x] ~~Read the lesson-4 spec and rule on it~~ - approved 2026-08-25, briefed rather
+      than read cold. Both domain calls stand as specced: `label-vs-truth` closes the
+      lesson, and §8 keeps its refusal to recover SGA/AGA/LGA from the births cloud.
+      The k=6 shape cap and the cut units-trap callback also stand.
+- [x] ~~Half-step decision in `kmeans-step`~~ - ruled 2026-08-25: **half-steps**.
+      Assign and recompute are two separate visible moves. Doubles the clicks to
+      convergence, which is the accepted cost, because the two moves being separable
+      is the thing the instrument exists to show.
 - [ ] apps.html card on andrewrausch.com - now unblocked, the site is public.
 - [x] ~~Flip public + enable Pages~~ - done 2026-08-21. Live at
       https://andrewrausch.com/shadowbox/ (HTTPS enforced, custom domain automatic).
@@ -31,13 +34,25 @@
       re-render) and is verified. Grayscale verified: `--accent-warm` is used by
       no instrument, and the three line families in three-lines carry distinct
       dash patterns, so nothing depends on hue.
-- [ ] **M6 - lesson 4, k-means** - spec written 2026-08-24 and **waiting on Andrew's
-      read**: `docs/superpowers/specs/2026-08-24-shadowbox-kmeans-design.md`. Four
+- [ ] **M6 - lesson 4, k-means** - spec approved 2026-08-25, plan written and ready to
+      execute: `docs/superpowers/plans/2026-08-25-shadowbox-m6-kmeans.md` (12 tasks).
+      Spec: `docs/superpowers/specs/2026-08-24-shadowbox-kmeans-design.md`. Four
       instruments (`kmeans-step`, `restart-roulette`, `elbow`, `label-vs-truth`), one
-      new data file (`data/blobs.json`), one additive contract change (optional
-      `step(state)` export plus a Play loop in `hydrate.mjs`). Build order is
-      `tools/make-blobs.mjs` then `test/kmeans-claims.test.mjs` then instruments then
-      prose - the test exists before the prose, deliberately.
+      new data file (`data/blobs.json`), one shared drawing module (`js/lib/marks.mjs`),
+      one additive contract change (optional `step(state)` export plus a Play loop in
+      `hydrate.mjs`). Build order is `js/math/kmeans.mjs`, then `tools/make-blobs.mjs`,
+      then `test/kmeans-claims.test.mjs`, then instruments, then prose - the claims
+      test exists before the prose, deliberately.
+
+      Two things the plan corrects against the spec, both measured 2026-08-25:
+      **biometry's elbow is not monotone** (drops 72, 52, 35, 28, 10, 21 - it falls to
+      10 percent and climbs back to 21), so the prose must not describe it as a smooth
+      decay the way it can describe births; and the **dataset selector is five named
+      action buttons**, not a toggle, because five choices is not a toggle and adding a
+      control kind would be a second contract change.
+
+      Task 11 has a hard human gate: the prose outline gets scored by Andrew before a
+      word is drafted, same as lesson 3.
 - [ ] **M7 - lesson 5, UMAP** - deferred. Teaches k-nearest-neighbours inside itself.
       Inherits lesson 4's two "start from zero" blocks (distance between rows;
       iterative optimisation) and its Play control surface, which is designed to accept

@@ -42,7 +42,10 @@ export const defaults = {
   // here stops rowsOf reading an absent field.
   standardize: false,
   note: '',
-  labels_: { title: 'six starts. same data, same k, six answers.' },
+  // States only what is always true: six starts, same data, same k. Whether
+  // they agree is a fact about the run, not a promise the title gets to make;
+  // the agreement line below states that, computed, every time.
+  labels_: { title: 'six starts. same data, same k.' },
 };
 
 export const posterState = null;
@@ -76,6 +79,31 @@ export function panels(st) {
     .sort((a, b) => a.r.cost - b.r.cost || a.i - b.i)
     .forEach((o, n) => { o.r.rank = n + 1; });
   return runs;
+}
+
+// How many DIFFERENT answers the six starts actually found. Canonical form
+// relabels by first appearance, so a pure renumbering of the same partition
+// collapses to one. That matters: on blobs with ++ seeding the six panels carry
+// three distinct raw label vectors but only ONE distinct partition, so counting
+// raw vectors would report disagreement that is not there.
+// Measured: blobs random 2, blobs ++ 1, crescents ++ 4, uniform 6.
+export function distinctAnswers(runs) {
+  const canon = labels => {
+    const m = new Map();
+    return labels.map(v => { if (!m.has(v)) m.set(v, m.size); return m.get(v); }).join(',');
+  };
+  return new Set(runs.map(r => canon(r.labels))).size;
+}
+
+// The figure reports what it found rather than asserting a headline, the same
+// way elbow's verdict does. The title used to promise "six answers" while
+// drawing five identical ones and a sixth, which is the overselling spec §11
+// forbids.
+export function agreementText(runs) {
+  const n = distinctAnswers(runs);
+  return n === 1
+    ? 'all six starts found the same answer'
+    : `these six starts found ${n} different answers`;
 }
 
 export function applyControl(st, id, value) { return { [id]: value }; }
@@ -119,6 +147,10 @@ export function render(state) {
   parts.push(`<defs><clipPath id="${id('clip')}"><rect x="${LOCAL_PLOT.x0}" y="${LOCAL_PLOT.y0}" width="${LOCAL_PLOT.x1 - LOCAL_PLOT.x0}" height="${LOCAL_PLOT.y1 - LOCAL_PLOT.y0}"/></clipPath></defs>`);
 
   parts.push(`<text x="${GRID_X}" y="26" font-size="14" fill="var(--text)" font-family="'IBM Plex Serif', Georgia, serif" font-style="italic">${st.labels_.title}</text>`);
+
+  // Computed, not asserted: the title only states what is always true (six
+  // starts, same data, same k), and this line reports what they actually found.
+  parts.push(`<text data-role="agreement" x="${GRID_X}" y="44" font-size="12.5" fill="var(--heading)">${agreementText(P)}</text>`);
 
   for (let i = 0; i < P.length; i++) {
     const p = P[i];

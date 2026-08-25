@@ -309,3 +309,30 @@ test('restart-roulette carries no em-dash and never writes the acronym', () => {
   assert.ok(!svg.includes(EM_DASH));
   assert.ok(!/WCSS/i.test(svg));
 });
+
+test('the panels differ in the PARTITION, not merely in the number printed on them', () => {
+  // Cost is the evidence, membership is the claim. Canonical form matters: raw
+  // label vectors count a renumbering as a difference, and on blobs with ++ the
+  // six panels carry three distinct raw vectors but only ONE distinct partition.
+  // Measured canonically: blobs random 2, blobs ++ 1, uniform 6.
+  assert.equal(RR.distinctAnswers(RR.panels(rrState())), 2);
+  assert.equal(RR.distinctAnswers(RR.panels(rrState({ plusplus: true }))), 1);
+  const u = BLOBS.configs.uniform;
+  assert.equal(RR.distinctAnswers(RR.panels(rrState({ dataset: 'uniform', xs: u.xs, ys: u.ys, truth: null, k: 3 }))), 6);
+});
+
+test('the figure counts its own answers instead of promising a number in the title', () => {
+  const svg = RR.render(rrState());
+  assert.equal(roles(svg, 'agreement'), 1);
+  assert.equal(texts(svg, 'agreement')[0], 'these six starts found 2 different answers');
+  const pp = RR.render(rrState({ plusplus: true }));
+  assert.equal(texts(pp, 'agreement')[0], 'all six starts found the same answer');
+  assert.ok(!/six answers/.test(svg), 'the title overclaimed once; it must not again');
+});
+
+test('a dataset with no ground truth renders no purity at all', () => {
+  const u = BLOBS.configs.uniform;
+  const svg = RR.render(rrState({ dataset: 'uniform', xs: u.xs, ys: u.ys, truth: null, k: 3 }));
+  assert.equal(roles(svg, 'panel-purity'), 0);
+  assert.equal(roles(svg, 'panel'), 6);
+});

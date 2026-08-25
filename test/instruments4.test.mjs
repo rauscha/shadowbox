@@ -354,3 +354,77 @@ test('each panel draws ITS OWN partition, not one panel repeated six times', () 
   const pp = perPanel(RR.render(rrState({ plusplus: true })));
   assert.equal(new Set(pp).size, 1, `++ draws one partition six times: ${pp}`);
 });
+
+// ------------------------------------------------------------------- elbow
+
+import * as EL from '../js/instruments/elbow.mjs';
+
+const BIO = JSON.parse(readFileSync(new URL('../data/biometry.json', import.meta.url), 'utf8'));
+const BIRTHS = JSON.parse(readFileSync(new URL('../data/births.json', import.meta.url), 'utf8'));
+const elState = (over = {}) => ({ ...EL.defaults, idKey: 'el1', dataset: 'blobs',
+  columns: [BLOBS.configs.blobs.xs, BLOBS.configs.blobs.ys], standardize: false, ...over });
+
+test('elbow sweeps k = 1 to 10 and is NOT capped at the shape budget', () => {
+  const slider = EL.controls.find(c => c.id === 'kMax');
+  assert.equal(slider.max, 10, 'elbow draws no membership, so six does not bind it');
+  assert.equal(EL.curve(elState()).length, 10);
+  assert.equal(EL.curve(elState()).at(-1).k, 10);
+});
+
+test('the cost falls as k rises, and the drop at k=1 is undefined', () => {
+  const c = EL.curve(elState());
+  assert.equal(c[0].dropPct, null, 'there is no previous k to drop from');
+  for (let i = 1; i < c.length; i++) {
+    assert.ok(c[i].cost <= c[i - 1].cost + 1e-9, `cost rose from k=${i} to k=${i + 1}`);
+  }
+});
+
+test('blobs has the corner: the k=3 drop dwarfs the k=4 drop', () => {
+  const c = EL.curve(elState());
+  assert.ok(c[2].dropPct / c[3].dropPct > 3, `blobs must show a real elbow: ${c.map(x => x.dropPct)}`);
+});
+
+test('births has no corner: 40, 32, 23, 15, 14, 12 and it just keeps going', () => {
+  const c = EL.curve(elState({ dataset: 'births', columns: [BIRTHS.xs, BIRTHS.ys], standardize: true }));
+  const got = c.slice(1, 7).map(x => Math.round(x.dropPct));
+  assert.deepEqual(got, [40, 32, 23, 15, 14, 12]);
+});
+
+test('biometry has no corner either, and its curve is not even monotone', () => {
+  // 72, 52, 35, 28, 10, 21. The k=7 drop is LARGER than the k=6 drop. The prose
+  // must not call this a smooth decay, and the instrument must not smooth it.
+  const c = EL.curve(elState({ dataset: 'biometry', columns: [BIO.bpd, BIO.hc, BIO.ac, BIO.fl], standardize: true }));
+  const got = c.slice(1, 7).map(x => Math.round(x.dropPct));
+  assert.deepEqual(got, [72, 52, 35, 28, 10, 21]);
+  assert.ok(got[5] > got[4], 'the bump at k=7 is real and stays drawn');
+});
+
+test('elbow draws one point and one printed drop per k', () => {
+  const svg = EL.render(elState());
+  assert.match(svg, /^<svg[^>]*viewBox="0 0 640 460"/);
+  assert.equal(roles(svg, 'k-point'), 10);
+  assert.equal(roles(svg, 'drop-label'), 9, 'every k but the first carries its drop in text');
+  assert.equal(roles(svg, 'curve'), 1);
+  assert.ok(texts(svg, 'drop-label').every(t => /%$/.test(t)), 'the bar is a picture of a number, the number is printed');
+});
+
+test('the verdict can say no, which is the only reason it is worth computing', () => {
+  // Measured. blobs has a corner and the rule finds the true k; neither real
+  // dataset has one. An earlier rule scored biometry a corner at 4.19 and would
+  // have printed "there is a corner here" under prose saying there is not one.
+  const blobs = EL.verdictOf(EL.curve(elState()));
+  assert.equal(blobs.corner, 3, `blobs ratio ${blobs.ratio}`);
+  assert.ok(blobs.ratio > 3);
+  for (const [name, cols] of [['births', [BIRTHS.xs, BIRTHS.ys]], ['biometry', [BIO.bpd, BIO.hc, BIO.ac, BIO.fl]]]) {
+    const v = EL.verdictOf(EL.curve(elState({ dataset: name, columns: cols, standardize: true })));
+    assert.equal(v.corner, null, `${name} claimed a corner at k=${v.corner}, ratio ${v.ratio}`);
+    assert.match(v.text, /^no corner\./);
+  }
+});
+
+test('elbow carries no em-dash and never writes the acronym', () => {
+  const svg = EL.render(elState());
+  assert.ok(!svg.includes(EM_DASH));
+  assert.ok(!/WCSS/i.test(svg));
+  assert.match(svg, /total squared distance/, 'the axis is named in words, not in an acronym');
+});

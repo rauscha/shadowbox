@@ -94,3 +94,125 @@ test('the partition is drawn once, not once per side', () => {
   const keys = segs.map(s => [Math.round(s[0] + s[2]), Math.round(s[1] + s[3])].join(':'));
   assert.equal(new Set(keys).size, keys.length, 'a wall traced from both sides would double every segment');
 });
+
+// ------------------------------------------------------------- kmeans-step
+
+import * as KS from '../js/instruments/kmeans-step.mjs';
+import { mulberry32 } from '../js/math/core.mjs';
+import { kmeansRun } from '../js/math/kmeans.mjs';
+
+const BLOBS = JSON.parse(readFileSync(new URL('../data/blobs.json', import.meta.url), 'utf8'));
+const blobState = (over = {}) => {
+  const c = BLOBS.configs.blobs;
+  return { ...KS.defaults, idKey: 'ks1', dataset: 'blobs', xs: c.xs, ys: c.ys, truth: c.labels, k: 3, ...over };
+};
+
+test('kmeans-step draws every point, every center, and a partition wall', () => {
+  // Stepped once on purpose. A wall only exists once membership does, and the
+  // very next test pins that a fresh restart draws no wall at all.
+  const base = blobState();
+  let s = { ...base, ...KS.restart(base, 1) };
+  s = { ...s, ...KS.step(s) };
+  const svg = KS.render(s);
+  assert.match(svg, /^<svg[^>]*viewBox="0 0 640 460"/);
+  assert.match(svg, /<\/svg>\s*$/);
+  assert.equal(roles(svg, 'pt'), 150);
+  assert.equal(roles(svg, 'center'), 3);
+  assert.ok(roles(svg, 'wall') > 10, 'the partition must be drawn, not implied');
+  assert.ok(svg.includes('sb-ks1-'), 'every id is namespaced to the instance');
+});
+
+test('kmeans-step opens before the first Step with nothing assigned', () => {
+  const s = { ...blobState(), ...KS.restart(blobState(), 1) };
+  assert.equal(s.phase, 'assign');
+  assert.ok(s.labels.every(l => l === -1));
+  const svg = KS.render(s);
+  assert.equal(texts(svg, 'phase')[0], 'press Step to assign every point to its nearest center');
+  assert.equal(roles(svg, 'wall'), 0, 'no wall before anything is assigned');
+});
+
+test('one Step assigns and freezes the centers; the next moves the centers and freezes membership', () => {
+  const base = blobState();
+  const s0 = { ...base, ...KS.restart(base, 1) };
+  const s1 = { ...s0, ...KS.step(s0) };
+  assert.equal(s1.phase, 'update');
+  assert.deepEqual(s1.centers, s0.centers);
+  assert.ok(s1.labels.every(l => l >= 0));
+  const s2 = { ...s1, ...KS.step(s1) };
+  assert.equal(s2.phase, 'assign');
+  assert.deepEqual(s2.labels, s1.labels);
+  assert.notDeepEqual(s2.centers, s1.centers);
+});
+
+test('the cost readout falls on every recompute and is never negative', () => {
+  let s = { ...blobState(), ...KS.restart(blobState(), 3) };
+  let prev = Infinity, guard = 0;
+  while (!s.done && guard++ < 60) {
+    s = { ...s, ...KS.step(s) };
+    if (s.phase === 'assign') {                       // a full iteration just finished
+      const cost = KS.stats(s).cost;
+      assert.ok(cost <= prev + 1e-9, `cost rose from ${prev} to ${cost}`);
+      assert.ok(cost >= 0);
+      prev = cost;
+    }
+  }
+  assert.ok(s.done, 'blobs at k=3 must converge well inside 30 iterations');
+});
+
+test('every cluster gets its own mark, and the legend names all of them', () => {
+  // Stepped once, so every cluster has members and every mark is on the page.
+  // Seed 5 at k=6 on blobs was measured to populate all six clusters.
+  const base = blobState({ k: 6 });
+  let s = { ...base, ...KS.restart(base, 5) };
+  s = { ...s, ...KS.step(s) };
+  const svg = KS.render(s);
+  assert.equal(roles(svg, 'legend-mark'), 6);
+  const kinds = attrs(svg, 'pt').map(a => a['data-mark']);
+  assert.equal(new Set(kinds).size, 6, 'membership must be visible as shape, one kind per cluster');
+  for (const kind of new Set(kinds)) assert.ok(MARK_KINDS.includes(kind));
+});
+
+test('k is capped at the shape budget on this instrument', () => {
+  const slider = KS.controls.find(c => c.id === 'k');
+  assert.equal(slider.min, 2);
+  assert.equal(slider.max, MAX_MARKS, 'k must not exceed the number of distinguishable marks');
+});
+
+test('changing k, the dataset or the seeding restarts the run rather than half-updating it', () => {
+  const base = { ...blobState(), ...KS.restart(blobState(), 1) };
+  const stepped = { ...base, ...KS.step(base) };
+  for (const [id, value] of [['k', 4], ['plusplus', true]]) {
+    const out = KS.applyControl(stepped, id, value);
+    assert.equal(out.phase, 'assign', `${id} must reset the phase`);
+    assert.ok(out.labels.every(l => l === -1), `${id} must clear membership`);
+    assert.equal(out.done, false);
+  }
+  const cr = BLOBS.configs.crescents;
+  const swapped = KS.setDataset(stepped, 'crescents', { xs: cr.xs, ys: cr.ys, truth: cr.labels });
+  assert.equal(swapped.xs.length, 150);
+  assert.equal(swapped.xs[0], cr.xs[0], 'the new run must be seeded from the NEW cloud');
+  assert.equal(swapped.k, 2, 'each dataset carries the k the spec chose for it');
+  assert.ok(swapped.labels.every(l => l === -1));
+});
+
+test('stepping to rest lands exactly where kmeansRun lands', () => {
+  // The load-bearing invariant of the whole lesson: the picture the reader steps
+  // their way to must be the same answer the claims test computes. done is
+  // raised during assign and the trailing update still has to run, so a step()
+  // that stopped on done alone would rest one half-step short.
+  const base = blobState();
+  let s = { ...base, ...KS.restart(base, 1) };
+  let guard = 0;
+  while (Object.keys(KS.step(s)).length && guard++ < 120) s = { ...s, ...KS.step(s) };
+  const run = kmeansRun(KS.rowsOf(base), 3, mulberry32(1), { plusplus: false });
+  assert.deepEqual(s.labels, run.labels);
+  assert.deepEqual(s.centers, run.centers);
+  assert.ok(Math.abs(KS.stats(s).cost - run.wcss) < 1e-9);
+  assert.equal(s.phase, 'assign', 'it rests after the trailing update, ready to be stepped again inertly');
+});
+
+test('kmeans-step carries no em-dash and never writes the acronym', () => {
+  const svg = KS.render({ ...blobState(), ...KS.restart(blobState(), 1) });
+  assert.ok(!svg.includes(EM_DASH));
+  assert.ok(!/WCSS/i.test(svg), 'the page calls it the total squared distance, in words');
+});

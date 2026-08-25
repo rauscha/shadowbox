@@ -1043,13 +1043,22 @@ test('four marks are filled silhouettes and two are stroke-only line marks', () 
   assert.deepEqual(MARK_KINDS.filter(k => !markPath(k, 0, 0, 3).filled), ['plus', 'cross']);
 });
 
-test('every mark is centred on the point it is drawn at and stays inside its radius', () => {
+test('a mark is centred where it is drawn and scales with its radius', () => {
+  // Both checks are parity-free on purpose. An SVG path interleaves coordinates
+  // with arc radii and flags, and H and V take a single coordinate, so reading
+  // the numbers as alternating x and y is wrong: it misreads the plus mark's
+  // `H` and `V` operands as a y of 100.
+  const nums = d => d.match(/-?\d+(\.\d+)?/g).map(Number);
   for (const kind of MARK_KINDS) {
-    const nums = markPath(kind, 100, 50, 5).d.match(/-?\d+(\.\d+)?/g).map(Number);
-    // Coordinates alternate x, y in every path this module emits, arc radii aside.
-    const xs = nums.filter((_, i) => i % 2 === 0), ys = nums.filter((_, i) => i % 2 === 1);
-    assert.ok(Math.max(...xs) <= 106 && Math.min(...xs.filter(v => v > 50)) >= 94, `${kind} x range`);
-    assert.ok(Math.max(...ys.filter(v => v > 10)) <= 56, `${kind} y range`);
+    // Drawn far from the origin, every coordinate-sized number must sit near the
+    // centre it was asked for. Radii and flags stay small and are skipped.
+    for (const v of nums(markPath(kind, 1000, 1000, 4).d).filter(v => Math.abs(v) >= 100)) {
+      assert.ok(v >= 994 && v <= 1006, `${kind} drawn away from its centre: ${v}`);
+    }
+    // Doubling r doubles the mark's reach, whatever commands it is built from.
+    const reach = r => Math.max(...nums(markPath(kind, 0, 0, r).d).map(Math.abs));
+    assert.ok(Math.abs(reach(8) - 2 * reach(4)) < 1e-9,
+      `${kind} must scale with r: ${reach(4)} then ${reach(8)}`);
   }
 });
 

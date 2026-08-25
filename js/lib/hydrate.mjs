@@ -50,10 +50,18 @@ export function clientToViewBox(m, cx, cy) {
   return { x: (m.d * x - m.c * y) / det, y: (m.a * y - m.b * x) / det };
 }
 
+// Play is capped rather than free-running: render returns a whole SVG string, so
+// every frame is a full re-render, and the algorithm converges in about ten
+// iterations anyway. Pure so it can be node-tested; the loop that calls it is
+// DOM and is exercised in the browser QA pass.
+export const PLAY_FPS = 4;
+export function playTick(lastMs, nowMs, fps) { return nowMs - lastMs >= 1000 / fps; }
+
 export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}) {
   const full = () => ({ ...store.get(), ...overlay });
   let dragging = null;          // {id, index} while a pointer drag is live
   let raf = 0;
+  let playRaf = 0, lastStep = -Infinity;
 
   function markup() {
     const state = full();
@@ -134,7 +142,32 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
     }
   }
 
+  // An instrument may export step(state) -> partial state. If it does, mount
+  // drives it while state.play is true. Instruments without step never enter
+  // this path, which is what makes the contract change additive.
+  //
+  // Exhaustion is signalled by step() returning an empty partial, not by mount
+  // reading a state field. mount must not know what "converged" means for any
+  // particular instrument: lesson 5 will drive a precomputed frame index through
+  // this same loop, and it runs out of frames rather than converging.
+  function pump(now) {
+    playRaf = 0;
+    const s = full();
+    if (!s.play || !instrument.step) return;
+    if (playTick(lastStep, now, PLAY_FPS)) {
+      lastStep = now;
+      const next = instrument.step(s);
+      if (!next || !Object.keys(next).length) { store.set({ play: false }); return; }
+      store.set(next);
+    }
+    playRaf = requestAnimationFrame(pump);
+  }
+  function maybePlay() {
+    if (!playRaf && instrument.step && full().play) playRaf = requestAnimationFrame(pump);
+  }
+
   store.subscribe(() => {
+    maybePlay();
     if (raf) return;
     // rAF never fires in a hidden tab; fall back so state changes still land.
     const schedule = typeof document !== 'undefined' && document.hidden
@@ -144,6 +177,7 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
   });
 
   rerender();
+  maybePlay();
   return { rerender };
 }
 

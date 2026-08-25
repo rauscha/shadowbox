@@ -1905,6 +1905,41 @@ test('the winning panel is marked by more than its position in the grid', () => 
   assert.equal(roles(svg, 'panel-best-mark'), 1, 'the cheapest answer carries a drawn mark, not a colour');
 });
 
+test('the panels differ in the PARTITION, not merely in the number printed on them', () => {
+  // The figure's argument is that the starting point changes the answer. Cost is
+  // the evidence, membership is the claim. A refactor that drew one panel's
+  // centers into all six while panels() still computed six different costs would
+  // pass every other test here and reduce the figure to six identical drawings
+  // with six different numbers stapled on, which is the exact failure this
+  // lesson is about.
+  // Canonical form matters: raw label vectors count a renumbering as a
+  // difference, and on blobs with ++ the six panels carry three distinct raw
+  // vectors but only ONE distinct partition. Measured canonically:
+  // blobs random 2, blobs ++ 1, crescents ++ 4, uniform 6.
+  assert.equal(RR.distinctAnswers(RR.panels(rrState())), 2);
+  assert.equal(RR.distinctAnswers(RR.panels(rrState({ plusplus: true }))), 1);
+  const u = BLOBS.configs.uniform;
+  assert.equal(RR.distinctAnswers(RR.panels(rrState({ dataset: 'uniform', xs: u.xs, ys: u.ys, truth: null, k: 3 }))), 6);
+});
+
+test('the figure counts its own answers instead of promising a number in the title', () => {
+  const svg = RR.render(rrState());
+  assert.equal(roles(svg, 'agreement'), 1);
+  assert.equal(texts(svg, 'agreement')[0], 'these six starts found 2 different answers');
+  assert.equal(texts(svg, 'agreement').length, 1);
+  const pp = RR.render(rrState({ plusplus: true }));
+  assert.equal(texts(pp, 'agreement')[0], 'all six starts found the same answer');
+  // and the title must not promise a count the panels may not deliver
+  assert.ok(!/six answers/.test(svg), 'the title overclaimed once; it must not again');
+});
+
+test('a dataset with no ground truth renders no purity at all', () => {
+  const u = BLOBS.configs.uniform;
+  const svg = RR.render(rrState({ dataset: 'uniform', xs: u.xs, ys: u.ys, truth: null, k: 3 }));
+  assert.equal(roles(svg, 'panel-purity'), 0);
+  assert.equal(roles(svg, 'panel'), 6);
+});
+
 test('restart-roulette carries no em-dash and never writes the acronym', () => {
   const svg = RR.render(rrState());
   assert.ok(!svg.includes(EM_DASH));
@@ -1947,7 +1982,7 @@ export const RUNS = 6;
 // The claims table's sweep uses mulberry32(s * 7919) over 60 seeds, where 5
 // distinct optima appear and 15 percent of starts land on a bad one. Taking the
 // first six of THAT scheme gives six identical panels: all 89.67. A figure
-// titled "six starts, six answers" that draws six identical answers teaches the
+// that promises disagreement and draws six identical panels teaches the
 // opposite of its point.
 //
 // Plain seeds 1 to 6 give five starts at 89.67 and one at 506.8. One wrong in
@@ -1969,7 +2004,7 @@ export const defaults = {
   // here stops rowsOf reading an absent field.
   standardize: false,
   note: '',
-  labels_: { title: 'six starts. same data, same k, six answers.' },
+  labels_: { title: 'six starts. same data, same k.' },
 };
 
 export const posterState = null;
@@ -2005,6 +2040,31 @@ export function panels(st) {
   return runs;
 }
 
+// How many DIFFERENT answers the six starts actually found. Canonical form
+// relabels by first appearance, so a pure renumbering of the same partition
+// collapses to one. That matters: on blobs with ++ seeding the six panels carry
+// three distinct raw label vectors but only ONE distinct partition, so counting
+// raw vectors would report disagreement that is not there.
+// Measured: blobs random 2, blobs ++ 1, crescents ++ 4, uniform 6.
+export function distinctAnswers(runs) {
+  const canon = labels => {
+    const m = new Map();
+    return labels.map(v => { if (!m.has(v)) m.set(v, m.size); return m.get(v); }).join(',');
+  };
+  return new Set(runs.map(r => canon(r.labels))).size;
+}
+
+// The figure reports what it found rather than asserting a headline, the same
+// way elbow's verdict does. The title used to promise "six answers" while
+// drawing five identical ones and a sixth, which is the overselling spec §11
+// forbids.
+export function agreementText(runs) {
+  const n = distinctAnswers(runs);
+  return n === 1
+    ? 'all six starts found the same answer'
+    : `these six starts found ${n} different answers`;
+}
+
 export function applyControl(st, id, value) { return { [id]: value }; }
 export function applyDrag() { return {}; }
 ```
@@ -2030,6 +2090,7 @@ Every panel uses the **same** `isoFrame` extent (compute it once from the data a
 | cost | `panel-cost` | 6 | `cost.toFixed(1)` |
 | best mark | `panel-best-mark` | 1 | a filled triangle glyph plus the word `cheapest` on the rank-1 panel. Shape and word, never colour |
 | purity | `panel-purity` | 0 or 6 | `${Math.round(100 * purity)}% right` only when `st.truth` |
+| agreement | `agreement` | 1 | `agreementText(panels(st))`, under the title. Computed, never asserted |
 | title, note | - | 1 each | |
 
 The `aria-label` on each panel is `start ${i + 1}, cost ${cost.toFixed(1)}${rank === 1 ? ', the cheapest of the six' : ''}` so a screen reader gets the ranking without the glyph.
@@ -2040,14 +2101,14 @@ The `aria-label` on each panel is `start ${i + 1}, cost ${cost.toFixed(1)}${rank
 node --test test/instruments4.test.mjs
 ```
 
-Expected: PASS. Task 7 adds 9 tests, so test/instruments4.test.mjs now holds 25.
+Expected: PASS. Task 7 adds 12 tests.
 
 - [ ] **Step 6: Commit**
 
 ```bash
 git add js/instruments/restart-roulette.mjs test/instruments4.test.mjs
 git commit -F- <<'MSG'
-m6: restart-roulette, six starts and six answers
+m6: restart-roulette, and a figure that counts its own answers
 
 Six initializations of the same data at the same k, as small multiples, each
 labelled with its own cost and ranked. Seeds follow the reference probe's scheme
@@ -2617,7 +2678,7 @@ Copy the head, trellis nav, and footer of `pca.html` verbatim, then change the t
       <figcaption><!-- PROSE: interaction copy. Name Step, say what it does. --></figcaption>
     </figure>
 
-    <h2>Six starts, six answers</h2>
+    <h2>Six starts on the same data</h2>
     <!-- PROSE -->
     <figure>
       <!-- poster:restart-roulette-blobs -->
@@ -2688,7 +2749,7 @@ Add the four imports beside the existing ones, then append this config object to
         return { ...restartRoulette.defaults, idKey: 'rr-blobs', dataset: 'blobs',
           xs: c.xs, ys: c.ys, truth: c.labels, k: 3, plusplus: false,
           note: '150 generated points, three blobs',
-          labels_: { title: 'six starts. same data, same k, six answers.' } };
+          labels_: { title: 'six starts. same data, same k.' } };
       },
     },
     {
@@ -2762,7 +2823,7 @@ Add the four imports beside the existing ones, then append this config object to
       }
       mount(document.getElementById('rr-blobs'), RR, rr, { actions: rrActions, overlay: {
         idKey: 'rr-blobs',
-        labels_: { title: 'six starts. same data, same k, six answers.' },
+        labels_: { title: 'six starts. same data, same k.' },
       } });
 
       // Clicking or Entering a panel loads that start into the mechanism above,

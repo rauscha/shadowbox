@@ -2238,6 +2238,29 @@ test('the verdict can say no, which is the only reason it is worth computing', (
   }
 });
 
+test('the verdict clears the k=1 marker, which always sits in the plot corner', () => {
+  // The one geometry test in this lesson, and it exists because a collision
+  // shipped here under a "zero collisions" self-check. The check measured
+  // clearance against the plot RECTANGLE; the k=1 marker pokes above that
+  // rectangle, because cost/maxCost is 1 at k=1 by definition and the marker has
+  // a radius. Coordinates are read straight off the emitted SVG, so this runs in
+  // node with no DOM.
+  const attr = (svg, role, name) => {
+    const tag = svg.match(new RegExp('<[a-z]+ data-role="' + role + '"[^>]*>'))[0];
+    const m = tag.match(new RegExp('\s' + name + '="([-0-9.]+)"'));
+    return m ? Number(m[1]) : NaN;
+  };
+  for (const st of [elState(),
+                    elState({ dataset: 'births', columns: [BIRTHS.xs, BIRTHS.ys], standardize: true })]) {
+    const svg = EL.render(st);
+    const markerTop = attr(svg, 'k-point', 'cy') - attr(svg, 'k-point', 'r');
+    const fs = attr(svg, 'verdict', 'font-size') || 11;
+    const inkBottom = attr(svg, 'verdict', 'y') + fs * 0.25;   // baseline plus descent
+    assert.ok(inkBottom < markerTop - 1,
+      `${st.dataset}: verdict ink reaches y=${inkBottom.toFixed(1)} but the k=1 marker starts at y=${markerTop}`);
+  }
+});
+
 test('elbow carries no em-dash and never writes the acronym', () => {
   const svg = EL.render(elState());
   assert.ok(!svg.includes(EM_DASH));
@@ -2321,7 +2344,13 @@ export function applyDrag() { return {}; }
 
 ```
 W = 640, H = 460
-MARGIN = { l: 72, r: 150, t: 44, b: 52 }
+MARGIN = { l: 72, r: 150, t: 56, b: 52 }
+        (t is 56, not 44, and the reason is load-bearing: the k=1 point has
+        cost/maxCost = 1 by definition, so its marker is pinned to the plot's
+        top-left corner on every dataset, and its radius pokes 4px ABOVE the
+        plot border. Clearance measured against the border is not clearance
+        against the marker. At t=44 the verdict text's ink reaches y=42.8 while
+        the marker starts at y=40, and they overlap on every render.)
 x: k, linear from 1 to kMax across the plot
 y: cost, linear from 0 to the k=1 cost
 ```
@@ -2377,7 +2406,7 @@ export function verdictOf(curve) {
 node --test test/instruments4.test.mjs
 ```
 
-Expected: PASS. Task 8 adds 8 tests.
+Expected: PASS. Task 8 adds 9 tests.
 
 - [ ] **Step 6: Commit**
 

@@ -90,15 +90,18 @@ export function applyDrag() { return {}; }
 // printed drop runs to the right of it, so the margin exists to hold that
 // text rather than clip it against the canvas edge.
 const W = 640, H = 460;
-const MARGIN = { l: 72, r: 150, t: 44, b: 52 };
+// t=56, not the 44 a first draft used: the k=1 point always sits exactly at
+// (plot.x0, plot.y0), because cost/maxCost is 1 at k=1 by definition, and its
+// r=4 marker pokes 4px above whatever y0 is. 44 put the marker's top edge
+// under the verdict text's own ink; 56 clears it with room to spare (measured:
+// marker top at 52 against a verdict ink bottom around 42.8, a 9+px gap).
+const MARGIN = { l: 72, r: 150, t: 56, b: 52 };
 
 const fmtNum = v => Math.abs(v) >= 1000 ? String(Math.round(v))
   : (Number.isInteger(v) ? String(v) : String(+v.toFixed(1)));
 
 export function render(state) {
   const st = { ...defaults, ...state };
-  const { idKey } = st;
-  const id = s => `sb-${idKey}-${s}`;
   const plot = { x0: MARGIN.l, y0: MARGIN.t, x1: W - MARGIN.r, y1: H - MARGIN.b };
 
   // Computed once, reused for the curve, the points, the printed drops and the

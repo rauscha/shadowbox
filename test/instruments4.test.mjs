@@ -428,3 +428,26 @@ test('elbow carries no em-dash and never writes the acronym', () => {
   assert.ok(!/WCSS/i.test(svg));
   assert.match(svg, /total squared distance/, 'the axis is named in words, not in an acronym');
 });
+
+test('the verdict clears the k=1 marker, which always sits in the plot corner', () => {
+  // The one geometry test in this lesson, and it exists because a collision
+  // shipped here under a "zero collisions" self-check. The check measured
+  // clearance against the plot RECTANGLE; the k=1 marker pokes above that
+  // rectangle, because cost/maxCost is 1 at k=1 by definition and the marker has
+  // a radius. Coordinates are read straight off the emitted SVG, so this runs in
+  // node with no DOM.
+  const attr = (svg, role, name) => {
+    const tag = svg.match(new RegExp('<[a-z]+ data-role="' + role + '"[^>]*>'))[0];
+    const m = tag.match(new RegExp('\\s' + name + '="([-0-9.]+)"'));
+    return m ? Number(m[1]) : NaN;
+  };
+  for (const st of [elState(),
+                    elState({ dataset: 'births', columns: [BIRTHS.xs, BIRTHS.ys], standardize: true })]) {
+    const svg = EL.render(st);
+    const markerTop = attr(svg, 'k-point', 'cy') - attr(svg, 'k-point', 'r');
+    const fs = attr(svg, 'verdict', 'font-size') || 11;
+    const inkBottom = attr(svg, 'verdict', 'y') + fs * 0.25;   // baseline plus descent
+    assert.ok(inkBottom < markerTop - 1,
+      `${st.dataset}: verdict ink reaches y=${inkBottom.toFixed(1)} but the k=1 marker starts at y=${markerTop}`);
+  }
+});

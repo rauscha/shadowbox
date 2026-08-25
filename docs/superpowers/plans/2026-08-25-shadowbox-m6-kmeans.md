@@ -411,7 +411,7 @@ export function eta2(y, labels, k) {
 node --test test/kmeans.test.mjs
 ```
 
-Expected: PASS, 12 tests.
+Expected: PASS. This task adds 13 tests.
 
 - [ ] **Step 5: Run the whole suite so nothing already green went red**
 
@@ -600,7 +600,7 @@ Expected: three lines. `blobs` spans roughly x [-3.6, 3.9] and y [-2.9, 4.1]; `c
 node --test test/kmeans.test.mjs
 ```
 
-Expected: PASS, 14 tests, including the point-for-point reproduction of the reference generator.
+Expected: PASS. This task adds 2 tests, so the file now holds 15, including the point-for-point reproduction of the reference generator.
 
 - [ ] **Step 6: Add the provenance entry**
 
@@ -705,7 +705,14 @@ const bioColumns = () => [BIO.bpd, BIO.hc, BIO.ac, BIO.fl];
 const close = (a, b, tol) => assert.ok(Math.abs(a - b) < tol, `${a} !~ ${b} (tol ${tol})`);
 
 // One restart sweep, exactly as the probes run it.
-function sweep(X, k, { plusplus, seedOf = s => s * 7919, runs = 60 }) {
+// digits: the resolution at which two runs count as landing on different
+// optima. Defaults to 2, matching reference/kmeans-probe-synthetic.mjs. The
+// births sweep passes 3, because its number came from
+// reference/kmeans-probe-real.mjs, which counts at 3 decimals. Rounding the
+// births costs to 2 decimals collapses 327.456, 327.458 and 327.460 into one
+// and turns the measured 10 optima into 8. Each claim is counted at the
+// resolution of the probe that measured it.
+function sweep(X, k, { plusplus, seedOf = s => s * 7919, runs = 60, digits = 2 }) {
   const ws = [], labs = [];
   for (let s = 1; s <= runs; s++) {
     const r = kmeansRun(X, k, mulberry32(seedOf(s)), { plusplus });
@@ -715,7 +722,7 @@ function sweep(X, k, { plusplus, seedOf = s => s * 7919, runs = 60 }) {
   const best = Math.min(...ws), worst = Math.max(...ws);
   return {
     ws, labs, best, worst,
-    optima: new Set(ws.map(w => w.toFixed(2))).size,
+    optima: new Set(ws.map(w => w.toFixed(digits))).size,
     spreadPct: (worst / best - 1) * 100,
     landedWrongPct: 100 * ws.filter(w => w > best * 1.02).length / runs,
     bestLabels: labs[ws.indexOf(best)],
@@ -819,7 +826,7 @@ test('births restarts are real but small: 10 optima across 60 random starts, 2.9
   // Spec §11: state this plainly as small. Do not let "10 distinct optima" imply
   // the drama that blobs actually has.
   const X = zscoreColumns([BIRTHS.xs, BIRTHS.ys]);
-  const s = sweep(X, 3, { plusplus: false, seedOf: n => n });
+  const s = sweep(X, 3, { plusplus: false, seedOf: n => n, digits: 3 });
   assert.equal(s.optima, 10);
   close(s.spreadPct, 2.9, 0.1);
   assert.ok(s.spreadPct < 5, 'the page calls this small; if it ever is not, the sentence is wrong');
@@ -931,7 +938,7 @@ test('no page number is ever computed from uniform purity', () => {
 node --test test/kmeans-claims.test.mjs
 ```
 
-Expected: PASS, 16 tests. If any number is off, **do not adjust the assertion**. Re-run the probe that produced it and find out which side moved:
+Expected: PASS. This task adds 17 tests. If any number is off, **do not adjust the assertion**. Re-run the probe that produced it and find out which side moved:
 
 ```bash
 node reference/kmeans-probe-synthetic.mjs
@@ -952,7 +959,7 @@ git add test/kmeans-claims.test.mjs
 git commit -F- <<'MSG'
 m6: the claims table, before a word of prose exists
 
-Sixteen tests, one per number lesson 4 will quote, all measured on 2026-08-25
+Seventeen tests, one per number lesson 4 will quote, all measured on 2026-08-25
 and all reproduced from the reference probes. Written now rather than after the
 page, because writing the prose first is exactly what produced the wrong PC2
 claim in lesson 3.
@@ -1198,7 +1205,7 @@ export function partitionSegments(centers, frame, { n = 64 } = {}) {
 node --test test/instruments4.test.mjs
 ```
 
-Expected: PASS, 7 tests.
+Expected: PASS. This task adds 7 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -1703,7 +1710,7 @@ Pick `fresh` when nothing is assigned, `done` when `st.done`, otherwise the valu
 node --test test/instruments4.test.mjs
 ```
 
-Expected: PASS, 15 tests.
+Expected: PASS. Task 6 adds 9 tests, so test/instruments4.test.mjs now holds 16.
 
 - [ ] **Step 6: Look at it before believing it**
 
@@ -1975,7 +1982,7 @@ The `aria-label` on each panel is `start ${i + 1}, cost ${cost.toFixed(1)}${rank
 node --test test/instruments4.test.mjs
 ```
 
-Expected: PASS, 23 tests.
+Expected: PASS. Task 7 adds 9 tests, so test/instruments4.test.mjs now holds 25.
 
 - [ ] **Step 6: Commit**
 
@@ -2194,7 +2201,7 @@ If the drops are not monotone, append ` (and it does not even fall steadily)`. O
 node --test test/instruments4.test.mjs
 ```
 
-Expected: PASS, 30 tests.
+Expected: PASS. Task 8 adds 7 tests, so test/instruments4.test.mjs now holds 32.
 
 - [ ] **Step 6: Commit**
 
@@ -2406,7 +2413,7 @@ The share must be **printed as a number in text**, not only encoded in a bar. Sa
 node --test test/instruments4.test.mjs
 ```
 
-Expected: PASS, 36 tests.
+Expected: PASS. Task 9 adds 6 tests, so test/instruments4.test.mjs now holds 38.
 
 - [ ] **Step 6: Run the whole suite**
 

@@ -2247,7 +2247,7 @@ test('the verdict clears the k=1 marker, which always sits in the plot corner', 
   // node with no DOM.
   const attr = (svg, role, name) => {
     const tag = svg.match(new RegExp('<[a-z]+ data-role="' + role + '"[^>]*>'))[0];
-    const m = tag.match(new RegExp('\s' + name + '="([-0-9.]+)"'));
+    const m = tag.match(new RegExp('\\s' + name + '="([-0-9.]+)"'));
     return m ? Number(m[1]) : NaN;
   };
   for (const st of [elState(),

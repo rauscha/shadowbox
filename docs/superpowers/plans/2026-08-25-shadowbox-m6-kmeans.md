@@ -2083,6 +2083,7 @@ MSG
 - Consumes: `kmeansRun`, `zscoreColumns` from `js/math/kmeans.mjs`; `niceTicks`, `F` from `js/lib/frame.mjs`; `mulberry32`.
 - Produces: `name`, `defaults`, `posterState`, `controls`, `render`, `applyControl`, `applyDrag`, plus
   - `curve(state) -> Array<{k, cost, dropPct}>` k = 1 to `state.kMax`, `dropPct` null at k = 1
+  - `verdictOf(curve) -> {corner: number|null, ratio: number, text: string}`
 
 **This instrument is not capped at 6.** It draws a curve and no cluster identity, so the shape budget does not apply. `kMax` defaults to 10 and the slider runs to 10. Capping it here would cripple the one instrument whose entire job is the shape of the curve across k; two cold readers caught that in the first draft of the design.
 
@@ -2142,6 +2143,20 @@ test('elbow draws one point and one printed drop per k', () => {
   assert.equal(roles(svg, 'drop-label'), 9, 'every k but the first carries its drop in text');
   assert.equal(roles(svg, 'curve'), 1);
   assert.ok(texts(svg, 'drop-label').every(t => /%$/.test(t)), 'the bar is a picture of a number, the number is printed');
+});
+
+test('the verdict can say no, which is the only reason it is worth computing', () => {
+  // Measured. blobs has a corner and the rule finds the true k; neither real
+  // dataset has one. An earlier rule scored biometry a corner at 4.19 and would
+  // have printed "there is a corner here" under prose saying there is not one.
+  const blobs = EL.verdictOf(EL.curve(elState()));
+  assert.equal(blobs.corner, 3, `blobs ratio ${blobs.ratio}`);
+  assert.ok(blobs.ratio > 3);
+  for (const [name, cols] of [['births', [BIRTHS.xs, BIRTHS.ys]], ['biometry', [BIO.bpd, BIO.hc, BIO.ac, BIO.fl]]]) {
+    const v = EL.verdictOf(EL.curve(elState({ dataset: name, columns: cols, standardize: true })));
+    assert.equal(v.corner, null, `${name} claimed a corner at k=${v.corner}, ratio ${v.ratio}`);
+    assert.match(v.text, /^no corner\./);
+  }
 });
 
 test('elbow carries no em-dash and never writes the acronym', () => {
@@ -2243,15 +2258,39 @@ y: cost, linear from 0 to the k=1 cost
 | verdict | `verdict` | 1 | see below |
 | note | `note` | 0 or 1 | |
 
-The `verdict` line is computed, never asserted. Compute `ratio = maxDrop / medianDrop` over k >= 2:
+The `verdict` line is computed, never asserted, so the figure cannot claim a corner the data does not have. Export it as `verdictOf(curve)` and render `verdictOf(curve(st)).text`.
+
+An elbow is a sharp fall-off in the **rate** of improvement, so the rule looks at the ratio between *consecutive* drops, not at any single drop's size:
 
 ```js
-const verdict = drops[0] / median(drops.slice(1)) > 3
-  ? 'there is a corner here, and it is at k = ' + kAtCorner
-  : 'no corner. the cost keeps falling and never tells you where to stop';
+// Measured with seed 3 and ++ seeding, k = 1 to 10:
+//   blobs    sharpest fall-off 6.21, at k = 3, which is the true k
+//   births   2.14, no corner
+//   biometry 2.90, no corner
+// An earlier version of this rule compared the first drop to the median of the
+// rest. It scored biometry at 4.19 and would have printed "there is a corner
+// here" on the very dataset this lesson uses to show there is not one. A
+// computed verdict is only worth having if it can say no.
+export function verdictOf(curve) {
+  const d = curve.slice(1).map(p => p.dropPct);
+  let best = 0, at = -1;
+  for (let i = 0; i < d.length - 1; i++) {
+    const r = d[i] / d[i + 1];
+    if (r > best) { best = r; at = i; }
+  }
+  const steady = d.every((v, i) => i === 0 || v <= d[i - 1] + 1e-9);
+  if (best > 3) {
+    return { corner: at + 2, ratio: best, text: `there is a corner here, and it is at k = ${at + 2}` };
+  }
+  return {
+    corner: null, ratio: best,
+    text: 'no corner. the cost keeps falling and never tells you where to stop'
+      + (steady ? '' : ', and it does not even fall steadily'),
+  };
+}
 ```
 
-If the drops are not monotone, append ` (and it does not even fall steadily)`. On biometry this fires, and it should: the curve drops to 10 percent at k = 6 and climbs back to 21 at k = 7.
+`d[i]` is the drop arriving at k = i + 2, so the corner sits at the last k before the fall-off. The `steady` clause is computed over whatever range is actually drawn: across k = 2 to 7 the births drops fall steadily, but out to k = 10 neither real dataset does.
 
 - [ ] **Step 5: Run the tests**
 
@@ -2259,7 +2298,7 @@ If the drops are not monotone, append ` (and it does not even fall steadily)`. O
 node --test test/instruments4.test.mjs
 ```
 
-Expected: PASS. Task 8 adds 7 tests, so test/instruments4.test.mjs now holds 32.
+Expected: PASS. Task 8 adds 8 tests.
 
 - [ ] **Step 6: Commit**
 
@@ -2471,7 +2510,7 @@ The share must be **printed as a number in text**, not only encoded in a bar. Sa
 node --test test/instruments4.test.mjs
 ```
 
-Expected: PASS. Task 9 adds 6 tests, so test/instruments4.test.mjs now holds 38.
+Expected: PASS. Task 9 adds 6 tests.
 
 - [ ] **Step 6: Run the whole suite**
 

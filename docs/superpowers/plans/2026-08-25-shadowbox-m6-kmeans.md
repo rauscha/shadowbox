@@ -1301,12 +1301,21 @@ Then add these two functions after `rerender()` is defined and before the `store
   // An instrument may export step(state) -> partial state. If it does, mount
   // drives it while state.play is true. Instruments without step never enter
   // this path, which is what makes the contract change additive.
+  //
+  // Exhaustion is signalled by step() returning an empty partial, not by mount
+  // reading a state field. mount must not know what "converged" means for any
+  // particular instrument: lesson 5 will drive a precomputed frame index through
+  // this same loop, and it runs out of frames rather than converging.
   function pump(now) {
     playRaf = 0;
     const s = full();
     if (!s.play || !instrument.step) return;
-    if (s.done) { store.set({ play: false }); return; }   // stop at convergence, do not spin
-    if (playTick(lastStep, now, PLAY_FPS)) { lastStep = now; store.set(instrument.step(s)); }
+    if (playTick(lastStep, now, PLAY_FPS)) {
+      lastStep = now;
+      const next = instrument.step(s);
+      if (!next || !Object.keys(next).length) { store.set({ play: false }); return; }
+      store.set(next);
+    }
     playRaf = requestAnimationFrame(pump);
   }
   function maybePlay() {
@@ -1403,6 +1412,7 @@ Append to `test/instruments4.test.mjs`:
 ```js
 import * as KS from '../js/instruments/kmeans-step.mjs';
 import { mulberry32 } from '../js/math/core.mjs';
+import { kmeansRun } from '../js/math/kmeans.mjs';
 
 const BLOBS = JSON.parse(readFileSync(new URL('../data/blobs.json', import.meta.url), 'utf8'));
 const blobState = (over = {}) => {
@@ -1482,10 +1492,28 @@ test('changing k, the dataset or the seeding restarts the run rather than half-u
     assert.ok(out.labels.every(l => l === -1), `${id} must clear membership`);
     assert.equal(out.done, false);
   }
-  const swapped = KS.setDataset(stepped, 'crescents');
+  const cr = BLOBS.configs.crescents;
+  const swapped = KS.setDataset(stepped, 'crescents', { xs: cr.xs, ys: cr.ys, truth: cr.labels });
   assert.equal(swapped.xs.length, 150);
+  assert.equal(swapped.xs[0], cr.xs[0], 'the new run must be seeded from the NEW cloud');
   assert.equal(swapped.k, 2, 'each dataset carries the k the spec chose for it');
   assert.ok(swapped.labels.every(l => l === -1));
+});
+
+test('stepping to rest lands exactly where kmeansRun lands', () => {
+  // The load-bearing invariant of the whole lesson: the picture the reader steps
+  // their way to must be the same answer the claims test computes. done is
+  // raised during assign and the trailing update still has to run, so a step()
+  // that stopped on done alone would rest one half-step short.
+  const base = blobState();
+  let s = { ...base, ...KS.restart(base, 1) };
+  let guard = 0;
+  while (Object.keys(KS.step(s)).length && guard++ < 120) s = { ...s, ...KS.step(s) };
+  const run = kmeansRun(KS.rowsOf(base), 3, mulberry32(1), { plusplus: false });
+  assert.deepEqual(s.labels, run.labels);
+  assert.deepEqual(s.centers, run.centers);
+  assert.ok(Math.abs(KS.stats(s).cost - run.wcss) < 1e-9);
+  assert.equal(s.phase, 'assign', 'it rests after the trailing update, ready to be stepped again inertly');
 });
 
 test('kmeans-step carries no em-dash and never writes the acronym', () => {
@@ -1582,12 +1610,14 @@ export function restart(st, seed = st.seed) {
   return { seed, centers: s.centers, labels: s.labels, phase: 'assign', iter: 0, done: false, play: false };
 }
 
-export function setDataset(st, dataset) {
-  // The page passes xs / ys / truth in with the action, since the instrument
-  // does not fetch. Callers that already hold the data pass it through here.
+// The instrument never fetches, so the caller hands the new data in. Taking it
+// as an explicit argument rather than reading it off st is what makes this
+// correct: restart() derives its rows from the state it is given, and a state
+// still holding the OLD xs / ys would seed the new run from the old cloud.
+export function setDataset(st, dataset, { xs, ys, truth = null }) {
   const cfg = DATASETS[dataset];
-  const next = { ...st, dataset, k: cfg.k };
-  return { dataset, k: cfg.k, ...restart(next) };
+  const next = { ...st, dataset, k: cfg.k, xs, ys, truth };
+  return { dataset, k: cfg.k, xs, ys, truth, ...restart(next) };
 }
 
 export function applyControl(st, id, value) {
@@ -1601,8 +1631,15 @@ export function applyControl(st, id, value) {
   return { [id]: value };
 }
 
+// Returns an empty partial when there is nothing left to do, which is how the
+// Play loop learns to stop. The guard is done AND phase 'assign', not done
+// alone: done is raised during the assign half-step, and the trailing update
+// half-step still has to run, exactly as kmeansRun does. Guarding on done alone
+// would leave the instrument resting one half-step short of the centers the
+// claims test computes, so the page and the tests would disagree about where
+// the algorithm ends up.
 export function step(st) {
-  if (st.done) return {};
+  if (st.done && st.phase === 'assign') return {};
   const s = kmeansStep({ X: rowsOf(st), k: st.k, centers: st.centers, labels: st.labels, phase: st.phase, iter: st.iter, done: st.done });
   return { centers: s.centers, labels: s.labels, phase: s.phase, iter: s.iter, done: s.done };
 }
@@ -1755,6 +1792,17 @@ test('on blobs with random seeding, the six panels do not all agree', () => {
   assert.ok(new Set(costs).size > 1, `all six restarts landed on ${costs[0]}`);
 });
 
+test('the six panels report the real divergence rate, one wrong in six, not a dramatised one', () => {
+  // Measured: 15 percent of starts land on a bad optimum across 60 seeds. Five
+  // panels at 89.67 and one at 506.8 is 17 percent, which reports that rate
+  // honestly. Six wrong out of six would oversell it, which spec §11 forbids;
+  // zero wrong out of six would teach the opposite of the figure's title.
+  const costs = RR.panels(rrState()).map(x => x.cost);
+  const best = Math.min(...costs);
+  assert.equal(costs.filter(c => c > best * 1.02).length, 1, `costs: ${costs.map(c => c.toFixed(1))}`);
+  assert.ok(Math.abs(best - 89.67) < 0.05);
+});
+
 test('k-means++ collapses the six panels onto one answer', () => {
   const costs = RR.panels(rrState({ plusplus: true })).map(x => +x.cost.toFixed(2));
   assert.equal(new Set(costs).size, 1, `++ on blobs should agree 6 of 6: ${costs}`);
@@ -1829,9 +1877,21 @@ import { isoFrame, F } from '../lib/frame.mjs';
 export const name = 'restart-roulette';
 
 export const RUNS = 6;
-// The same seed scheme the reference probe used, so a panel here is a row of the
-// spec's claims table rather than a different sweep that happens to look similar.
-export const seedOf = i => (i + 1) * 7919;
+// Seeds 1 to 6, and the choice was measured rather than picked.
+//
+// The claims table's sweep uses mulberry32(s * 7919) over 60 seeds, where 5
+// distinct optima appear and 15 percent of starts land on a bad one. Taking the
+// first six of THAT scheme gives six identical panels: all 89.67. A figure
+// titled "six starts, six answers" that draws six identical answers teaches the
+// opposite of its point.
+//
+// Plain seeds 1 to 6 give five starts at 89.67 and one at 506.8. One wrong in
+// six is 17 percent against a measured 15 percent, so this display sample
+// reports the real rate rather than dramatising it, which is what spec §11 warns
+// against. The claims table's sweep scheme is separate and unchanged; this is
+// the six panels the reader sees, and the test pins the one-in-six rate so a
+// drift in either direction fails loudly.
+export const seedOf = i => i + 1;
 
 export const defaults = {
   idKey: 'restart-roulette',
@@ -1839,6 +1899,10 @@ export const defaults = {
   xs: null, ys: null, truth: null,
   k: 3,
   plusplus: false,
+  // Explicit, not left undefined. The three synthetic sets are already on one
+  // scale, so this stays false for every configuration the page uses; naming it
+  // here stops rowsOf reading an absent field.
+  standardize: false,
   note: '',
   labels_: { title: 'six starts. same data, same k, six answers.' },
 };
@@ -2579,10 +2643,7 @@ Add the four imports beside the existing ones, then append this config object to
         reset: store => store.set(KS.restart(store.get(), store.get().seed + 1)),
       };
       for (const name of Object.keys(KS.DATASETS)) {
-        ksActions[`use-${name}`] = store => {
-          const next = { ...store.get(), ...pick(name) };
-          store.set({ ...pick(name), ...KS.setDataset(next, name) });
-        };
+        ksActions[`use-${name}`] = store => store.set(KS.setDataset(store.get(), name, pick(name)));
       }
       mount(document.getElementById('ks-blobs'), KS, ks, { actions: ksActions, overlay: {
         idKey: 'ks-blobs',
@@ -2844,7 +2905,7 @@ The current page is marked three ways at once and never by colour: a leading gly
 grep -c 'kmeans.html' index.html least-squares.html covariance.html pca.html
 ```
 
-Expected: `1` for each.
+Expected: `1` for the three lesson pages. `index.html` may be more than 1 if its card markup carries both a heading link and a body link; match whatever the other three cards do rather than forcing a count.
 
 - [ ] **Step 3: Grayscale and print pass**
 

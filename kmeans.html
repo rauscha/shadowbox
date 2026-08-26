@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>k-means - shadowbox</title>
-  <meta name="description" content="An interactive essay on k-means clustering: what one step of the algorithm actually does, why six honest starts give six different answers, why the elbow method fails on real data, and what happens when the clusters turn out to be gestational age in disguise.">
+  <meta name="description" content="An interactive essay on k-means clustering: what one step of the algorithm actually does, why six honest starts give six different answers, why the elbow method fails on real data, and what happens when the clusters turn out to be recovering gestational age.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><rect x=%221%22 y=%221%22 width=%2214%22 height=%2214%22 fill=%22none%22 stroke=%22%231e4a7a%22 stroke-width=%222%22/><circle cx=%225%22 cy=%2211%22 r=%221.6%22 fill=%22%231e4a7a%22/><circle cx=%228%22 cy=%228%22 r=%221.6%22 fill=%22%231e4a7a%22/><circle cx=%2211%22 cy=%225%22 r=%221.6%22 fill=%22%231e4a7a%22/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2542,12 +2542,26 @@
 
       // Clicking or Entering a panel loads that start into the mechanism above,
       // which is the whole reason the panels are tabbable.
-      document.getElementById('rr-blobs').addEventListener('click', ev => {
-        const panel = ev.target.closest('[data-role="panel"]');
-        if (!panel) return;
+      const loadStart = panel => {
         const s = { ...ks.get(), dataset: rr.get().dataset, ...pick(rr.get().dataset), k: rr.get().k, plusplus: rr.get().plusplus };
         ks.set({ ...s, ...KS.restart(s, Number(panel.dataset.seed)) });
         document.getElementById('ks-blobs').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+      const rrMount = document.getElementById('rr-blobs');
+      rrMount.addEventListener('click', ev => {
+        const panel = ev.target.closest('[data-role="panel"]');
+        if (panel) loadStart(panel);
+      });
+      // A native <button> turns Enter and Space into a click for free. An SVG
+      // <g role="button" tabindex="0"> does not, so without this the panels are
+      // tabbable and announce themselves as buttons while doing nothing at all
+      // for anyone not using a mouse.
+      rrMount.addEventListener('keydown', ev => {
+        if (ev.key !== 'Enter' && ev.key !== ' ') return;
+        const panel = ev.target.closest('[data-role="panel"]');
+        if (!panel) return;
+        ev.preventDefault();          // Space would otherwise scroll the page
+        loadStart(panel);
       });
 
       // --- how many groups ---

@@ -13,8 +13,14 @@ on screen, then on real clinical data where no one has the truth.
 1. **[Least squares](least-squares.html)** - residuals as literal dot-screened
    squares (*the best fit spends the least ink*), the loss landscape as a bowl you
    can drag, and 400 real births from the 2014 NCHS natality file. **Live.**
-2. Covariance - the matrix is an ellipse. *Coming.*
-3. PCA - the long axis of the data. *Coming.*
+2. **[Covariance](covariance.html)** - the matrix is an ellipse, and the units
+   trap that hides a correlation in plain sight. **Live.**
+3. **[PCA](pca.html)** - the long axis of the data, found two ways that turn out
+   to be one way. **Live.**
+4. **[k-means](kmeans.html)** - groups you choose in advance, six random starts
+   that disagree with each other, and 350 simulated growth scans where the
+   clusters turn out to be recovering gestational age. Generated data in
+   `data/blobs.json`. **Live.**
 
 ## Running it
 

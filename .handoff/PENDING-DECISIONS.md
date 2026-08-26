@@ -12,6 +12,13 @@ your approval; the `add-app-card` flow shows you the diff before anything is pus
 ---
 
 ## Resolved since the last list
+- **The lesson-4 prose** - cleared 2026-08-25, as written, with no edits. The three
+  open questions in the outline were cleared unanswered, so the drafted answers stand.
+  Two short sentences flagged as possible style violations were cleared with them in,
+  and `.handoff/LESSON-4-PROSE-DRAFT.md` records that so a later tidy-up does not cut
+  them. Your reframing of the SGA/AGA/LGA refusal is in the draft: the categories are
+  arbitrary percentile cut points rather than outcome boundaries, so failing to recover
+  them is a fact about the categories, not a limit of the method.
 - **The lesson-4 spec** - approved 2026-08-25. Briefed rather than read cold. Both
   domain calls stand as written: `label-vs-truth` closes the lesson, and §8 keeps its
   refusal to recover SGA/AGA/LGA from the births cloud. The k=6 shape cap and the cut

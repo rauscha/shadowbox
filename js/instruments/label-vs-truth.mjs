@@ -1,7 +1,7 @@
 // label-vs-truth - the closer, and the handoff to lesson 5. Cluster the four
 // biometry measurements, then lay the clusters out against gestational age,
 // which the algorithm never saw. The bands very nearly tile the interval: the
-// clusters are gestational age wearing a costume.
+// clusters are recovering gestational age.
 // Same punchline as PC1 in lesson 3, reached by completely unrelated machinery,
 // which is the part worth saying out loud. And because this is four dimensions,
 // the reader cannot check it by eye. That discomfort is what lesson 5 is for.

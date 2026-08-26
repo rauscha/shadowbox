@@ -643,3 +643,58 @@ test('kmeans.html obeys the hard rules of the prose guide', () => {
   assert.ok(!/<!-- PROSE/.test(html), 'a prose slot survived into the shipped page');
   assert.match(prose, /k-nearest/i, 'lesson 5 uses a kNN graph, and this page has to say so');
 });
+
+// ------------------------------------------------- all four, the house rules
+
+test('every lesson-4 instrument prefixes its ids and keeps the house punctuation', () => {
+  const ksBase = blobState({ idKey: 'ks' });
+  let ks = { ...ksBase, ...KS.restart(ksBase, 1) };
+  ks = { ...ks, ...KS.step(ks) };
+
+  const cases = [
+    ['ks', KS, ks],
+    ['rr', RR, rrState({ idKey: 'rr' })],
+    ['el', EL, elState({ idKey: 'el' })],
+    ['lt', LT, ltState({ idKey: 'lt' })],
+  ];
+
+  for (const [key, mod, st] of cases) {
+    const svg = mod.render(st);
+    assert.match(svg, /^<svg[^>]*viewBox="0 0 640 460"/, key);
+    assert.match(svg, /<\/svg>\s*$/, key);
+    assert.equal((svg.match(/<svg/g) || []).length, 1, key);
+
+    // Ids are not required. elbow draws nothing that needs referencing, so it
+    // emits none, and forcing one on it would be inventing a rule. What IS
+    // required is that any id present is namespaced to this instance, and that
+    // every url(#...) resolves inside the same document - two mounts of the
+    // same instrument on one page collide otherwise.
+    const ids = [...svg.matchAll(/\sid="([^"]+)"/g)].map(m => m[1]);
+    for (const id of ids) assert.ok(id.startsWith(`sb-${key}-`), `${key}: unprefixed id ${id}`);
+    for (const ref of [...svg.matchAll(/url\(#([^)]+)\)/g)].map(m => m[1])) {
+      assert.ok(ids.includes(ref), `${key}: dangling reference ${ref}`);
+    }
+
+    assert.ok(!svg.includes(EM_DASH), `${key} rendered an em-dash`);
+    assert.ok(svg.includes('<title>'), `${key} has no accessible title`);
+    assert.equal(typeof mod.name, 'string', key);
+    assert.ok(Array.isArray(mod.controls), key);
+    assert.equal(typeof mod.applyDrag, 'function', key);
+
+    // hydrate.mjs keys control identity on kind:id and renders only these three
+    // kinds. Any other kind never draws AND forces a full rebuild every frame,
+    // which silently reintroduces the mobile drag bug fixed in c397076.
+    for (const c of mod.controls) {
+      assert.ok(['slider', 'toggle', 'action'].includes(c.kind), `${key}: control ${c.id} has kind ${c.kind}`);
+    }
+  }
+});
+
+test('the lesson-4 sources are free of em-dashes too', () => {
+  const files = ['js/instruments/kmeans-step.mjs', 'js/instruments/restart-roulette.mjs',
+    'js/instruments/elbow.mjs', 'js/instruments/label-vs-truth.mjs',
+    'js/lib/marks.mjs', 'js/math/kmeans.mjs'];
+  for (const f of files) {
+    assert.ok(!readFileSync(new URL(`../${f}`, import.meta.url), 'utf8').includes(EM_DASH), f);
+  }
+});

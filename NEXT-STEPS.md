@@ -21,6 +21,9 @@
       worthwhile study question, can just show association").
 
 ## Build queue (spec §13)
+
+**Next up: M7, lesson 5 (UMAP).** Everything above it is done. The queue stays in
+build order rather than priority order, so the open item is named here instead.
 - [x] ~~**M3 - lesson 2, covariance**~~ - done 2026-08-20/21.
 - [x] ~~**M4 - lesson 3, PCA**~~ - done 2026-08-22. `pca.html` live with all four
       instruments plus a fifth figure (scree on GA-adjusted residuals). Every
@@ -34,8 +37,13 @@
       re-render) and is verified. Grayscale verified: `--accent-warm` is used by
       no instrument, and the three line families in three-lines carry distinct
       dash patterns, so nothing depends on hue.
-- [ ] **M6 - lesson 4, k-means** - spec approved 2026-08-25, plan written and ready to
-      execute: `docs/superpowers/plans/2026-08-25-shadowbox-m6-kmeans.md` (12 tasks).
+- [x] ~~**M6 - lesson 4, k-means**~~ - done 2026-08-26. `kmeans.html` live with all
+      four instruments, the prose cleared by Andrew as written, and four committed
+      poster frames so the page teaches with JS off. Every number in the prose is
+      pinned by `test/kmeans-claims.test.mjs`, written before the prose existed.
+      Original plan entry follows.
+
+      Spec approved 2026-08-25, plan: `docs/superpowers/plans/2026-08-25-shadowbox-m6-kmeans.md` (12 tasks).
       Spec: `docs/superpowers/specs/2026-08-24-shadowbox-kmeans-design.md`. Four
       instruments (`kmeans-step`, `restart-roulette`, `elbow`, `label-vs-truth`), one
       new data file (`data/blobs.json`), one shared drawing module (`js/lib/marks.mjs`),
@@ -53,10 +61,19 @@
 
       Task 11 has a hard human gate: the prose outline gets scored by Andrew before a
       word is drafted, same as lesson 3.
-- [ ] **M7 - lesson 5, UMAP** - deferred. Teaches k-nearest-neighbours inside itself.
+- [ ] **M7 - lesson 5, UMAP** - next. Teaches k-nearest-neighbours inside itself.
       Inherits lesson 4's two "start from zero" blocks (distance between rows;
       iterative optimisation) and its Play control surface, which is designed to accept
       a precomputed frame index because UMAP cannot optimise live in the browser.
+      It also inherits the shape channel in `js/lib/marks.mjs` - six mark kinds, which
+      is how membership is drawn without hue.
+
+      **It does not inherit the k=6 cap.** That cap binds only instruments that draw
+      membership as a mark per point. An instrument that draws no membership is not
+      limited by the number of available shapes, so do not carry the cap across
+      blindly. Note also that lesson 4's `k` counts groups while UMAP's `k` counts
+      neighbours; `kmeans.html` says so explicitly so lesson 5 does not have to undo
+      the assumption.
 
   **Queue changed shape 2026-08-24.** UMAP was lesson 4; k-means was not on the ladder
   at all. k-means went first because iterative optimisation has to be taught somewhere

@@ -631,3 +631,15 @@ test('geometry: at k=5 (the row that draws a stroke-only plus mark) no label col
     if (r === bandLines.length - 1) assert.ok(nBottom < plotY1, `bottom row's count (ink bottom ${nBottom.toFixed(1)}) pokes below the plot frame (${plotY1})`);
   }
 });
+
+// --------------------------------------------------------- kmeans.html page
+
+test('kmeans.html obeys the hard rules of the prose guide', () => {
+  const html = readFileSync(new URL('../kmeans.html', import.meta.url), 'utf8');
+  const prose = html.replace(/<svg[\s\S]*?<\/svg>/g, '').replace(/<script[\s\S]*?<\/script>/g, '');
+  assert.ok(!prose.includes(EM_DASH), 'never an em-dash; spaced hyphen instead');
+  assert.ok(!/\bWCSS\b/i.test(prose), 'call it the total squared distance from each point to its own center');
+  assert.ok(!/eta[- ]?squared|η²/i.test(prose), 'call it the share of the variation the labels account for');
+  assert.ok(!/<!-- PROSE/.test(html), 'a prose slot survived into the shipped page');
+  assert.match(prose, /k-nearest/i, 'lesson 5 uses a kNN graph, and this page has to say so');
+});

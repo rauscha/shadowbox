@@ -13,6 +13,10 @@ import * as axisProjector from '../js/instruments/axis-projector.mjs';
 import * as threeLines from '../js/instruments/three-lines.mjs';
 import * as basisSpin from '../js/instruments/basis-spin.mjs';
 import * as scree from '../js/instruments/scree.mjs';
+import * as kmeansStep from '../js/instruments/kmeans-step.mjs';
+import * as restartRoulette from '../js/instruments/restart-roulette.mjs';
+import * as elbow from '../js/instruments/elbow.mjs';
+import * as labelVsTruth from '../js/instruments/label-vs-truth.mjs';
 import { synthLine, ols, detrend, standardize } from '../js/math/core.mjs';
 
 export function injectPoster(html, key, svg) {
@@ -134,6 +138,64 @@ const CONFIGS = [{
           standardize: true, unit: '',
           note: 'same scans, gestational age removed first',
           labels: { title: 'size for dates. the spread divides differently.' } };
+      },
+    },
+  ],
+}, {
+  file: 'kmeans.html',
+  posters: [
+    {
+      key: 'kmeans-step-blobs', instrument: kmeansStep,
+      // the resting state: stepped to convergence, so the printed frame shows
+      // three groups, three marks and the wall between them
+      state: () => {
+        const c = JSON.parse(readFileSync(inRepo('data/blobs.json'), 'utf8')).configs.blobs;
+        let s = { ...kmeansStep.defaults, idKey: 'ks-blobs', dataset: 'blobs',
+          xs: c.xs, ys: c.ys, truth: c.labels, k: 3, plusplus: false,
+          labels_: { title: 'press Step. watch which half of the algorithm moves.' } };
+        s = { ...s, ...kmeansStep.restart(s, 1) };
+        let guard = 0;
+        while (!s.done && guard++ < 60) s = { ...s, ...kmeansStep.step(s) };
+        return s;
+      },
+    },
+    {
+      key: 'restart-roulette-blobs', instrument: restartRoulette,
+      // random seeding on purpose: ++ would print six identical panels, which
+      // teaches nothing on paper
+      state: () => {
+        const c = JSON.parse(readFileSync(inRepo('data/blobs.json'), 'utf8')).configs.blobs;
+        return { ...restartRoulette.defaults, idKey: 'rr-blobs', dataset: 'blobs',
+          xs: c.xs, ys: c.ys, truth: c.labels, k: 3, plusplus: false,
+          note: '150 generated points, three blobs',
+          labels_: { title: 'six starts. same data, same k.' } };
+      },
+    },
+    {
+      key: 'elbow-blobs', instrument: elbow,
+      // Ruling 2026-08-25: this figure opens on BLOBS, in the poster and in the
+      // live mount alike. Biometry's curve has no bend and its verdict line
+      // declines to name a k, so opening there would sit beside prose reading
+      // "there is a real bend, and the figure puts it at k=3". The prose walks
+      // blobs, then births, then biometry, so blobs is the correct load state
+      // and all three stay reachable through the dataset buttons.
+      state: () => {
+        const c = JSON.parse(readFileSync(inRepo('data/blobs.json'), 'utf8')).configs.blobs;
+        return { ...elbow.defaults, idKey: 'el-blobs', dataset: 'blobs',
+          columns: [c.xs, c.ys], standardize: false, kMax: 10,
+          note: '150 generated points, three blobs',
+          labels_: { title: 'three blobs make this data. the curve finds all three.' } };
+      },
+    },
+    {
+      key: 'label-vs-truth-biometry', instrument: labelVsTruth,
+      state: () => {
+        const d = JSON.parse(readFileSync(inRepo('data/biometry.json'), 'utf8'));
+        return { ...labelVsTruth.defaults, idKey: 'lt-bio',
+          columns: [d.bpd, d.hc, d.ac, d.fl], names: ['BPD', 'HC', 'AC', 'FL'],
+          outcome: d.ga, k: 3,
+          note: '350 simulated scans, 20-40 weeks',
+          labels_: { title: 'the algorithm never saw the dates. look what it found.' } };
       },
     },
   ],

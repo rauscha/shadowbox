@@ -99,7 +99,7 @@ test('the partition is drawn once, not once per side', () => {
 
 import * as KS from '../js/instruments/kmeans-step.mjs';
 import { mulberry32 } from '../js/math/core.mjs';
-import { kmeansRun } from '../js/math/kmeans.mjs';
+import { kmeansRun, zscoreColumns } from '../js/math/kmeans.mjs';
 
 const BLOBS = JSON.parse(readFileSync(new URL('../data/blobs.json', import.meta.url), 'utf8'));
 const blobState = (over = {}) => {
@@ -490,7 +490,11 @@ test('label-vs-truth draws every scan as its cluster mark, on one gestational-ag
   assert.equal(roles(svg, 'band'), 3);
   assert.equal(roles(svg, 'band-mean'), 3);
   assert.equal(roles(svg, 'share'), 1);
-  assert.match(svg, /gestational age/);
+  // Not just /gestational age/: that phrase also appears in the share readout
+  // and the caption, so deleting the axis label itself would still pass a bare
+  // regex test. Anchor on the axis label's own exact markup and text.
+  assert.match(svg, /<text x="[\d.]+" y="[\d.]+" text-anchor="middle" font-size="10" fill="var\(--text\)">gestational age \(weeks\)<\/text>/,
+    'the axis itself must be labelled, not merely mentioned elsewhere on the page');
 });
 
 test('the share is written out in words, never as an acronym or a symbol', () => {
@@ -506,4 +510,124 @@ test('k stays inside the shape budget and inside the measured range', () => {
   assert.equal(slider.min, 2);
   assert.equal(slider.max, 5);
   assert.ok(slider.max <= MAX_MARKS);
+});
+
+// Fix round 1 (review task-9-review.md). Findings A1/A3, B4, B5, B6, B7, B9.
+
+test('st.note draws its own line, following scree.mjs\'s shape - not the lesson-3 corner, which this title would cross', () => {
+  const withNote = LT.render(ltState({ note: '350 simulated scans, 20-40 weeks' }));
+  assert.equal(roles(withNote, 'note'), 1);
+  assert.equal(texts(withNote, 'note')[0], '350 simulated scans, 20-40 weeks');
+  assert.equal(roles(LT.render(ltState()), 'note'), 0, 'an empty note (the default) draws nothing');
+});
+
+test('bands are stacked tallest to the top: the largest mean is drawn first, each next row strictly below it', () => {
+  const svg = LT.render(ltState());
+  assert.deepEqual(texts(svg, 'band-mean'), ['35.7 wk', '28.7 wk', '22.8 wk'],
+    'largest-mean band must read first in the markup, i.e. drawn at the top');
+  const ys = attrs(svg, 'band-mean').map(a => Number(a.y));
+  for (let i = 1; i < ys.length; i++) {
+    assert.ok(ys[i] > ys[i - 1], `row ${i} (y=${ys[i]}) must sit below row ${i - 1} (y=${ys[i - 1]})`);
+  }
+});
+
+test('the ++ seeding is load-bearing, not just numerically close to random init on this data', () => {
+  // eta-squared cannot tell the two schemes apart here - they differ by at
+  // most 0.0014 at every k, inside the 0.002 tolerance the claims-table test
+  // above uses - so pin bands()'s actual labels against an independently
+  // computed kmeansRun with plusplus explicit, rather than tightening that
+  // tolerance into brittleness for no real coverage.
+  const st = ltState();
+  const X = zscoreColumns(st.columns);
+  const expected = kmeansRun(X, st.k, mulberry32(LT.SEED), { plusplus: true }).labels;
+  assert.deepEqual(LT.bands(st).labels, expected);
+});
+
+test('the count, the caption, the title and the id prefix are all pinned, not just the geometry roles', () => {
+  const svg = LT.render(ltState());
+  assert.equal(roles(svg, 'band-n'), 3);
+  assert.deepEqual(texts(svg, 'band-n'), ['n = 132', 'n = 117', 'n = 101']);
+  assert.match(svg, /clustered on BPD, HC, AC and FL\. gestational age was never shown to the algorithm\./);
+  assert.match(svg, /the algorithm never saw the dates\. look what it found\./);
+  assert.ok(svg.includes('sb-lt1-'), 'every id is namespaced to the instance');
+});
+
+test('every band draws its OWN mark shape - shape is the only channel a colorblind reader gets', () => {
+  // Reverses markPath's own output back to a kind, via the real MARK_KINDS
+  // and markFor - not a guess at what a circle's path "looks like" - so this
+  // is checking what the shipped marks module actually draws, position aside.
+  const markKindOf = (() => {
+    const table = new Map(MARK_KINDS.map(kind => [markPath(kind, 0, 0, 3).d.replace(/-?[\d.]+/g, '#'), kind]));
+    return d => table.get(d.replace(/-?[\d.]+/g, '#'));
+  })();
+  const svg = LT.render(ltState());
+  const shapeByCluster = new Map();
+  for (const p of attrs(svg, 'pt')) {
+    const kind = markKindOf(p.d);
+    assert.ok(kind, `pt path does not normalize to any known mark shape: ${p.d}`);
+    const prev = shapeByCluster.get(p['data-cluster']);
+    if (prev) assert.equal(prev, kind, `cluster ${p['data-cluster']} drew two different shapes on different scans`);
+    else shapeByCluster.set(p['data-cluster'], kind);
+  }
+  assert.equal(shapeByCluster.size, 3, 'k=3 must produce three distinct clusters, each with a mark');
+  assert.equal(new Set(shapeByCluster.values()).size, 3, 'two different clusters must never share a mark shape');
+});
+
+test('geometry: at k=5 (the row that draws a stroke-only plus mark) no label collides with the swarm beside it', () => {
+  // getBBox() in a browser excludes stroke width, which undercounts a
+  // stroke-only mark's real visual extent (see task-9-report.md's Fix round 1
+  // section). Every number below is read straight off the rendered markup -
+  // each scan's actual drawn centre from its own "pt" element's data-cy, its
+  // actual radius from data-r, stroke width from a real stroke-only element -
+  // rather than recomputed from the brief's jitter formula. A first draft of
+  // this test recomputed the expected jitter from (i % 7 - 3) * 1.6 instead of
+  // reading data-cy, so it never actually looked at what got drawn: widening
+  // the real jitter to * 12, or growing the real radius from 3 to 12, both
+  // left it green (see task-9-report.md for the mutation that caught this).
+  const st = ltState({ k: 5 });
+  const svg = LT.render(st);
+  const bandLines = attrs(svg, 'band');
+  const means = attrs(svg, 'band-mean');
+  const ns = attrs(svg, 'band-n');
+  const pts = attrs(svg, 'pt');
+  const plotTag = svg.match(/<rect x="[\d.]+" y="([\d.]+)" width="[\d.]+" height="([\d.]+)" fill="none" stroke="var\(--border\)"/);
+  const plotY0 = Number(plotTag[1]), plotY1 = plotY0 + Number(plotTag[2]);
+
+  assert.equal(bandLines.length, 5, 'k=5 must produce five bands to exercise the tightest row');
+
+  // Conservative (pessimistic) ink-extent constants: real, browser-measured
+  // ascent for this font runs close to 1.0x the font-size and descent runs
+  // close to 0.29x (task-9-report.md), so 0.9x ascent / 0.3x descent already
+  // overestimates real ink reach in the direction that matters for a
+  // clearance check - a false RED here means measure again, not loosen this.
+  const inkBottom = (y, size) => y + size * 0.3;
+  const inkTop = (y, size) => y - size * 0.9;
+
+  for (let r = 0; r < bandLines.length; r++) {
+    const cluster = bandLines[r]['data-cluster'];
+    const rowPts = pts.filter(p => p['data-cluster'] === cluster);
+    assert.ok(rowPts.length > 0, `cluster ${cluster} has no drawn scans`);
+    const strokeW = rowPts[0]['stroke-width'] ? Number(rowPts[0]['stroke-width']) : 0;
+    const halfExtra = strokeW / 2;
+
+    const cys = rowPts.map(p => Number(p['data-cy']));
+    const rs = rowPts.map(p => Number(p['data-r']));
+    const swarmTop = Math.min(...cys.map((cy, j) => cy - rs[j])) - halfExtra;
+    const swarmBottom = Math.max(...cys.map((cy, j) => cy + rs[j])) + halfExtra;
+
+    const meanSize = Number(means[r]['font-size']), meanY = Number(means[r].y);
+    const meanTop = inkTop(meanY, meanSize), meanBottom = inkBottom(meanY, meanSize);
+    const nSize = Number(ns[r]['font-size']), nY = Number(ns[r].y);
+    const nTop = inkTop(nY, nSize), nBottom = inkBottom(nY, nSize);
+
+    assert.ok(swarmTop > meanBottom,
+      `cluster ${cluster}: mean label (ink bottom ${meanBottom.toFixed(1)}) collides with the swarm (top ${swarmTop.toFixed(1)})`);
+    assert.ok(nTop > swarmBottom,
+      `cluster ${cluster}: swarm (bottom ${swarmBottom.toFixed(1)}) collides with the count (ink top ${nTop.toFixed(1)})`);
+
+    // Only the outermost rows can ever touch the frame - a middle row's
+    // "outward" direction is bounded by its neighbour's row, not the border.
+    if (r === 0) assert.ok(meanTop > plotY0, `top row's mean label (ink top ${meanTop.toFixed(1)}) pokes above the plot frame (${plotY0})`);
+    if (r === bandLines.length - 1) assert.ok(nBottom < plotY1, `bottom row's count (ink bottom ${nBottom.toFixed(1)}) pokes below the plot frame (${plotY1})`);
+  }
 });

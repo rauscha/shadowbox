@@ -37,6 +37,14 @@ export const controls = [
   { id: 'k', kind: 'slider', label: 'how many groups (k)', min: 2, max: 5, step: 1 },
 ];
 
+// A real guard, not a decorative import: if a future edit ever raises the k
+// slider past the shape budget, this fails loudly at load time rather than
+// leaving markFor() to throw deep inside a render() call on whichever k the
+// reader happens to drag to first.
+if (controls[0].max > MAX_MARKS) {
+  throw new RangeError(`label-vs-truth's k slider goes to ${controls[0].max}, past the shape budget of ${MAX_MARKS}`);
+}
+
 export function bands(st) {
   const X = zscoreColumns(st.columns);
   const { labels } = kmeansRun(X, st.k, mulberry32(SEED), { plusplus: true });
@@ -65,6 +73,7 @@ export function applyDrag() { return {}; }
 
 const W = 640, H = 460;
 const MARGIN = { l: 64, r: 40, t: 56, b: 72 };
+const MARK_R = 3;   // the brief's r=3. One constant, so data-r can never drift from what markPath actually drew.
 
 const fmtNum = v => Math.abs(v) >= 1000 ? String(Math.round(v))
   : (Number.isInteger(v) ? String(v) : String(+v.toFixed(1)));
@@ -114,13 +123,16 @@ export function render(state) {
   // plot frame
   parts.push(`<rect x="${plot.x0}" y="${plot.y0}" width="${F(plot.x1 - plot.x0)}" height="${F(plot.y1 - plot.y0)}" fill="none" stroke="var(--border)" stroke-width="1.5"/>`);
 
-  // x ticks, on the measured gestational-age range
-  for (const t of niceTicks(d0, d1)) {
+  // x ticks, on the measured gestational-age range. target=8 (not the
+  // library default of 4): this is the lesson's payoff figure, and the
+  // reading task is entirely positional (is this band's mean left or right
+  // of 30 weeks?), so it earns gridlines the default's 20/30/40 does not give.
+  for (const t of niceTicks(d0, d1, 8)) {
     const px = F(xAt(t));
     parts.push(`<line x1="${px}" y1="${plot.y1}" x2="${px}" y2="${F(plot.y1 + 5)}" stroke="var(--border)" stroke-width="1.5"/>`);
     parts.push(`<text x="${px}" y="${F(plot.y1 + 18)}" text-anchor="middle" font-size="11" fill="var(--text-light)">${fmtNum(t)}</text>`);
   }
-  parts.push(`<text x="${F((plot.x0 + plot.x1) / 2)}" y="${F(plot.y1 + 36)}" text-anchor="middle" font-size="11.5" fill="var(--text)">${st.outcomeName}</text>`);
+  parts.push(`<text x="${F((plot.x0 + plot.x1) / 2)}" y="${F(plot.y1 + 34)}" text-anchor="middle" font-size="10" fill="var(--text)">${st.outcomeName}</text>`);
 
   // title + the computed share, printed directly under it - the share is a
   // number in text, never only the picture the bands make of it.
@@ -155,8 +167,17 @@ export function render(state) {
       const cx = F(xAt(st.outcome[i]));
       const jitter = (i % 7 - 3) * 1.6;
       const py = F(cy + jitter);
-      const { d, filled } = markPath(b.mark, cx, py, 3);
-      parts.push(`<path data-role="pt" data-cluster="${b.cluster}" d="${d}" ${filled ? `fill="var(--heading)"` : `fill="none" stroke="var(--heading)" stroke-width="1.4"`}/>`);
+      const { d, filled } = markPath(b.mark, cx, py, MARK_R);
+      // data-cy and data-r carry the exact centre and radius markPath was
+      // called with - the same MARK_R, never a second copy of the number -
+      // so they cannot silently drift from what got drawn. Every mark kind
+      // bakes its own drawing origin into `d` differently (a circle's own M
+      // sits at its centre; a square's or a triangle's sits at a corner
+      // offset by r - see marks.mjs and the parity warning on the "a mark is
+      // centred..." test in test/instruments4.test.mjs), so recovering the
+      // true drawn extent from `d` alone is fragile - a geometry test needs
+      // the real numbers, not a re-derivation of them.
+      parts.push(`<path data-role="pt" data-cluster="${b.cluster}" data-cy="${py}" data-r="${MARK_R}" d="${d}" ${filled ? `fill="var(--heading)"` : `fill="none" stroke="var(--heading)" stroke-width="1.4"`}/>`);
     }
   }
   parts.push(`</g>`);
@@ -165,11 +186,12 @@ export function render(state) {
   // Its baseline is spaced from the axis label using real getBBox() clearance
   // measured in a browser (see task-9-report.md), not an assumed font metric -
   // the assumed one undershot by about half a pixel where the two are tightest
-  // (the tick row and the axis label). st.note is intentionally not drawn:
-  // it is not one of the seven required elements, and scree.mjs is already a
-  // precedent for an instrument that carries `note` in defaults without ever
-  // rendering it. Task 10's poster config may still set st.note harmlessly.
-  parts.push(`<text x="${plot.x0}" y="${F(plot.y1 + 54)}" font-size="10.5" fill="var(--text-light)">clustered on ${listNames(names)}. gestational age was never shown to the algorithm.</text>`);
+  // (the tick row and the axis label).
+  parts.push(`<text x="${plot.x0}" y="${F(plot.y1 + 50)}" font-size="10" fill="var(--text-light)">clustered on ${listNames(names)}. gestational age was never shown to the algorithm.</text>`);
+  // st.note, drawn last, following scree.mjs:131's exact shape (data-role,
+  // font-size 11, var(--text-light)) rather than the top-right slot the
+  // lesson-3 instruments use - that slot crosses this figure's own title.
+  if (st.note) parts.push(`<text data-role="note" x="${plot.x0}" y="${F(plot.y1 + 67)}" font-size="11" fill="var(--text-light)">${st.note}</text>`);
 
   parts.push(`</svg>`);
   return parts.join('\n');

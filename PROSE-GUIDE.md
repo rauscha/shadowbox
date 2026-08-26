@@ -99,6 +99,25 @@ the body is about to use.
 "figures out which way the ellipse is pointing". Pointing relative to what was
 missing, and it is the whole content of the sentence.
 
+**14. Cut the line that is memorable because it does not fit.** From his ruling
+on the lesson-4 outline, 2026-08-25. I proposed "the clusters are gestational
+age wearing a costume", and flagged it myself as the most memorable line in the
+outline and the least like the register around it. He cut it: *"too cute.
+memorable because it doesn't fit - not always good to be the proud nail."*
+
+This generalises rule 7. Rule 7 catches the punchy fragment; rule 14 catches the
+quotable metaphor. The tell is the same in both: I notice a line is doing
+something different from its neighbours and read that as strength. It is not. If
+a line's appeal is that it stands out from the register around it, that is the
+argument for cutting it.
+
+> **Standing exception, ruled 2026-08-26.** `pca.html` reads "PC1 here is
+> gestational age wearing a disguise". That is the same metaphor family, and it
+> **stays**. Lesson 3's prose was approved on 2026-08-22, before this rule
+> existed, and Andrew ruled explicitly that it is not to be changed. Do not
+> sweep it out under rule 14. Rules here are not retroactive against text he has
+> already signed off.
+
 ## Process: outline, then one bullet at a time
 
 His instruction after the first PCA draft lost the thread halfway down:

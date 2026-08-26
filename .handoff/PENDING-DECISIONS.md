@@ -12,6 +12,12 @@ your approval; the `add-app-card` flow shows you the diff before anything is pus
 ---
 
 ## Resolved since the last list
+- **The lesson-3 "wearing a disguise" line** - ruled 2026-08-26: **it stays.** Same
+  metaphor family as the one cut from lesson 4, but lesson 3's prose was approved on
+  2026-08-22, before that ruling. Recorded as a standing exception in `PROSE-GUIDE.md`
+  so a later sweep does not remove it.
+- **iOS Safari verification** - accepted 2026-08-26 without a real-device check. Ismely
+  will look at it on an iPhone; Andrew reports back only if it is still broken.
 - **The lesson-4 prose** - cleared 2026-08-25, as written, with no edits. The three
   open questions in the outline were cleared unanswered, so the drafted answers stand.
   Two short sentences flagged as possible style violations were cleared with them in,

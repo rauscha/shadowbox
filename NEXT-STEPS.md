@@ -20,6 +20,15 @@
 - [x] ~~Biometry sim parameters~~ - Andrew accepted them ("doesn't have to be a
       worthwhile study question, can just show association").
 
+## Accepted, not verified
+- **iOS Safari touch behaviour.** The mobile drag fix (commit `c397076`) was measured
+  only in Blink under DevTools mobile emulation. `touch-action` on SVG children is the
+  one half of it that no test and no measurement exercises. Andrew accepted it as-is on
+  2026-08-26 and will have Ismely check it on a real iPhone. **Treat it as accepted
+  rather than confirmed**, and if a report comes back that drags still die mid-gesture,
+  that is a second mechanism and wants its own investigation rather than a re-run of the
+  same fix.
+
 ## Build queue (spec §13)
 
 **Next up: M7, lesson 5 (UMAP).** Everything above it is done. The queue stays in

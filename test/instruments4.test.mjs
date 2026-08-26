@@ -451,3 +451,59 @@ test('the verdict clears the k=1 marker, which always sits in the plot corner', 
       `${st.dataset}: verdict ink reaches y=${inkBottom.toFixed(1)} but the k=1 marker starts at y=${markerTop}`);
   }
 });
+
+// ------------------------------------------------------------ label-vs-truth
+
+import * as LT from '../js/instruments/label-vs-truth.mjs';
+
+const ltState = (over = {}) => ({ ...LT.defaults, idKey: 'lt1',
+  columns: [BIO.bpd, BIO.hc, BIO.ac, BIO.fl], names: ['BPD', 'HC', 'AC', 'FL'],
+  outcome: BIO.ga, k: 3, ...over });
+
+test('label-vs-truth reproduces the claims table: 0.719 / 0.871 / 0.916 / 0.941', () => {
+  [2, 3, 4, 5].forEach((k, i) => {
+    const share = LT.bands(ltState({ k })).share;
+    assert.ok(Math.abs(share - [0.719, 0.871, 0.916, 0.941][i]) < 0.002, `k=${k} share ${share}`);
+  });
+});
+
+test('at k=3 the three bands are 22.8, 28.7 and 35.7 weeks and they come out ordered', () => {
+  const b = LT.bands(ltState()).bands;
+  assert.equal(b.length, 3);
+  [22.8, 28.7, 35.7].forEach((w, i) => assert.ok(Math.abs(b[i].mean - w) < 0.05, `band ${i} ${b[i].mean}`));
+  for (let i = 1; i < b.length; i++) assert.ok(b[i].mean > b[i - 1].mean, 'bands must be sorted by mean');
+});
+
+test('the bands very nearly tile the gestational-age interval, which is the whole punchline', () => {
+  const b = LT.bands(ltState()).bands;
+  for (let i = 1; i < b.length; i++) {
+    const gap = b[i].min - b[i - 1].max;
+    assert.ok(gap < 1.5, `bands ${i - 1} and ${i} leave a gap of ${gap} weeks`);
+  }
+  assert.deepEqual(b.map(x => x.n).reduce((a, c) => a + c, 0), 350, 'every scan lands in exactly one band');
+});
+
+test('label-vs-truth draws every scan as its cluster mark, on one gestational-age axis', () => {
+  const svg = LT.render(ltState());
+  assert.match(svg, /^<svg[^>]*viewBox="0 0 640 460"/);
+  assert.equal(roles(svg, 'pt'), 350);
+  assert.equal(roles(svg, 'band'), 3);
+  assert.equal(roles(svg, 'band-mean'), 3);
+  assert.equal(roles(svg, 'share'), 1);
+  assert.match(svg, /gestational age/);
+});
+
+test('the share is written out in words, never as an acronym or a symbol', () => {
+  const svg = LT.render(ltState());
+  assert.ok(!/eta/i.test(svg), 'the page says "the share of the variation ... that the labels account for"');
+  assert.ok(!/WCSS/i.test(svg));
+  assert.ok(!svg.includes(EM_DASH));
+  assert.match(texts(svg, 'share')[0], /0\.87/, 'the number is printed, not only drawn');
+});
+
+test('k stays inside the shape budget and inside the measured range', () => {
+  const slider = LT.controls.find(c => c.id === 'k');
+  assert.equal(slider.min, 2);
+  assert.equal(slider.max, 5);
+  assert.ok(slider.max <= MAX_MARKS);
+});

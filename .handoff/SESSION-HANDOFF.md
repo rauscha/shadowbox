@@ -43,13 +43,12 @@
 
 ## Watch out for
 
-- **`hp-review` has 984 insertions across 12 files sitting uncommitted, last commit two
-  weeks ago**, on branch `grader-skill`. This is real source work (scripts, SKILL.md,
-  README, plans) that exists only in that working tree. Not touched here because it is not
-  this session's work. It wants committing.
-- **`hp-data-batch1` is a worktree of `hp-review` sitting on a detached HEAD** (`be4ace8`)
-  with 12MB of untracked grading-pipeline output. Detached HEAD is fragile. The output is
-  generated data, but the state is worth resolving deliberately.
+- **`hp-review`'s uncommitted work is deliberate and local-only.** Ruled 2026-08-26. It
+  looks alarming from a worktree scan - 984 insertions across 12 files, last commit two
+  weeks ago - and it is meant to stay that way. **Do not commit it, do not push it, and do
+  not flag it as stranded next time.** Recorded in the root `INDEX.md` too, so a future
+  scan sees it before raising the alarm. `hp-data-batch1` is a worktree of the same repo
+  on a detached HEAD with 12MB of untracked pipeline output; same category, leave it.
 - Loose untracked files elsewhere: `mfm-round-2/scripts/lor_orchestrate.py`,
   `mfm-round-3/SESSION-3-NOTES.md`, `mfm-round-4/SESSION-4-NOTES.md`, and two stale
   `.log.prev` files in `digi-me`. `app-review` is clean and its side branch is merged.

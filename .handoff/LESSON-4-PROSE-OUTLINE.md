@@ -98,7 +98,10 @@ written before this outline existed.
   rather than merely abut. The labels account for 0.871 of the variation in
   gestational age, climbing to 0.941 at k=5. (Written out in words, never as a
   symbol.)
-- Name what happened: the clusters are gestational age wearing a costume.
+- Name what happened, plainly: the groups are recovering gestational age.
+  (Was "gestational age wearing a costume". Cut 2026-08-25 - too cute. It was
+  memorable because it did not fit the register, and that is a defect, not a
+  feature.)
 - Say out loud that this is the same finding as PC1 in lesson 3, reached by
   unrelated machinery. Two different methods converging on one answer is what
   makes it more than a curiosity.
@@ -114,8 +117,17 @@ written before this outline existed.
 - SGA / AGA / LGA are not recoverable from the births cloud. Asked for three
   groups it returns 10, 159 and 231, splitting mostly on weight with heavily
   overlapping gestational ages, and nothing in its output says it missed.
-  **This one is yours to rule on.** I read it as the stronger lesson precisely
-  because a reader arrives expecting those three groups to be there.
+  **Ruled in, 2026-08-25, with a better reason than the one I offered.** Not
+  "the reader expected those groups". The real point: SGA / AGA / LGA are
+  **arbitrary human-drawn lines on a continuum, defined by percentile cut
+  points rather than by any outcome boundary.** So k-means is not failing to
+  find them. It is showing they were never in the data to begin with - they
+  are administrative thresholds laid over a gradient. That reframes the whole
+  refusal section: the biometry has a gradient, and the clinical categories
+  stacked on top of it are cuts, not clusters.
+  Drafting note: this is the lesson's strongest paragraph. Do not soften it
+  into "k-means struggles with these categories" - the categories are the
+  thing under examination, not the algorithm.
 - Convergence is not correctness. Crescents already proved it.
 - One sentence on why lesson 2's units trap does not spring here: raw
   millimetres and standardized values agree on 93.7 percent of the labels,
@@ -127,15 +139,23 @@ written before this outline existed.
 
 ---
 
-## Three things I would especially like scored
+## Three rulings, 2026-08-25 - all settled, nothing outstanding
 
-1. **Is the crescents paragraph in the right section?** It currently sits under
-   "six starts" because that is the figure it belongs to, but its point
-   (convergence is not correctness) is arguably the spine of the whole lesson
-   and might deserve its own heading.
+1. **Crescents stays under "six starts".** No separate heading. It belongs to
+   the figure it sits beside.
 
-2. **Is "gestational age wearing a costume" too cute?** It is the most memorable
-   line in the outline and also the least like the rest of the register.
+2. **"Gestational age wearing a costume" is cut.** Too cute. His reasoning is
+   the durable part and generalizes past this line: it was memorable *because
+   it did not fit*, and it is not always good to be the proud nail. A line
+   that stands out by being tonally alien to everything around it is a defect
+   in the register, however quotable it is on its own.
 
-3. **The SGA/AGA/LGA refusal.** Flagged above. You are the domain authority on
-   whether teaching that failure lands or reads as a straw man.
+3. **The SGA / AGA / LGA refusal is in, and gets a stronger reason than mine.**
+   See that bullet above. The teaching lands because the categories are
+   arbitrary human delineations based on percentile cuts, not on outcomes -
+   so the failure to recover them is a fact about the categories, not a
+   limitation of the method.
+
+**Status:** the outline is approved. Task 11 drafts each surviving bullet
+separately, in the register of the rest of the site, with the drafting note on
+bullet 3 respected.

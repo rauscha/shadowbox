@@ -1,63 +1,69 @@
-# Session hand-off - 2026-08-24 (machine: desktop)
+# Session hand-off - 2026-08-26 (machine: desktop)
 
 ## STATE (read this first)
-- Branch: `main`, clean, synced with `origin/main`.
-- Lessons 1 to 3 are live at https://andrewrausch.com/shadowbox/. M1 through M5 closed.
-- **The build queue changed shape this session.** k-means is now lesson 4; UMAP moved to
-  lesson 5. The lesson-4 spec is written, committed, and **waiting on Andrew's read**.
-  Nothing is being built until he rules on it.
+
+- Branch: `main` at `c95bb29`, clean, pushed, synced with `origin/main`.
+- **M6 is complete and lesson 4 is live** at https://andrewrausch.com/shadowbox/kmeans.html.
+  Four lessons now ship: least squares, covariance, PCA, k-means. 177 tests pass, poster
+  generation is idempotent, and the page teaches with JavaScript off. Every number in the
+  prose is pinned by a test that was written before the prose existed. The next milestone
+  is M7, lesson 5, UMAP, and nothing blocks starting it.
 
 ## Done this session
-- **Reframed the queue.** UMAP does not use k-means; its first step is a
-  k-nearest-neighbour graph. The two share a letter and nothing else. But k-means still
-  belongs first, because it is where iterative optimisation gets taught in 2D where the
-  truth is still visible, and lessons 1 to 3 all had closed-form answers.
-- **Andrew's framing is the lesson's spine.** k-means is not a projection, but it is
-  still a projection in the Plato's Cave sense: a representation of something else,
-  possibly true, possibly false, flattened either way. That resolves the apparent break
-  in the ladder without the page having to apologise for it.
-- **Measured before writing**, which is the lesson-3 scar. Findings that changed the
-  design: biometry clusters are gestational age in a costume (0.871 of GA variation
-  accounted for at k=3, up to 0.941 at k=5); no elbow on either real dataset; blobs
-  restarts spread 579% and k-means++ fixes them 60 of 60; crescents restarts all agree
-  at 0.2% spread and all are 74.7% right at best; the units-trap callback is dead at
-  93.7% agreement and was cut.
-- **Two cold readers** (Haiku and Opus, no repo access) reviewed the design outline.
-  They caught a real design bug - the six-shape cap on k was unscoped and would have
-  crippled the `elbow` instrument - plus three load-bearing unglossed terms. Both fixed
-  in the spec.
-- **Spec committed:** `docs/superpowers/specs/2026-08-24-shadowbox-kmeans-design.md`.
-- **Measurement scripts preserved** into `reference/kmeans-probe-real.mjs` and
-  `reference/kmeans-probe-synthetic.mjs`. Both verified to reproduce the spec's §7
-  numbers from the repo root.
+
+- **Lesson 4 shipped end to end**: four instruments (`kmeans-step`, `restart-roulette`,
+  `elbow`, `label-vs-truth`), `data/blobs.json`, `js/lib/marks.mjs` (the shape channel),
+  `kmeans.html`, four committed poster frames, nav and index wired.
+- **Prose cleared as written.** The draft lives at `.handoff/LESSON-4-PROSE-DRAFT.md` and
+  its header records what was ruled, including two short sentences that were cleared with
+  them in and must not be tidied away later.
+- **Mobile drag bug fixed** (`c397076`). Touch drags were dying after one animation frame
+  because the node under the finger was destroyed on every re-render. Drag listeners now
+  live on the mount container, controls update in place, and `touch-action: none` is
+  scoped to handles and sliders only so pages still scroll.
+- **Keyboard defect fixed.** The six roulette panels carried `role="button"` and
+  `tabindex="0"` but the page listened only for `click`, so they did nothing for anyone
+  not using a mouse. Enter and Space now work.
+- **Two untested colorblind-shape holes closed.** Nothing asserted that clusters get
+  different shapes on `restart-roulette`, or that `kmeans-step`'s legend matches the
+  points it keys. Both were holes in the tests, not the drawing.
+- `.gitattributes` added (`* text=auto eol=lf`), measured to cost zero content diff.
 
 ## Next up
-1. **Andrew reads the spec.** Blocking - the implementation plan waits on it.
-2. **Rule on the half-step decision** in `kmeans-step`: assign and recompute as two
-   separate visible moves (doubles the clicks to convergence, but it is the mechanism),
-   versus one combined step. Specced as half-steps; he never ruled.
-3. **Then `writing-plans`** to turn the spec into an M6 implementation plan.
-4. **M6 starts with `tools/make-blobs.mjs` and `test/kmeans-claims.test.mjs`**, both
-   before a word of prose. The spec's §7 table is the test's contents.
+
+1. **M7, lesson 5, UMAP.** Spec first. `NEXT-STEPS.md` records what it inherits (the two
+   "start from zero" blocks, the Play surface built to take a precomputed frame index, the
+   shape channel in `marks.mjs`) and the one thing it must **not** inherit blindly: the
+   k=6 cap, which binds only instruments drawing membership as a mark per point. This is a
+   large multi-task build - commit after each task and consider `/compact` between them.
+2. **Stranded work in other sandbox projects** - see "Watch out for". `hp-review` is the
+   one that matters.
+3. **`apps.html` card on andrewrausch.com** - still open, unblocked since 2026-08-21,
+   never actioned. Carried in `.handoff/PENDING-DECISIONS.md`.
 
 ## Watch out for
-- **Do not let prose get written before the claims test exists.** That inversion is
-  exactly what produced the wrong PC2 claim in lesson 3.
-- **The synthetic generators in `reference/kmeans-probe-synthetic.mjs` are the spec for
-  `data/blobs.json`** (§6). Seeds 42 / 43 / 44. If they drift, every restart number in
-  §7 drifts with them.
-- **M6 is a large multi-task build** (4 instruments, a contract change to `hydrate.mjs`,
-  a new data file, a claims test, prose, posters). Commit after each instrument;
-  consider `/compact` between them.
-- **Open decision unrelated to lesson 4:** the `apps.html` card on andrewrausch.com,
-  unblocked since the site went public. Never actioned. Say the word and it gets drafted
-  through the `add-app-card` flow, which shows the diff before pushing.
-- **Site-repo worktree, now verified harmless.** `C:/rauscha.github.io/.claude/worktrees/
-  objective-mcclintock-817c73` sits at `f38fde7`, which this session confirmed is a
-  fully-merged ancestor of `master` with no uncommitted changes. Nothing stranded.
-  Clear it whenever with:
-  `git -C C:/rauscha.github.io worktree remove .claude/worktrees/objective-mcclintock-817c73`
-- **Other repos still holding another session's loose work, deliberately untouched:**
-  `hp-review` (17 modifications, 2 worktrees, plus `C:/claudeyard/hp-data-batch1`),
-  `mfm-round-2` (1), `mfm-round-3` (1), `digi-me` (2). Unchanged since 2026-08-22.
-  Committing another session's half-finished state blindly is how things get lost.
+
+- **`hp-review` has 984 insertions across 12 files sitting uncommitted, last commit two
+  weeks ago**, on branch `grader-skill`. This is real source work (scripts, SKILL.md,
+  README, plans) that exists only in that working tree. Not touched here because it is not
+  this session's work. It wants committing.
+- **`hp-data-batch1` is a worktree of `hp-review` sitting on a detached HEAD** (`be4ace8`)
+  with 12MB of untracked grading-pipeline output. Detached HEAD is fragile. The output is
+  generated data, but the state is worth resolving deliberately.
+- Loose untracked files elsewhere: `mfm-round-2/scripts/lor_orchestrate.py`,
+  `mfm-round-3/SESSION-3-NOTES.md`, `mfm-round-4/SESSION-4-NOTES.md`, and two stale
+  `.log.prev` files in `digi-me`. `app-review` is clean and its side branch is merged.
+- **iOS Safari is accepted, not verified.** Every measurement of the mobile drag fix was
+  Blink under DevTools emulation. Ismely will check a real iPhone. If drags still die
+  mid-gesture, that is a *second* mechanism and wants its own investigation, not a re-run
+  of the same fix. Recorded under "Accepted, not verified" in `NEXT-STEPS.md`.
+- **`pca.html:888` keeps "gestational age wearing a disguise"** by explicit ruling, even
+  though the same metaphor was cut from lesson 4. Lesson 3's prose was approved before
+  that rule existed. `PROSE-GUIDE.md` rule 14 carries the standing exception. Do not
+  sweep it out for consistency.
+- **The house-rules test sweep drives a hand-written list of four instrument names**
+  (`test/instruments4.test.mjs`). Lesson 5's instruments must be added to it or it passes
+  by simply not looking at them.
+- Filed as future work, deliberately not done: `band-mean`/`band-n` inside the clip group
+  in `label-vs-truth` (cannot trigger on fixed data), the double-mount case in
+  `hydrate.mjs` (no live caller), and three small refactors that belong with lesson 5.

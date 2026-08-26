@@ -2,7 +2,8 @@
 
 ## STATE (read this first)
 
-- Branch: `main` at `c95bb29`, clean, pushed, synced with `origin/main`.
+- Branch: `main`, clean, pushed, synced with `origin/main`. (No SHA pinned here on purpose
+  - it goes stale the moment this file is itself committed.)
 - **M6 is complete and lesson 4 is live** at https://andrewrausch.com/shadowbox/kmeans.html.
   Four lessons now ship: least squares, covariance, PCA, k-means. 177 tests pass, poster
   generation is idempotent, and the page teaches with JavaScript off. Every number in the
@@ -36,10 +37,11 @@
    shape channel in `marks.mjs`) and the one thing it must **not** inherit blindly: the
    k=6 cap, which binds only instruments drawing membership as a mark per point. This is a
    large multi-task build - commit after each task and consider `/compact` between them.
-2. **Stranded work in other sandbox projects** - see "Watch out for". `hp-review` is the
-   one that matters.
-3. **`apps.html` card on andrewrausch.com** - still open, unblocked since 2026-08-21,
+2. **`apps.html` card on andrewrausch.com** - still open, unblocked since 2026-08-21,
    never actioned. Carried in `.handoff/PENDING-DECISIONS.md`.
+
+   Nothing else is outstanding. The worktree scan found no stranded work: every other
+   sandbox repo is either clean or holding local-only changes on purpose.
 
 ## Watch out for
 

@@ -1,4 +1,17 @@
-# Lesson 4 prose - first full draft, 2026-08-25
+# Lesson 4 prose - CLEARED 2026-08-25
+
+> **Andrew cleared this draft as written on 2026-08-25.** No edits requested.
+> The three open questions at the bottom were cleared unanswered, so the
+> answers stand as drafted: the plain "Clusters" heading stays, the
+> four-dimension handoff stays as a discomfort rather than a promise, and the
+> refusal section keeps its length as the spine of the lesson.
+>
+> The two short sentences I flagged as probable rule-7 violations ("Switch to
+> the births." and "You are trusting a summary.") were **not** cut. He cleared
+> the draft with them in it. Do not quietly remove them later.
+>
+> Task 11 is therefore no longer a writing task. It is: render this text into
+> `kmeans.html` with the poster markers, changing no wording.
 
 Drafted from the approved outline, one bullet at a time, then read straight
 through for the joins. Figure positions marked so you can see what each
@@ -219,7 +232,7 @@ groups in the data. The two share a letter and nothing else.
 
 ---
 
-## Open questions on the draft itself
+## Open questions on the draft itself (all cleared unanswered, 2026-08-25)
 
 1. **The "Clusters" heading.** Plain noun phrase, matching "Principal
    components" in lesson 3. It is duller than the section deserves. Say if you

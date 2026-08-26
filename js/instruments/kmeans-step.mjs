@@ -31,13 +31,11 @@ export const defaults = {
   idKey: 'kmeans-step',
   dataset: 'blobs',
   xs: null, ys: null, truth: null,
-  xName: 'x', yName: 'y',
   k: 3,
   plusplus: false,
   seed: 1,
   centers: null, labels: null, phase: 'assign', iter: 0, done: false,
   showTruth: false, showWall: true, play: false,
-  note: '',
   labels_: { title: 'press Step. watch which half of the algorithm moves.' },
 };
 

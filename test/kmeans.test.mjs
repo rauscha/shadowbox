@@ -90,6 +90,7 @@ test('kmeansRun is the half-step loop, not a second implementation', () => {
   assert.deepEqual(run.labels, s.labels);
   assert.deepEqual(run.centers, s.centers);
   close(run.wcss, totalSquaredDistance(TOY, s.labels, s.centers));
+  assert.equal(run.iters, s.iter, 'iters must count the same full iterations this manual loop just counted');
 });
 
 test('purity is the share of points in their cluster majority class', () => {
@@ -141,6 +142,7 @@ test('blobs.json carries three configs, 150 points each, with truth where truth 
   for (const [name, c] of Object.entries(d.configs)) {
     assert.equal(c.xs.length, 150, `${name} xs`);
     assert.equal(c.ys.length, 150, `${name} ys`);
+    assert.ok(c.labels === null || c.labels.length === 150, `${name} labels`);
     assert.ok(c.xs.every(Number.isFinite) && c.ys.every(Number.isFinite), `${name} has a non-finite value`);
   }
   assert.deepEqual([...new Set(d.configs.blobs.labels)].sort(), [0, 1, 2]);

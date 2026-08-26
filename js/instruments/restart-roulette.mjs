@@ -20,8 +20,8 @@ export const RUNS = 6;
 // The claims table's sweep uses mulberry32(s * 7919) over 60 seeds, where 5
 // distinct optima appear and 15 percent of starts land on a bad one. Taking the
 // first six of THAT scheme gives six identical panels: all 89.67. A figure
-// titled "six starts, six answers" that draws six identical answers teaches the
-// opposite of its point.
+// built to show that six restarts can land on different answers, but that
+// draws six identical ones instead, teaches the opposite of its point.
 //
 // Plain seeds 1 to 6 give five starts at 89.67 and one at 506.8. One wrong in
 // six is 17 percent against a measured 15 percent, so this display sample
@@ -221,7 +221,7 @@ export function render(state) {
     parts.push(`</g>`);
   }
 
-  if (st.note) parts.push(`<text x="${GRID_X}" y="${H - 10}" font-size="11" fill="var(--text-light)">${st.note}</text>`);
+  if (st.note) parts.push(`<text data-role="note" x="${GRID_X}" y="${H - 10}" font-size="11" fill="var(--text-light)">${st.note}</text>`);
 
   parts.push(`</svg>`);
   return parts.join('\n');

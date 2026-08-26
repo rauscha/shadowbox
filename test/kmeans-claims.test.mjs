@@ -57,8 +57,22 @@ test('blobs, k=3, random starts: 5 optima, 579 percent spread, 15 percent land w
   assert.equal(s.optima, 5);
   close(s.best, 89.7, 0.05);                    // prose: the good answer costs about 90
   close(s.worst, 608.9, 0.05);
-  close(s.spreadPct, 579.1, 0.5);               // prose: "the worst is nearly seven times the best"
-  close(s.landedWrongPct, 15, 0.1);             // prose: "about one start in seven"
+  close(s.spreadPct, 579.1, 0.5);               // this sweep's own spread across 60 seeds; not quoted directly in prose
+  close(s.landedWrongPct, 15, 0.1);             // prose: "about one start in six"
+});
+
+test('the roulette figure (seeds 1-6, not the 60-seed sweep) shows one bad optimum: 89.7 against 506.8', () => {
+  // restart-roulette.mjs does not reuse sweep()'s mulberry32(s * 7919) scheme;
+  // its own seedOf steps mulberry32(1) through mulberry32(6) directly.
+  // kmeans.html:1906 prints both numbers ("a total of 89.7 against 506.8"), and
+  // until now nothing pinned the second one: the neighbouring instrument test
+  // (test/instruments4.test.mjs) only asserts that exactly one of the six costs
+  // exceeds best * 1.02, which lets the bad optimum drift anywhere above that
+  // line and still read green.
+  const X = rowsOf(BLOBS.configs.blobs);
+  const costs = [1, 2, 3, 4, 5, 6].map(seed => kmeansRun(X, 3, mulberry32(seed), { plusplus: false }).wcss);
+  close(Math.min(...costs), 89.7, 0.05);
+  close(Math.max(...costs), 506.8, 0.1);        // prose: "a total of 89.7 against 506.8"
 });
 
 test('blobs, k=3, k-means++ : one optimum, zero spread, and it is right every time', () => {
@@ -155,7 +169,7 @@ test('births restarts are real but small: 10 optima across 60 random starts, 2.9
 
 // ------------------------------------------------------------------ biometry
 
-test('biometry: the labels are gestational age in a costume, 0.719 / 0.871 / 0.916 / 0.941', () => {
+test('biometry: the labels account for most of the variation in gestational age, 0.719 / 0.871 / 0.916 / 0.941', () => {
   const X = zscoreColumns(bioColumns());
   const want = [0.719, 0.871, 0.916, 0.941];
   [2, 3, 4, 5].forEach((k, i) => {

@@ -5,8 +5,8 @@
 //   - pointer drags on [data-drag] elements, routed through instrument.applyDrag
 //   - keyboard drags (tab to a handle, arrows nudge, shift = coarse)
 // Pure helpers (createStore, controlsMarkup, visibleControls, updateControls,
-// clientToViewBox) are node-tested; DOM binding is exercised in the browser QA
-// pass.
+// clientToViewBox, playTick) are node-tested; DOM binding is exercised in the
+// browser QA pass.
 //
 // rerender() calls instrument.render(state) on every state change, which hands
 // back a whole new <svg> string - every frame is a full re-render (see

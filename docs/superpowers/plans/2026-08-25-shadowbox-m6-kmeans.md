@@ -736,8 +736,8 @@ test('blobs, k=3, random starts: 5 optima, 579 percent spread, 15 percent land w
   assert.equal(s.optima, 5);
   close(s.best, 89.7, 0.05);                    // prose: the good answer costs about 90
   close(s.worst, 608.9, 0.05);
-  close(s.spreadPct, 579.1, 0.5);               // prose: "the worst is nearly seven times the best"
-  close(s.landedWrongPct, 15, 0.1);             // prose: "about one start in seven"
+  close(s.spreadPct, 579.1, 0.5);               // this sweep's own spread across 60 seeds; not quoted directly in prose
+  close(s.landedWrongPct, 15, 0.1);             // prose: "about one start in six"
 });
 
 test('blobs, k=3, k-means++ : one optimum, zero spread, and it is right every time', () => {

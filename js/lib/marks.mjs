@@ -78,6 +78,11 @@ export function partitionSegments(centers, frame, { n = 64 } = {}) {
       for (let l = 0; l < ds.length; l++) if (l !== c && ds[l] < other) other = ds[l];
       return ds[c] - other;
     }));
+    // isoSegments' saddle-pairing shortcut is only documented safe for a convex
+    // bowl (see its own header comment); a Voronoi boundary is not guaranteed
+    // convex, so a four-crossing cell here pairs its two segments as-is rather
+    // than checking which pairing matches the true nearest-center topology.
+    // The one place this file's partition can be inexact, not exact by proof.
     for (const [i0, j0, i1, j1] of isoSegments({ values }, 0)) {
       const s = [N(px(i0)), N(py(j0)), N(px(i1)), N(py(j1))];
       const key = `${Math.round((s[0] + s[2]) * 2)}:${Math.round((s[1] + s[3]) * 2)}`;

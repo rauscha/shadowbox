@@ -1894,7 +1894,7 @@
 </g>
 <text data-role="panel-purity" x="8" y="170" font-size="10" fill="var(--text)">100% right</text>
 </g>
-<text x="28" y="450" font-size="11" fill="var(--text-light)">150 generated points, three blobs</text>
+<text data-role="note" x="28" y="450" font-size="11" fill="var(--text-light)">150 generated points, three blobs</text>
 </svg>
 <!-- /poster:restart-roulette-blobs -->
     </div>
@@ -2530,10 +2530,15 @@
       } });
 
       // --- six starts ---
-      const rr = createStore({ dataset: 'blobs', ...pick('blobs'), k: 3, plusplus: false });
+      const rrNotes = {
+        blobs: '150 generated points, three blobs',
+        crescents: '150 generated points, two crescents',
+        uniform: '150 generated points, no structure at all',
+      };
+      const rr = createStore({ dataset: 'blobs', ...pick('blobs'), k: 3, plusplus: false, note: rrNotes.blobs });
       const rrActions = {};
       for (const name of ['blobs', 'crescents', 'uniform']) {
-        rrActions[`use-${name}`] = store => store.set({ dataset: name, ...pick(name), k: DATA[name].k ?? store.get().k });
+        rrActions[`use-${name}`] = store => store.set({ dataset: name, ...pick(name), k: DATA[name].k ?? store.get().k, note: rrNotes[name] });
       }
       mount(document.getElementById('rr-blobs'), RR, rr, { actions: rrActions, overlay: {
         idKey: 'rr-blobs',

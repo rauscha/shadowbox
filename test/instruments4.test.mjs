@@ -174,7 +174,7 @@ test('the cost readout falls on every recompute and is never negative', () => {
   assert.ok(s.done, 'blobs at k=3 must converge well inside 30 iterations');
 });
 
-test('every cluster gets its own mark, and the legend names all of them', () => {
+test('every cluster gets its own mark, and the legend draws the SAME shape as that cluster\'s points', () => {
   // Stepped once, so every cluster has members and every mark is on the page.
   // Seed 5 at k=6 on blobs was measured to populate all six clusters.
   const base = blobState({ k: 6 });
@@ -185,6 +185,29 @@ test('every cluster gets its own mark, and the legend names all of them', () => 
   const kinds = attrs(svg, 'pt').map(a => a['data-mark']);
   assert.equal(new Set(kinds).size, 6, 'membership must be visible as shape, one kind per cluster');
   for (const kind of new Set(kinds)) assert.ok(MARK_KINDS.includes(kind));
+
+  // The two checks above only COUNT: six legend rows, six distinct point
+  // shapes. Neither compares the two, so a legend that drew six rows in six
+  // shapes but in the WRONG order - telling the reader group 2 is a square
+  // when every one of cluster 2's points is a triangle - would still pass
+  // both. Decode each legend row's own path back to a kind (same reverse-
+  // lookup label-vs-truth's shape test uses) and check it against the shape
+  // actually drawn for that cluster's points, keyed by data-cluster - not by
+  // position in the markup, which is the thing that can silently disagree.
+  const markKindOf = (() => {
+    const table = new Map(MARK_KINDS.map(kind => [markPath(kind, 0, 0, 8).d.replace(/-?[\d.]+/g, '#'), kind]));
+    return d => table.get(d.replace(/-?[\d.]+/g, '#'));
+  })();
+  const shapeByCluster = new Map();
+  for (const p of attrs(svg, 'pt')) shapeByCluster.set(p['data-cluster'], p['data-mark']);
+  const legendPaths = [...svg.matchAll(/<g data-role="legend-mark">\s*<path d="([^"]+)"/g)].map(m => m[1]);
+  assert.equal(legendPaths.length, 6);
+  for (let j = 0; j < legendPaths.length; j++) {
+    const legendKind = markKindOf(legendPaths[j]);
+    assert.ok(legendKind, `legend row ${j}: path does not normalize to any known mark shape`);
+    assert.equal(legendKind, shapeByCluster.get(String(j)),
+      `legend row ${j} (group ${j + 1}) draws ${legendKind}, but cluster ${j}'s points draw ${shapeByCluster.get(String(j))}`);
+  }
 });
 
 test('k is capped at the shape budget on this instrument', () => {
@@ -352,7 +375,40 @@ test('each panel draws ITS OWN partition, not one panel repeated six times', () 
   assert.equal(rand.length, 6);
   assert.equal(new Set(rand).size, 2, `wall counts per panel: ${rand}`);
   const pp = perPanel(RR.render(rrState({ plusplus: true })));
+  assert.equal(pp.length, 6);
   assert.equal(new Set(pp).size, 1, `++ draws one partition six times: ${pp}`);
+});
+
+test('every point draws the shape of ITS OWN cluster, not a fixed shape - shape is the only channel a colorblind reader gets here too', () => {
+  // restart-roulette draws no data-cluster / data-mark on its 900 points (see
+  // the comment above the render loop), so this cannot key off an attribute
+  // the way label-vs-truth's equivalent test does. Instead it decodes each
+  // drawn path back to a kind - same reverse-lookup, same real MARK_KINDS and
+  // markFor, not a guess at what a shape "looks like" - and checks it against
+  // panels()'s own computed label for that exact point, panel by panel and
+  // point by point. A render loop that painted every point with one fixed
+  // shape regardless of its label - collapsing all 900 points to a single
+  // shape - would still pass every other test in this file.
+  const markKindOf = (() => {
+    const table = new Map(MARK_KINDS.map(kind => [markPath(kind, 0, 0, 2.2).d.replace(/-?[\d.]+/g, '#'), kind]));
+    return d => table.get(d.replace(/-?[\d.]+/g, '#'));
+  })();
+  const st = rrState();
+  const panels = RR.panels(st);
+  const svg = RR.render(st);
+  const panelSvgs = svg.split(/(?=<g data-role="panel")/).slice(1);
+  assert.equal(panelSvgs.length, 6);
+  for (let i = 0; i < panelSvgs.length; i++) {
+    const pts = attrs(panelSvgs[i], 'pt');
+    assert.equal(pts.length, 150, `panel ${i} must draw all 150 points`);
+    assert.ok(new Set(panels[i].labels).size > 1, `panel ${i}: only one cluster represented, weakens this check`);
+    for (let j = 0; j < pts.length; j++) {
+      const kind = markKindOf(pts[j].d);
+      assert.ok(kind, `panel ${i} point ${j}: path does not normalize to any known mark shape`);
+      assert.equal(kind, markFor(panels[i].labels[j]),
+        `panel ${i} point ${j}: drew ${kind} but its label is cluster ${panels[i].labels[j]} (should be ${markFor(panels[i].labels[j])})`);
+    }
+  }
 });
 
 // ------------------------------------------------------------------- elbow

@@ -30,7 +30,7 @@ taken at the same time:
   makes structureless data look *more* structured is useful, and the reader has to be
   able to reach it rather than be told about it.
 - **UMAP is not presented as beating k-means.** Approved. §8's requirement stands: the
-  k=5 median of 0.660, worse than k-means' 0.747, appears alongside the k=50 result.
+  k=5 median of 0.657, worse than k-means' 0.747, appears alongside the k=50 result.
   The point is that the two methods are different bets, not that one wins.
 - **Random initialisation, not spectral.** Approved. The page owes one sentence saying
   that umap-learn defaults to spectral and that this differs.
@@ -270,10 +270,10 @@ computes a fresh one on every load.
 | k is structural: crescents recovered, k=2/5/15/50 | 0.607 / 0.627 / 0.753 / 1.000 | seed 1 |
 | **min_dist is cosmetic**, 0 to 1.0 on blobs | local structure 0.771-0.845, class recovery **1.000 throughout** | seed 1, k=15, 7 values |
 | k-means on raw crescents (lesson 4's number) | 0.747, every restart agreeing | `kmeans-claims` |
-| crescents after UMAP, 30 seeds, k=5 | median 0.660, **1/30** reach 1.000 - worse than k-means | 30 seeds |
-| crescents after UMAP, 30 seeds, k=15 | median 0.867, 8/30 reach 1.000 | 30 seeds |
+| crescents after UMAP, 30 seeds, k=5 | median 0.657, **1/30** reach 1.000 - worse than k-means | 30 seeds |
+| crescents after UMAP, 30 seeds, k=15 | median 0.830, 8/30 reach 1.000 | 30 seeds |
 | crescents after UMAP, 30 seeds, k=30 | median 1.000, 20/30 reach 1.000 | 30 seeds |
-| crescents after UMAP, 30 seeds, k=50 | median 1.000, **25/30** reach 1.000, worst 0.833 | 30 seeds |
+| crescents after UMAP, 30 seeds, k=50 | median 1.000, **24/30** reach 1.000, worst 0.833 | 30 seeds |
 | uniform: apparent grouping, raw square | 0.444 | best k-means k=2..6 |
 | uniform: apparent grouping after UMAP | k=5 0.538-0.669; k=15 0.559-0.636; k=50 0.586-0.622 | 5 seeds each |
 | biometry GA recovered, original 4-D | 0.972 | neighbourhood measure, k=15 |
@@ -281,6 +281,17 @@ computes a fresh one on every load.
 | lesson 4's k=3 labels on the same data | 0.871 | `kmeans-claims` |
 | the linear reading of the same closer | 0.261-0.971, an artifact of curvature | §2(c) |
 | runtime, worst case | 96 ms, biometry k=50, 200 epochs | Node 24 |
+
+Reconciled 2026-08-27 against `results/umap-measure.log`, produced by the now-complete
+`reference/umap-measure.mjs` (Task 1 of the M7 plan). Three numbers in the crescents
+30-seed sweep were pasted from an earlier ad hoc run and moved once the harness became the
+source of truth: k=5 median 0.660 to **0.657**, k=15 median 0.867 to **0.830**, k=50 perfect
+count 25/30 to **24/30**. The worst-case value at each k, every other row in this table, and
+both load-bearing biometry numbers (ceiling 0.972, embedding range 0.971-0.974) held exact.
+Runtime is excluded from this reconciliation: two consecutive runs on the same machine gave
+94 ms and 98 ms for biometry k=50, confirming wall-clock timing is inherently noisy in a way
+the seeded algorithmic measures are not, so 96 ms stands as a representative value inside the
+observed band rather than a fact this harness pins.
 
 Fidelity of the implementation itself is pinned separately by `test/umap.test.mjs` against
 `reference/umap-probe.py` (umap-learn 0.5.12): every rho exact, every sigma and edge weight
@@ -292,7 +303,7 @@ within 1e-5, the a/b fit within 5.1e-6 across 28 grid points.
   0.333 to 0.703 across seeds on crescents alone, on data whose true structure never moved.
 - **That the shape of a cluster means anything.** Same evidence.
 - **That UMAP finds structure k-means cannot.** It can, and only sometimes: on crescents at
-  k=50, 25 of 30 seeds recover both arcs exactly - but **at k=5 the median is 0.660, worse
+  k=50, 24 of 30 seeds recover both arcs exactly - but **at k=5 the median is 0.657, worse
   than the 0.747 k-means got for free**. The method is not a strict improvement, it is a
   different bet, and the bet depends on a number you chose.
 - **That an apparent group is a real group.** The uniform square has no structure by
@@ -347,7 +358,7 @@ M6 built the transport correctly and lesson 5 pays nothing for it.
 - **Reading `seed-roulette` as instability theatre.** The local numbers barely move. The
   page must not let six different-looking panels imply the method is unreliable, when what
   the panels show is that the *unstable* part is the part you were never supposed to read.
-- **Crescents overclaiming.** It is tempting to present k=50 (25/30 perfect) as UMAP
+- **Crescents overclaiming.** It is tempting to present k=50 (24/30 perfect) as UMAP
   beating k-means. §8 requires the k=5 result on the same slide.
 - **Poster frames and a live-computed instrument.** The poster must be generated from a
   fixed seed and the live instrument must start from that same seed, or the page visibly

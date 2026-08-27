@@ -12,9 +12,12 @@
 //
 // Stage 2 being deterministic is the single most useful fact for the lesson. Every
 // run-to-run difference a reader sees comes from stage 3 alone, which is the same
-// "start from a guess and improve" idiom lesson 4 introduced. Lesson 4's Play loop
-// drives frames from a live step(); this module instead precomputes a trajectory
-// (see trajectory()) because UMAP's SGD is far too slow to run per animation frame.
+// "start from a guess and improve" idiom lesson 4 introduced. Lesson 5 runs the
+// whole thing live: 96 ms worst case on the largest committed dataset (biometry,
+// n=350, k=50, 200 epochs), measured before the spec was written. layout-play
+// drives optimizeEpoch through hydrate.mjs's Play loop one epoch at a time and
+// ships no precomputed frames. An earlier draft of this comment asserted the
+// opposite, and spec §2(a) records the correction.
 //
 // Fidelity notes, all deliberate, all matching umap-learn 0.5's reference code:
 //   - sigma is found by the same 64-step bisection against a target of log2(k),

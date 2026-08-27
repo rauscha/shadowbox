@@ -1,0 +1,92 @@
+[13:54:19] umap measurement harness
+queue: (1) graph determinism  (2) seed spread  (3) k sweep  (4) min_dist sweep
+       (5) crescents vs k-means  (6) uniform false structure  (7) biometry closer
+       (8) crescents, 30 seeds  (9) biometry closer, neighbourhood measure  (10) runtime
+
+== 1. is the graph deterministic? (same X, same k, different seeds) ==
+  blobs      edges=1398 identical across calls: true
+  biometry   edges=3329 identical across calls: true
+
+== 2. seed spread of the embedding (k=15, min_dist=0.1, 200 epochs) ==
+  dataset     seeds  knn-recall(15)      km-purity           dist-spearman
+  blobs       10     0.769-0.799         1.000-1.000         0.565-0.763
+  crescents   10     0.840-0.890         0.533-1.000         0.333-0.703
+  uniform     10     0.756-0.805          n/a                0.589-0.881
+  births      10     0.731-0.765          n/a                -0.029-0.236
+  biometry    10     0.646-0.655          n/a                0.586-0.965
+
+== 3. k sweep (seed 1) - does the number of neighbours change the picture? ==
+  dataset     k    knn-recall  km-purity  dist-spearman  best-silhouette(k)
+  blobs       2    0.680       0.533      0.118          0.499 (k=6)
+  blobs       5    0.720       0.693      0.664          0.523 (k=5)
+  blobs       15   0.793       1.000      0.690          0.833 (k=3)
+  blobs       50   0.773       1.000      0.773          0.882 (k=3)
+  crescents   2    0.693       0.607      0.033          0.438 (k=6)
+  crescents   5    0.825       0.627      0.250          0.555 (k=6)
+  crescents   15   0.882       0.753      0.402          0.683 (k=5)
+  crescents   50   0.909       1.000      0.756          0.710 (k=2)
+  uniform     2    0.660         n/a      0.200          0.447 (k=5)
+  uniform     5    0.759         n/a      0.401          0.569 (k=6)
+  uniform     15   0.791         n/a      0.589          0.627 (k=6)
+  uniform     50   0.809         n/a      0.848          0.612 (k=5)
+  births      2    0.704         n/a      -0.070         0.373 (k=4)
+  births      5    0.751         n/a      -0.127         0.398 (k=6)
+  births      15   0.760         n/a      0.050          0.531 (k=6)
+  births      50   0.766         n/a      0.230          0.535 (k=6)
+  biometry    2    0.557         n/a      0.135          0.439 (k=5)
+  biometry    5    0.585         n/a      0.440          0.567 (k=6)
+  biometry    15   0.652         n/a      0.731          0.605 (k=5)
+  biometry    50   0.627         n/a      0.689          0.581 (k=6)
+
+== 4. min_dist sweep on blobs (k=15, seed 1) - cosmetic or structural? ==
+  min_dist  knn-recall  km-purity  dist-spearman  spread(x)
+  0         0.771       1.000      0.801          14.2
+  0.1       0.793       1.000      0.690          15.0
+  0.35      0.820       1.000      0.772          17.2
+  0.6       0.830       1.000      0.592          17.7
+  0.75      0.813       1.000      0.777          27.0
+  0.9       0.840       1.000      0.648          13.3
+  1         0.845       1.000      0.807          15.9
+
+== 5. crescents: the thing k-means could not do ==
+  k-means on the raw data, k=2:      purity 0.747
+  umap(k=15,seed=1 ) then k-means k=2:  purity 0.753   km-purity 0.753
+  umap(k=15,seed=2 ) then k-means k=2:  purity 0.900   km-purity 0.900
+  umap(k=15,seed=3 ) then k-means k=2:  purity 0.753   km-purity 0.753
+  umap(k=15,seed=4 ) then k-means k=2:  purity 0.667   km-purity 0.667
+  umap(k=15,seed=5 ) then k-means k=2:  purity 0.533   km-purity 0.533
+
+== 6. uniform: does umap manufacture groups that are not there? ==
+  silhouette of best k-means on the RAW uniform square: 0.444 (k=5)
+  silhouette after umap k=5  : 0.538-0.669  (best k per seed: 6,5,6,6,6)
+  silhouette after umap k=15 : 0.559-0.636  (best k per seed: 6,2,5,5,6)
+  silhouette after umap k=50 : 0.586-0.622  (best k per seed: 5,5,5,6,5)
+
+== 7. biometry closer: does the embedding recover gestational age? ==
+  k=5   R^2(GA on the 2 embedding coords) 0.160-0.609   knn-recall 0.613-0.635
+  k=15  R^2(GA on the 2 embedding coords) 0.261-0.971   knn-recall 0.647-0.652
+  k=50  R^2(GA on the 2 embedding coords) 0.395-0.967   knn-recall 0.624-0.637
+  for comparison, lesson 4's k=3 cluster labels on the same data: eta^2(GA) 0.871
+  and PCA's PC1 (lesson 3) is the same story by a third route.
+  embedding-vs-GA rank correlation on the best axis: 0.646
+
+== 8. crescents, 30 seeds: is UMAP better than k-means, or just different? ==
+  [13:54:27] k=5   median 0.657  perfect 1/30  worst 0.513
+  [13:54:28] k=15  median 0.830  perfect 8/30  worst 0.533
+  [13:54:29] k=30  median 1.000  perfect 20/30  worst 0.593
+  [13:54:30] k=50  median 1.000  perfect 24/30  worst 0.833
+  [13:54:30] for comparison, k-means on the raw crescents at k=2 is 0.747 (kmeans-claims)
+
+== 9. biometry closer: GA recovered from neighbours, not from a line ==
+  [13:54:30] ceiling, the original 4-D measurements, k=15: 0.972
+  [13:54:30] embedding k=5  , 10 seeds: 0.971-0.973
+  [13:54:31] embedding k=15 , 10 seeds: 0.972-0.974
+  [13:54:32] embedding k=50 , 10 seeds: 0.972-0.974
+
+== 10. runtime, the claim that this can run in a browser at all ==
+  [13:54:32] blobs     n=150  k=15  graph 3 ms   full 200-epoch run 22 ms
+  [13:54:32] blobs     n=150  k=50  graph 6 ms   full 200-epoch run 34 ms
+  [13:54:32] biometry  n=350  k=15  graph 17 ms   full 200-epoch run 62 ms
+  [13:54:32] biometry  n=350  k=50  graph 25 ms   full 200-epoch run 94 ms
+
+[13:54:32] done

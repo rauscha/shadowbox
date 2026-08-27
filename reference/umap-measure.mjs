@@ -9,9 +9,10 @@
 // standing correction to that.
 
 import { readFileSync } from 'node:fs';
-import { umap, fuzzyGraph, knn, euclidean } from '../js/math/umap.mjs';
+import { umap, fuzzyGraph, euclidean } from '../js/math/umap.mjs';
 import { zscoreColumns, kmeansRun, purity, eta2 } from '../js/math/kmeans.mjs';
 import { mulberry32 } from '../js/math/core.mjs';
+import { knnRecall, rank, pearson, distanceSpearman, gaFromNeighbours } from '../js/lib/embed-metrics.mjs';
 
 const D = new URL('../data/', import.meta.url);
 const read = f => JSON.parse(readFileSync(new URL(f, D), 'utf8'));
@@ -27,18 +28,9 @@ SETS.biometry = { X: zscoreColumns([bio.bpd, bio.hc, bio.ac, bio.fl]), truth: nu
 const fmt = (v, d = 3) => (v === null || Number.isNaN(v) ? '  n/a' : v.toFixed(d));
 
 // --- metrics -----------------------------------------------------------------
-
-// Fraction of each point's k original neighbours that survive as neighbours in 2D.
-// The single most honest summary of "did local structure survive the flattening".
-function knnRecall(X, Y, k) {
-  const a = knn(X, k).indices, b = knn(Y, k).indices;
-  let hit = 0;
-  for (let i = 0; i < a.length; i++) {
-    const s = new Set(b[i]);
-    for (const j of a[i]) if (s.has(j)) hit++;
-  }
-  return hit / (a.length * k);
-}
+// knnRecall, rank, pearson, distanceSpearman and gaFromNeighbours now live in
+// js/lib/embed-metrics.mjs, imported above, so the page and this harness cannot
+// drift apart on what these words mean.
 
 // DROPPED: 1-nearest-neighbour label agreement. It reads 1.000 on the embedding
 // for both labelled datasets - and 1.000 on the RAW data as well, because these
@@ -50,33 +42,6 @@ function kmeansPurity(Y, truth, k) {
   if (!truth) return null;
   const km = kmeansRun(Y, k, mulberry32(7), { plusplus: true });
   return purity(km.labels, truth, k);
-}
-
-function rank(v) {
-  const idx = v.map((x, i) => [x, i]).sort((p, q) => p[0] - q[0]);
-  const r = new Array(v.length);
-  for (let i = 0; i < idx.length;) {
-    let j = i; while (j + 1 < idx.length && idx[j + 1][0] === idx[i][0]) j++;
-    const avg = (i + j) / 2 + 1;
-    for (let t = i; t <= j; t++) r[idx[t][1]] = avg;
-    i = j + 1;
-  }
-  return r;
-}
-function pearson(a, b) {
-  const n = a.length, ma = a.reduce((x, y) => x + y, 0) / n, mb = b.reduce((x, y) => x + y, 0) / n;
-  let sab = 0, sa = 0, sb = 0;
-  for (let i = 0; i < n; i++) { const da = a[i] - ma, db = b[i] - mb; sab += da * db; sa += da * da; sb += db * db; }
-  return sab / Math.sqrt(sa * sb);
-}
-// Global structure: do pairwise distances in 2D track pairwise distances in the
-// original space? Spearman, over every pair.
-function distanceSpearman(X, Y) {
-  const dx = [], dy = [];
-  for (let i = 0; i < X.length; i++) for (let j = i + 1; j < X.length; j++) {
-    dx.push(euclidean(X[i], X[j])); dy.push(euclidean(Y[i], Y[j]));
-  }
-  return pearson(rank(dx), rank(dy));
 }
 
 // Mean silhouette of the best k-means partition of the EMBEDDING, k = 2..6.
@@ -152,6 +117,7 @@ const stamp = () => new Date().toTimeString().slice(0, 8);
 log(`[${stamp()}] umap measurement harness`);
 log(`queue: (1) graph determinism  (2) seed spread  (3) k sweep  (4) min_dist sweep`);
 log(`       (5) crescents vs k-means  (6) uniform false structure  (7) biometry closer`);
+log(`       (8) crescents, 30 seeds  (9) biometry closer, neighbourhood measure  (10) runtime`);
 log('');
 
 log('== 1. is the graph deterministic? (same X, same k, different seeds) ==');
@@ -244,6 +210,53 @@ log('== 7. biometry closer: does the embedding recover gestational age? ==');
   log(`  embedding-vs-GA rank correlation on the best axis: ${fmt(Math.max(
     Math.abs(pearson(rank(Y.map(p => p[0])), rank(ga))),
     Math.abs(pearson(rank(Y.map(p => p[1])), rank(ga)))))}`);
+}
+log('');
+
+log('== 8. crescents, 30 seeds: is UMAP better than k-means, or just different? ==');
+{
+  const S = SETS.crescents;
+  const median = v => {
+    const s = [...v].sort((a, b) => a - b), m = s.length >> 1;
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  };
+  for (const k of [5, 15, 30, 50]) {
+    const p = [];
+    for (let seed = 1; seed <= 30; seed++) {
+      const { Y } = umap(S.X, { k, seed, nEpochs: 200 });
+      p.push(purity(kmeansRun(Y, 2, mulberry32(7), { plusplus: true }).labels, S.truth, 2));
+    }
+    log(`  [${stamp()}] k=${String(k).padEnd(3)} median ${fmt(median(p))}  perfect ${p.filter(v => v > 0.999).length}/30  worst ${fmt(Math.min(...p))}`);
+  }
+  log(`  [${stamp()}] for comparison, k-means on the raw crescents at k=2 is 0.747 (kmeans-claims)`);
+}
+log('');
+
+log('== 9. biometry closer: GA recovered from neighbours, not from a line ==');
+{
+  const S = SETS.biometry, ga = bio.ga;
+  log(`  [${stamp()}] ceiling, the original 4-D measurements, k=15: ${fmt(gaFromNeighbours(S.X, ga, 15))}`);
+  for (const k of [5, 15, 50]) {
+    const v = [];
+    for (let seed = 1; seed <= 10; seed++) {
+      const { Y } = umap(S.X, { k, seed, nEpochs: 200 });
+      v.push(gaFromNeighbours(Y, ga, 15));
+    }
+    log(`  [${stamp()}] embedding k=${String(k).padEnd(3)}, 10 seeds: ${fmt(Math.min(...v))}-${fmt(Math.max(...v))}`);
+  }
+}
+log('');
+
+log('== 10. runtime, the claim that this can run in a browser at all ==');
+for (const [name, k] of [['blobs', 15], ['blobs', 50], ['biometry', 15], ['biometry', 50]]) {
+  const S = SETS[name];
+  const ms = d => Number(d) / 1e6;
+  const t0 = process.hrtime.bigint();
+  fuzzyGraph(S.X, k);
+  const t1 = process.hrtime.bigint();
+  umap(S.X, { k, seed: 1, nEpochs: 200 });
+  const t2 = process.hrtime.bigint();
+  log(`  [${stamp()}] ${name.padEnd(9)} n=${String(S.X.length).padEnd(4)} k=${String(k).padEnd(3)} graph ${ms(t1 - t0).toFixed(0)} ms   full 200-epoch run ${ms(t2 - t1).toFixed(0)} ms`);
 }
 log('');
 log(`[${stamp()}] done`);

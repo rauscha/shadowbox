@@ -75,7 +75,16 @@ build order rather than priority order, so the open item is named here instead.
 
       Task 11 has a hard human gate: the prose outline gets scored by Andrew before a
       word is drafted, same as lesson 3.
-- [ ] **M7 - lesson 5, UMAP** - next. Teaches k-nearest-neighbours inside itself.
+- [ ] **M7 - lesson 5, UMAP** - **spec written 2026-08-27, awaiting your ruling**:
+      `docs/superpowers/specs/2026-08-27-shadowbox-umap-design.md`. Measured first,
+      per the standing rule - `js/math/umap.mjs` is built and pinned against
+      umap-learn 0.5.12 (195 tests green) before a word of the spec was written.
+      Four instruments, no new data files, and **no contract change** (M6's Play
+      loop already takes it). Three things measurement reversed: UMAP runs live at
+      96ms so the precomputed frame index M6 planned is unnecessary; `births.json`
+      is dropped from this lesson only (78 duplicate rows of 400, ~22% of k-th
+      neighbours decided by rounding); and the obvious closer metric understated
+      the result threefold. Original queue entry follows. Teaches k-nearest-neighbours inside itself.
       Inherits lesson 4's two "start from zero" blocks (distance between rows;
       iterative optimisation) and its Play control surface, which is designed to accept
       a precomputed frame index because UMAP cannot optimise live in the browser.

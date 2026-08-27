@@ -1,7 +1,25 @@
 # Pending decisions - for Andrew (updated 2026-08-27)
 
-**Nothing is waiting on you.** The last open item, the apps.html card, closed
-2026-08-27. M7 (lesson 5, UMAP) is unblocked and can start cold.
+One item is waiting on you.
+
+## 1. The M7 spec (lesson 5, UMAP)
+
+`docs/superpowers/specs/2026-08-27-shadowbox-umap-design.md`. Same gate lesson 4's
+spec had - brief or read cold, your call. The three calls worth your attention are
+flagged in its Section 2, because each reverses something a reasonable person would
+have assumed:
+
+- **UMAP runs live** (96ms worst case), so the precomputed frame index the lesson-4
+  spec designed for is not needed. That is a correction to an approved spec.
+- **`births.json` is dropped from this lesson only** - 78 duplicate rows out of 400
+  and ~22% of k-th neighbours decided by floating-point rounding, which makes it
+  unusable for anything built on a neighbour graph. It stays in lessons 1, 2 and 4.
+- **The closer keeps its punchline**: the embedding recovers gestational age at
+  0.973 against a ceiling of 0.972, so PCA, k-means and UMAP all land on the same
+  answer by unrelated machinery.
+
+Nothing is blocked meanwhile - the math core, the probes and the tests are committed
+and green.
 
 ---
 

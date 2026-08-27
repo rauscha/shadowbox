@@ -1,8 +1,7 @@
-# Pending decisions - for Andrew (updated 2026-08-25)
+# Pending decisions - for Andrew (updated 2026-08-27)
 
-Nothing is waiting on you. The last open item, the apps.html card, closed 2026-08-27.
-
-(No open items.)
+**Nothing is waiting on you.** The last open item, the apps.html card, closed
+2026-08-27. M7 (lesson 5, UMAP) is unblocked and can start cold.
 
 ---
 

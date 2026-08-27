@@ -2303,6 +2303,190 @@ lesson whose poster state is not fully determined by its controls."
 
 ---
 
+## Task 8b: The method card - data module, generator, tests
+
+Added mid-plan, 2026-08-27, on the owner's approved idea. **Spec:**
+`docs/superpowers/specs/2026-08-27-shadowbox-method-cards-design.md` - read its §3, §4 and §6
+before starting; they define the record model, the comparison matrix and the tests.
+
+Every lesson gains one closing `<details>` answering when you would use this method, why you
+would reach for it instead of an earlier one, and how it differs as a test. Lesson 5 gets
+its card now; lessons 1 to 4 are backfilled as a separate milestone (M8). The content lives
+in a data module rather than in hand-written HTML because the owner framed it as the first
+authored form of the comparison data a future statistical-test picker will route on, and a
+matrix with holes cannot answer "why not X".
+
+**Files:**
+- Create: `js/data/methods.mjs`
+- Create: `tools/methods.mjs`
+- Create: `test/methods.test.mjs`
+- Modify: `css/shadowbox.css` (one `details.method-card` block, mirroring `details.from-zero`)
+
+**Interfaces:**
+- Produces: `METHODS` - an ordered object keyed by method id. Each record carries `name`, `lesson`, `kind: 'method' | 'lens'`, `when`, `assumes: string[]`, `gives`, and `notInstead: Record<string, {depth: 'deep' | 'brief', text: string}>`.
+- Produces: `renderCard(id) -> string` and `injectCard(html, key, card) -> string` from `tools/methods.mjs`, the latter identical in shape to `injectPoster` in `tools/poster.mjs`.
+- Consumes: nothing. This task adds no page markup - Task 8 already shipped `umap.html`, and Task 10 adds the marker pair and runs the generator.
+
+- [ ] **Step 1: Write the failing tests**
+
+Create `test/methods.test.mjs`. The completeness test is the load-bearing one - it is what
+makes the future picker possible and the entire reason this is data rather than prose.
+
+```js
+// The comparison matrix behind every lesson's closing card, pinned so it cannot
+// grow holes. Spec: docs/superpowers/specs/2026-08-27-shadowbox-method-cards-design.md
+//
+// Completeness is the point. A picker with a missing pair cannot answer "why not
+// X?", and missing pairs are exactly what accumulates when five panels are
+// written months apart. Everything else here protects the format from drifting
+// into five paragraphs of equal weight.
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { METHODS } from '../js/data/methods.mjs';
+
+const EM_DASH = String.fromCharCode(0x2014);
+const records = () => Object.entries(METHODS);
+const sentences = s => s.split(/(?<=[.!?])\s+/).filter(t => t.trim().length);
+
+test('every record carries the fields a card and a picker both need', () => {
+  for (const [id, m] of records()) {
+    assert.equal(typeof m.name, 'string', id);
+    assert.ok(Number.isInteger(m.lesson) && m.lesson >= 1, id);
+    assert.ok(['method', 'lens'].includes(m.kind), `${id}: kind ${m.kind}`);
+    assert.equal(typeof m.when, 'string', id);
+    assert.ok(Array.isArray(m.assumes), id);
+    assert.equal(typeof m.gives, 'string', id);
+    assert.equal(typeof m.notInstead, 'object', id);
+  }
+});
+
+test('lesson numbers are unique, so the ladder has one method per rung', () => {
+  const ls = records().map(([, m]) => m.lesson);
+  assert.equal(new Set(ls).size, ls.length);
+});
+
+test('covariance is the only lens, and it is one deliberately', () => {
+  // Nobody chooses covariance over k-means. Forcing a "when would you use this
+  // instead" card onto lesson 2 would be subtly untrue, and the picker must
+  // never offer it as an answer to "which test should I run". Spec §3.1.
+  const lenses = records().filter(([, m]) => m.kind === 'lens').map(([id]) => id);
+  assert.deepEqual(lenses, ['covariance']);
+});
+
+test('the comparison matrix has no holes', () => {
+  // THE load-bearing test. Every record must compare against every method the
+  // reader has already met.
+  for (const [id, m] of records()) {
+    const priors = records().filter(([, p]) => p.lesson < m.lesson).map(([pid]) => pid);
+    for (const p of priors) {
+      const e = m.notInstead[p];
+      assert.ok(e, `${id} has no "why not ${p}" entry, and the reader has already met ${p}`);
+      assert.ok(typeof e.text === 'string' && e.text.trim().length > 0, `${id} vs ${p}: empty text`);
+      assert.ok(['deep', 'brief'].includes(e.depth), `${id} vs ${p}: depth ${e.depth}`);
+    }
+  }
+});
+
+test('no card compares against a method the reader has not met yet', () => {
+  for (const [id, m] of records()) {
+    for (const other of Object.keys(m.notInstead)) {
+      assert.ok(METHODS[other], `${id} compares against unknown ${other}`);
+      assert.ok(METHODS[other].lesson < m.lesson,
+        `${id} (lesson ${m.lesson}) compares forward against ${other} (lesson ${METHODS[other].lesson})`);
+    }
+  }
+});
+
+test('depth is honest: deep entries argue, brief entries do not', () => {
+  // Without this the tiering collapses into five paragraphs of equal weight,
+  // which is the format's most likely failure. Spec §4.1.
+  for (const [id, m] of records()) {
+    for (const [other, e] of Object.entries(m.notInstead)) {
+      const n = sentences(e.text).length;
+      if (e.depth === 'deep') assert.ok(n >= 2, `${id} vs ${other}: deep needs two sentences, has ${n}`);
+      else assert.equal(n, 1, `${id} vs ${other}: brief must be one sentence, has ${n}`);
+    }
+  }
+});
+
+test('records hold plain text, never markup', () => {
+  // The picker will render this in a layout nobody has designed yet. A record
+  // carrying page-specific markup only works on one surface. Spec §3.2.
+  const strings = m => [m.name, m.when, m.gives, ...m.assumes,
+    ...Object.values(m.notInstead).map(e => e.text)];
+  for (const [id, m] of records()) {
+    for (const s of strings(m)) {
+      assert.ok(!s.includes('<'), `${id}: markup in a record - ${s.slice(0, 40)}`);
+      assert.ok(!s.includes(EM_DASH), `${id}: em-dash in a record`);
+    }
+  }
+});
+
+test('no card contains a bare k, because a card is read out of context', () => {
+  // k counts groups in lesson 4 and neighbours in lesson 5, and a card is often
+  // the only part a hurried reader opens. Token match, not a judgment call.
+  const strings = m => [m.when, m.gives, ...m.assumes,
+    ...Object.values(m.notInstead).map(e => e.text)];
+  for (const [id, m] of records()) {
+    for (const s of strings(m)) {
+      assert.ok(!/\bk\b/.test(s), `${id}: bare k - say clusters or neighbours: ${s.slice(0, 60)}`);
+    }
+  }
+});
+
+test('lesson 5 keeps its own vocabulary bans inside its card', () => {
+  const s = JSON.stringify(METHODS.umap);
+  assert.ok(!/n_neighbors/.test(s), 'say neighbours');
+  assert.ok(!/fuzzy simplicial/i.test(s), 'say: the graph of who is near whom');
+});
+```
+
+- [ ] **Step 2: Run them and watch them fail**
+
+Run: `node --test test/methods.test.mjs`
+Expected: FAIL, `Cannot find module '../js/data/methods.mjs'`.
+
+- [ ] **Step 3: Write `js/data/methods.mjs`**
+
+Full records for `umap`. Stub records for the four earlier methods carrying only `name`,
+`lesson`, `kind`, and an empty `notInstead` - M8 fills them. The completeness test only
+demands pairs for records whose own lesson has a card, so stubs are legal now and become
+illegal the moment their lesson gets one.
+
+**The `umap` record's prose is written in Task 9**, alongside the rest of lesson 5's prose,
+because it IS prose and the same voice rules apply. Put placeholder-free minimal sentences
+here that satisfy the tests, and expect Task 9 to replace them.
+
+- [ ] **Step 4: Write `tools/methods.mjs`**
+
+Hand-run, mirroring `tools/poster.mjs`: read `METHODS`, render one card per method, inject
+between `<!-- methods:KEY -->` markers, idempotently. Reuse `injectPoster`'s regex shape.
+Escape record text into HTML, since records hold plain text by contract.
+
+Render section 1's heading from `kind`: a `method` gets "When you would use it", a `lens`
+gets "What this buys you further up the ladder" (spec §3.1). Assumptions render as a `<ul>`;
+comparisons as a `<dl>` with the method name as `<dt>`, deep entries first, then brief, each
+group in descending lesson order.
+
+- [ ] **Step 5: Add the stylesheet block**
+
+One `details.method-card` block in `css/shadowbox.css`, mirroring the existing
+`details.from-zero` block immediately above it. No colour carries meaning; the existing
+print rules already force `<details>` open.
+
+- [ ] **Step 6: Run the tests and commit**
+
+Run: `node --test`
+Expected: PASS.
+
+```bash
+git add js/data/methods.mjs tools/methods.mjs test/methods.test.mjs css/shadowbox.css
+git commit -m "feat: method-card data model, generator and completeness tests"
+```
+
+---
+
 ## Task 9: The prose
 
 Follow the established process from spec §5 and `PROSE-GUIDE.md`: terse outline in bullets,
@@ -2378,10 +2562,25 @@ linters, not detectors: the target is parity with the approved pages, not zero f
 Run: `grep -c 'PROSE' umap.html`
 Expected: `0`.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: Write the `umap` record's prose in `js/data/methods.mjs`**
+
+Task 8b left minimal sentences there to satisfy its tests. Replace them now, in the same
+pass as the page's prose, because they are prose and the same voice rules apply. The record
+needs: `when`, `assumes`, `gives`, and four `notInstead` entries.
+
+Per spec §4.1, `kmeans` and `pca` are the `deep` pair - those are the genuine confusions a
+reader could act on wrongly - and `covariance` and `leastSquares` are `brief`. The tests in
+`test/methods.test.mjs` enforce two sentences for deep and exactly one for brief, plus no
+bare `k` anywhere, so write to those bounds rather than trimming afterward.
+
+The material is already settled by the lesson: §8's refusals say what the method will not
+claim, and the k=5-versus-k-means result says plainly that UMAP is a different bet rather
+than an upgrade. Do not invent new comparisons here.
+
+- [ ] **Step 7: Commit**
 
 ```bash
-git add umap.html .handoff/LESSON-5-PROSE-OUTLINE.md .handoff/LESSON-5-PROSE-DRAFT.md
+git add umap.html js/data/methods.mjs .handoff/LESSON-5-PROSE-OUTLINE.md .handoff/LESSON-5-PROSE-DRAFT.md
 git commit -m "prose: lesson 5, drafted bullet by bullet against measured numbers"
 ```
 
@@ -2518,6 +2717,35 @@ touch the `apps.html` card on the site repo. Both were deliberately de-enumerate
 
 Run: `grep -c 'umap.html' index.html least-squares.html covariance.html pca.html kmeans.html`
 Expected: `index.html:1`, and `1` for each of the other four.
+
+- [ ] **Step 4b: Add the method card to `umap.html` and generate it**
+
+Add the marker pair at the very end of the essay, after the closing instrument and before
+the trellis nav:
+
+```html
+<!-- methods:umap -->
+<!-- /methods:umap -->
+```
+
+Then run the generator and confirm it round-trips:
+
+```bash
+node tools/methods.mjs
+git diff --stat
+node tools/methods.mjs
+git diff --stat
+```
+
+Expected: the first run injects the card, the second changes nothing. Add an assertion to
+`test/methods.test.mjs` that `umap.html` contains exactly one `details class="method-card"`
+inside its marker pair, and that re-running the generator is a no-op - mirroring the
+poster-parity tests in Task 8.
+
+Read the rendered card on the page before moving on. Spec §10 names the risk plainly: the
+card must read as an appendix the reader may open, not as a second ending competing with
+the lesson's closer. If it reads as a second ending, say so in your report - the remedy is
+a spec amendment, not a silent reposition.
 
 - [ ] **Step 5: Accessibility and print pass**
 

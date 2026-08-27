@@ -123,3 +123,140 @@ test('biometry computes its neighbours on all four measurements, not on the two 
 test('knn-graph refuses a k the data cannot support', () => {
   assert.throws(() => KG.graphOf(kgState({ k: 200 })), /k/);
 });
+
+// ------------------------------------------------------------- layout-play
+
+import * as LP from '../js/instruments/layout-play.mjs';
+import * as UMAP from '../js/math/umap.mjs';
+
+const lpState = (over = {}) => {
+  const c = BLOBS.configs.blobs;
+  const base = { ...LP.defaults, idKey: 'lp1', dataset: 'blobs',
+    columns: [c.xs, c.ys], truth: c.labels, k: 15, ...over };
+  return { ...base, ...LP.start(base, base.seed ?? 1) };
+};
+
+test('layout-play starts from the raw initialisation and holds exactly one frame', () => {
+  const st = lpState();
+  assert.equal(st.frames.length, 1, 'epoch 0 is the noise the reader watches resolve');
+  assert.equal(st.view, 0);
+  assert.equal(st.frames[0].length, 150);
+  assert.equal(st.frames[0][0].length, 2);
+});
+
+test('one step is one epoch, and it appends a frame rather than replacing one', () => {
+  let st = lpState();
+  const before = st.frames[0].map(p => p.slice());
+  st = { ...st, ...LP.step(st) };
+  assert.equal(st.frames.length, 2);
+  assert.equal(st.view, 1);
+  assert.deepEqual(st.frames[0], before, 'the initialisation must survive so the scrubber can go back to it');
+  // Movement is checked after the SECOND step, not the first: epoch 0 is a
+  // provable no-op (see the test below), so asserting movement here would be
+  // asserting something that cannot be true of this optimiser. Two steps is
+  // the earliest point any edge is guaranteed to have fired.
+  st = { ...st, ...LP.step(st) };
+  assert.notDeepEqual(st.frames[2], before, 'by the second epoch, something must have moved');
+});
+
+test('the first epoch provably moves nothing, and that is umap-learn\'s behaviour too', () => {
+  // epochsPerSample(weight, nEpochs) returns max(weight) / weight[e] for every
+  // edge. Since every edge's weight is <= max(weight) by definition of max,
+  // every eps[e] >= 1, always, for any graph - the strongest edge attains
+  // exactly eps[e] === 1, and nothing can go lower.
+  //
+  // start() and umap() both initialise eons (epoch_of_next_sample) to eps, and
+  // optimizeEpoch skips an edge while eons[e] > epoch. At epoch === 0 that
+  // requires eps[e] <= 0 to fire, which never happens. So no edge in any
+  // dataset, at any k or seed, can move on the first epoch - it is a
+  // mathematical invariant of epochsPerSample, not a property of this
+  // fixture. umap-learn's reference optimizer uses the identical condition
+  // (epoch_of_next_sample initialised to epochs_per_sample, fired on
+  // epoch_of_next_sample[i] <= n), so this is not a departure this module
+  // introduced; it is the algorithm working as specified.
+  //
+  // Folding this no-op into start() so the first Step lands on epoch 1 was
+  // considered and rejected: it would shift the frames-to-epoch mapping the
+  // scrubber and the bit-identical parity test both depend on, for a
+  // cosmetic gain. The test records the fact instead of hiding it, so a
+  // future contributor who finds a dead first click can learn from the test
+  // file that it is intended, and why.
+  let st = lpState();
+  const before = st.frames[0].map(p => p.slice());
+  st = { ...st, ...LP.step(st) };
+  assert.deepEqual(st.frames[1], before, 'epoch 0 cannot fire any edge, by construction of epochsPerSample');
+  st = { ...st, ...LP.step(st) };
+  assert.notDeepEqual(st.frames[2], before, 'epoch 1 fires every edge whose eps === 1, so something must have moved');
+});
+
+test('step returns an empty partial once the epochs run out, which is how Play stops', () => {
+  let st = lpState();
+  let guard = 0;
+  while (guard++ <= LP.N_EPOCHS + 5) {
+    const next = LP.step(st);
+    if (!Object.keys(next).length) break;
+    st = { ...st, ...next };
+  }
+  assert.equal(st.frames.length, LP.N_EPOCHS + 1, 'epoch 0 plus every epoch run');
+  assert.deepEqual(LP.step(st), {}, 'an exhausted run must return an empty partial, not a repeated frame');
+});
+
+test('the same seed gives the same trajectory and a different seed does not', () => {
+  const a = lpState({ seed: 1 }), b = lpState({ seed: 1 }), c = lpState({ seed: 2 });
+  assert.deepEqual(a.frames[0], b.frames[0]);
+  assert.notDeepEqual(a.frames[0], c.frames[0]);
+});
+
+test('changing the neighbours slider starts the run over rather than half-updating it', () => {
+  const st = lpState();
+  const next = LP.applyControl(st, 'k', 30);
+  assert.equal(next.k, 30);
+  assert.equal(next.frames.length, 1, 'the graph changed, so no earlier frame is reachable from it');
+  assert.equal(next.play, false);
+});
+
+test('the scrubber shows an earlier epoch without discarding the later ones', () => {
+  let st = lpState();
+  for (let i = 0; i < 20; i++) st = { ...st, ...LP.step(st) };
+  const scrubbed = { ...st, ...LP.applyControl(st, 'view', 5) };
+  assert.equal(scrubbed.view, 5);
+  assert.equal(scrubbed.frames.length, 21, 'scrubbing back must not throw away what was computed');
+  assert.notEqual(LP.render(scrubbed), LP.render(st), 'the drawn epoch must actually change');
+});
+
+test('layout-play never produces a NaN coordinate at any min_dist the slider reaches', () => {
+  // A NaN embedding renders as an empty figure with no error reported anywhere.
+  // Spec §2(d): this was real, it came from an undamped fitter, and it was
+  // believed for twenty minutes. The guard stays.
+  for (const minDist of [0, 0.1, 0.5, 0.9, 1.0]) {
+    let st = lpState({ minDist });
+    for (let i = 0; i < 30; i++) st = { ...st, ...LP.step(st) };
+    for (const p of st.frames[st.frames.length - 1]) {
+      assert.ok(Number.isFinite(p[0]) && Number.isFinite(p[1]),
+        `min_dist ${minDist} produced ${p}, which draws as an empty figure and reports nothing`);
+    }
+  }
+});
+
+test('stepping to the end reproduces umap() exactly, so the page and the tests agree', () => {
+  // start() must consume the rng in the same order umap() does - graph, a/b fit,
+  // random initialisation, then epochs - or the instrument would draw a
+  // trajectory no claim in test/umap-claims.test.mjs describes. Bit-identical is
+  // the right bar here: both paths call the same optimizeEpoch with the same
+  // schedule, so anything less means the orders diverged.
+  const c = BLOBS.configs.blobs;
+  const X = c.xs.map((x, i) => [x, c.ys[i]]);
+  let st = lpState({ seed: 7, k: 15 });
+  for (let i = 0; i < LP.N_EPOCHS; i++) st = { ...st, ...LP.step(st) };
+  const direct = UMAP.umap(X, { k: 15, seed: 7, nEpochs: LP.N_EPOCHS });
+  assert.deepEqual(st.frames[st.frames.length - 1], direct.Y);
+});
+
+test('layout-play draws every point and reports which epoch is on screen', () => {
+  let st = lpState();
+  for (let i = 0; i < 10; i++) st = { ...st, ...LP.step(st) };
+  const svg = LP.render(st);
+  assert.match(svg, /^<svg[^>]*viewBox="0 0 640 460"/);
+  assert.equal(roles(svg, 'pt'), 150);
+  assert.match(texts(svg, 'epoch').join(' '), /10/, 'the reader has to know where in the run they are');
+});

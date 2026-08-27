@@ -285,13 +285,65 @@ test('every panel is labelled with BOTH numbers, never just the picture', () => 
   for (const t of texts(svg, 'panel-global')) assert.match(t, /\d\.\d\d/);
 });
 
-test('the six panels share one frame, so this is a comparison and not six pictures', () => {
-  // Six layouts at six scales would let a reader read a difference that is only
-  // a difference in zoom.
+test('the six panels sit in six different grid cells', () => {
+  // Renamed from a name that claimed to test the shared frame; this only checks
+  // grid placement, which six independently-scaled panels would pass just as
+  // well as one shared frame would. The one-shared-frame property itself is
+  // checked by the next test.
   const svg = SR.render(srState());
   const panels = [...svg.matchAll(/<g data-role="panel"[^>]*transform="translate\(([\d.]+) ([\d.]+)\)"/g)];
   assert.equal(panels.length, 6);
   assert.equal(new Set(panels.map(p => `${p[1]},${p[2]}`)).size, 6, 'each panel sits in its own cell');
+});
+
+test('the six panels share one frame: no panel is free to zoom to its own extent', () => {
+  // Fix round 1: the previous version of this test (grid placement, kept above
+  // under its own name) only proved the six panels sit in six different cells.
+  // A per-panel isoFrame(p.Y, ...) - normalising every panel to fill its own
+  // cell - passes that check too, and renders six perfectly plausible-looking
+  // pictures, while silently destroying the one thing this figure exists to
+  // do: a reader could then read a difference that is only a difference in
+  // zoom. Proven by mutation below in the fix report.
+  //
+  // The exact check: pick the two panels whose underlying layouts (p.Y, before
+  // any framing) have the most different x-extents, so the signal is as large
+  // as possible. Read each chosen panel's drawn point x-extent straight from
+  // its own path data, in the panel's own local coordinate space (the panel's
+  // outer translate only positions the cell; it carries no scale, so reading
+  // the un-translated path coordinates is exactly the on-screen extent).
+  // Under one shared frame, both panels are drawn at the same units per pixel,
+  // so screenExtent(a) / screenExtent(b) equals dataExtent(a) / dataExtent(b)
+  // up to markPath's 2-decimal rounding. Under a per-panel frame each panel
+  // is normalised to fill its cell, so the screen ratio collapses toward 1
+  // regardless of the data ratio, and the assertion below fails.
+  const st = srState();
+  const svg = SR.render(st);
+  const ps = SR.panels(st);
+
+  const dataExtent = Y => Math.max(...Y.map(q => q[0])) - Math.min(...Y.map(q => q[0]));
+  const dataExtents = ps.map(p => dataExtent(p.Y));
+
+  let a = 0, b = 1, bestRatio = 0;
+  for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) {
+    const ratio = Math.max(dataExtents[i], dataExtents[j]) / Math.min(dataExtents[i], dataExtents[j]);
+    if (ratio > bestRatio) { bestRatio = ratio; a = i; b = j; }
+  }
+  // Measured on this fixture: the chosen pair's data extents differ by about
+  // 1.44x (panels 1 and 3, seeds 2 and 4). Recorded here so a future reader
+  // can see the discrimination this test relies on is real, not incidental.
+
+  const screenXsOf = i => {
+    const start = svg.indexOf(`data-panel="${i}"`);
+    const end = i + 1 < ps.length ? svg.indexOf(`data-panel="${i + 1}"`) : svg.indexOf('</svg>');
+    const block = svg.slice(start, end);
+    return [...block.matchAll(/data-role="pt" d="M(-?[\d.]+) /g)].map(m => Number(m[1]));
+  };
+  const screenExtent = i => { const xs = screenXsOf(i); return Math.max(...xs) - Math.min(...xs); };
+
+  const dataRatio = dataExtents[a] / dataExtents[b];
+  const screenRatio = screenExtent(a) / screenExtent(b);
+  assert.ok(Math.abs(screenRatio - dataRatio) < 0.02,
+    `panels ${a} and ${b} (data extents differ by ${bestRatio.toFixed(2)}x): screen ratio ${screenRatio.toFixed(4)} should equal data ratio ${dataRatio.toFixed(4)} under one shared frame`);
 });
 
 test('local structure barely moves across the six seeds and global structure does', () => {

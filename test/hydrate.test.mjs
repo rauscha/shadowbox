@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createStore, controlsMarkup, clientToViewBox } from '../js/lib/hydrate.mjs';
+import { createStore, controlsMarkup, clientToViewBox, visibleControls } from '../js/lib/hydrate.mjs';
 import { playTick, PLAY_FPS, mount, updateControls } from '../js/lib/hydrate.mjs';
 
 test('store merges, notifies, respects silent', () => {
@@ -328,4 +328,89 @@ test('rerender() actually uses updateControls, and never rebinds a control that 
   } finally {
     g.document = savedDoc;
   }
+});
+
+test('bindControls binds the declared event: plain slider gets input, commit: change slider gets change', () => {
+  // The declared event is the event actually bound - not just a markup detail.
+  // A test that only inspected controlsMarkup could not fail if bindControls
+  // ignored commit entirely and always wired 'input', which is exactly the bug
+  // this option exists to prevent. Mirrors the fake-DOM scene from
+  // 'rerender() actually uses updateControls...' above: el.innerHTML replaces
+  // everything below el (first render only, here), and each fake <input>
+  // records every event name it is ever asked to listen for.
+  const g = globalThis;
+  const savedDoc = g.document;
+  g.document = { activeElement: null };
+  try {
+    const scene = { svg: null, controls: null, inputs: {} };
+
+    function freshInput(id) {
+      const node = {
+        tagName: 'INPUT',
+        value: '0',
+        dataset: { control: id },
+        events: [],
+        addEventListener(type) { node.events.push(type); },
+      };
+      return node;
+    }
+    function freshControls() {
+      scene.inputs.plain = freshInput('plain');
+      scene.inputs.committing = freshInput('committing');
+      return {
+        querySelectorAll(sel) {
+          return sel === 'input[data-control]' ? [scene.inputs.plain, scene.inputs.committing] : [];
+        },
+        set innerHTML(_html) { /* not exercised: this test never triggers a controls rebuild */ },
+        get innerHTML() { return ''; },
+      };
+    }
+    function freshSvg() {
+      return {
+        addEventListener() {},
+        getScreenCTM() { return null; },
+        set outerHTML(_html) { scene.svg = freshSvg(); },
+        get outerHTML() { return ''; },
+      };
+    }
+    const el = {
+      addEventListener() {},
+      querySelector(sel) {
+        if (sel === 'svg') return scene.svg;
+        if (sel === '.controls') return scene.controls;
+        return null;
+      },
+      querySelectorAll: () => [],
+      contains: () => false,
+      setPointerCapture() {},
+      get innerHTML() { return ''; },
+      set innerHTML(_html) { scene.svg = freshSvg(); scene.controls = freshControls(); },
+    };
+
+    const controls = [
+      { id: 'plain', kind: 'slider', min: 0, max: 10, step: 1, label: 'plain' },
+      { id: 'committing', kind: 'slider', min: 0, max: 10, step: 1, label: 'committing', commit: 'change' },
+    ];
+    const store = createStore({ plain: 0, committing: 0 });
+    mount(el, { controls, render: () => '<svg></svg>', applyDrag: () => ({}) }, store);
+
+    assert.deepEqual(scene.inputs.plain.events, ['input'],
+      'a slider with no commit field must bind input, exactly as today');
+    assert.deepEqual(scene.inputs.committing.events, ['change'],
+      'a slider declaring commit: change must bind change instead');
+  } finally {
+    g.document = savedDoc;
+  }
+});
+
+test('a slider that commits on change still renders and keys identically', () => {
+  const controls = [
+    { id: 'k', kind: 'slider', label: 'neighbours (k)', min: 1, max: 30, step: 1, commit: 'change' },
+  ];
+  const state = { k: 15 };
+  assert.equal(visibleControls(controls, state).length, 1);
+  const html = controlsMarkup(controls, state);
+  assert.match(html, /type="range"/);
+  assert.match(html, /data-control="k"/);
+  assert.ok(!html.includes('commit'), 'commit is a binding hint, never an attribute on the node');
 });

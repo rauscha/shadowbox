@@ -163,7 +163,14 @@ export function mount(el, instrument, store, { actions = {}, overlay = {} } = {}
       store.set(partial);
     };
     controlsEl.querySelectorAll('input[data-control]').forEach(input => {
-      input.addEventListener('input', () => apply(input.dataset.control, Number(input.value)));
+      // A slider may declare commit: 'change' to fire once per released drag
+      // rather than once per pixel. Lesson 5's closer recomputes a whole
+      // embedding on this event (96 ms in Node, 2 to 3x that in Safari), which
+      // is a control at 'change' and a stall at 'input'. Anything cheap leaves
+      // the field off and keeps the live 'input' feel.
+      const desc = instrument.controls.find(c => c.kind === 'slider' && c.id === input.dataset.control);
+      const evName = desc && desc.commit === 'change' ? 'change' : 'input';
+      input.addEventListener(evName, () => apply(input.dataset.control, Number(input.value)));
     });
     controlsEl.querySelectorAll('button[data-control]').forEach(btn => {
       btn.addEventListener('click', () => {

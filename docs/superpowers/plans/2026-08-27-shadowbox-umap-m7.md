@@ -543,11 +543,16 @@ test('crescents: UMAP beats k-means at many neighbours and loses to it at few', 
   // 0.747 k-means gets for free; the k=50 median is perfect. The method is not an
   // upgrade, it is a different bet, and the bet depends on a number you chose.
   const KMEANS_RAW = 0.747;
+  // Measured by reference/umap-measure.mjs section 8; see results/umap-measure.log.
+  // Three of these moved when the harness was made to compute them rather than
+  // having them pasted in: k=5 median 0.660 -> 0.657, k=15 median 0.867 -> 0.830,
+  // k=50 perfect 25/30 -> 24/30. Spec §7 was corrected to match, per the standing
+  // rule that measurement wins.
   const want = {
-    5:  { median: 0.660, perfect: 1 },
-    15: { median: 0.867, perfect: 8 },
+    5:  { median: 0.657, perfect: 1 },
+    15: { median: 0.830, perfect: 8 },
     30: { median: 1.000, perfect: 20 },
-    50: { median: 1.000, perfect: 25 },
+    50: { median: 1.000, perfect: 24 },
   };
   for (const [k, w] of Object.entries(want)) {
     const p = [];
@@ -2288,8 +2293,8 @@ in the order the instruments appear:
 8. What survived and what did not: near moved by 0.01, far moved by 0.38.
 9. The honest failure. The uniform square has no structure by construction, and UMAP makes
    it look **more** structured, not less.
-10. Not a strict improvement on k-means. At 50 neighbours 25 of 30 seeds recover both
-    crescents exactly; at 5 the median is 0.660, worse than the 0.747 k-means got for free.
+10. Not a strict improvement on k-means. At 50 neighbours 24 of 30 seeds recover both
+    crescents exactly; at 5 the median is 0.657, worse than the 0.747 k-means got for free.
     Both numbers in the same paragraph.
 11. `umap-vs-truth`: the third route to the same answer, 0.973 against a ceiling of 0.972.
 12. The wrong instrument. The obvious way to measure that closer gives 0.261 to 0.971 and

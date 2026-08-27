@@ -1,17 +1,15 @@
 # Pending decisions - for Andrew (updated 2026-08-25)
 
-Both lesson-4 decisions cleared on 2026-08-25. One item is open, and it is the same
-one that has been open since 2026-08-21.
+Nothing is waiting on you. The last open item, the apps.html card, closed 2026-08-27.
 
-## 1. apps.html card on andrewrausch.com
-
-Still open, still unblocked, still never actioned - carried over since 2026-08-21. The
-site is public, so the card can go in whenever. Say the word and it gets drafted for
-your approval; the `add-app-card` flow shows you the diff before anything is pushed.
+(No open items.)
 
 ---
 
 ## Resolved since the last list
+- **The apps.html card** - closed 2026-08-27. It had actually been added 2026-08-22;
+  the stale part was that it named only three lessons. Andrew rewrote the copy himself
+  and it is live. The new wording avoids enumerating lessons on purpose.
 - **The lesson-3 "wearing a disguise" line** - ruled 2026-08-26: **it stays.** Same
   metaphor family as the one cut from lesson 4, but lesson 3's prose was approved on
   2026-08-22, before that ruling. Recorded as a standing exception in `PROSE-GUIDE.md`

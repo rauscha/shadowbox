@@ -13,7 +13,12 @@
       Assign and recompute are two separate visible moves. Doubles the clicks to
       convergence, which is the accepted cost, because the two moves being separable
       is the thing the instrument exists to show.
-- [ ] apps.html card on andrewrausch.com - now unblocked, the site is public.
+- [x] ~~apps.html card on andrewrausch.com~~ - closed 2026-08-27. The card had in fact
+      been added 2026-08-22 (`28ed0fc`); what was open was that it froze at three
+      lessons. Andrew rewrote the description himself (`df44fbe`), deliberately
+      dropping the lesson enumeration so it does not go stale again: it now says the
+      lessons "will continue to expand into more statistical and machine learning
+      methods over time." **Do not re-add a lesson list to that card.**
 - [x] ~~Flip public + enable Pages~~ - done 2026-08-21. Live at
       https://andrewrausch.com/shadowbox/ (HTTPS enforced, custom domain automatic).
 - [x] ~~Dot colour~~ - done: `--ink-dot` grey token for halftone screens only.

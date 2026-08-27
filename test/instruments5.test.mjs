@@ -260,3 +260,72 @@ test('layout-play draws every point and reports which epoch is on screen', () =>
   assert.equal(roles(svg, 'pt'), 150);
   assert.match(texts(svg, 'epoch').join(' '), /10/, 'the reader has to know where in the run they are');
 });
+
+// ----------------------------------------------------------- seed-roulette
+
+import * as SR from '../js/instruments/seed-roulette.mjs';
+
+const srState = (over = {}) => {
+  const c = BLOBS.configs.blobs;
+  return { ...SR.defaults, idKey: 'sr1', dataset: 'blobs',
+    columns: [c.xs, c.ys], truth: c.labels, k: 15, ...over };
+};
+
+test('seed-roulette draws six panels from six different seeds', () => {
+  const svg = SR.render(srState());
+  assert.equal(roles(svg, 'panel'), 6);
+  assert.equal(new Set(SR.panels(srState()).map(p => p.seed)).size, 6);
+});
+
+test('every panel is labelled with BOTH numbers, never just the picture', () => {
+  const svg = SR.render(srState());
+  assert.equal(roles(svg, 'panel-local'), 6);
+  assert.equal(roles(svg, 'panel-global'), 6);
+  for (const t of texts(svg, 'panel-local')) assert.match(t, /\d\.\d\d/);
+  for (const t of texts(svg, 'panel-global')) assert.match(t, /\d\.\d\d/);
+});
+
+test('the six panels share one frame, so this is a comparison and not six pictures', () => {
+  // Six layouts at six scales would let a reader read a difference that is only
+  // a difference in zoom.
+  const svg = SR.render(srState());
+  const panels = [...svg.matchAll(/<g data-role="panel"[^>]*transform="translate\(([\d.]+) ([\d.]+)\)"/g)];
+  assert.equal(panels.length, 6);
+  assert.equal(new Set(panels.map(p => `${p[1]},${p[2]}`)).size, 6, 'each panel sits in its own cell');
+});
+
+test('local structure barely moves across the six seeds and global structure does', () => {
+  // The lesson's central claim, computed on the figure the reader is looking at
+  // rather than asserted beside it.
+  for (const name of ['blobs', 'crescents', 'biometry']) {
+    const st = name === 'biometry'
+      ? srState({ dataset: 'biometry', columns: [BIO.bpd, BIO.hc, BIO.ac, BIO.fl], truth: null })
+      : srState({ dataset: name, columns: [BLOBS.configs[name].xs, BLOBS.configs[name].ys], truth: BLOBS.configs[name].labels });
+    const p = SR.panels(st);
+    const loc = p.map(v => v.local), glo = p.map(v => v.global);
+    const locSpread = Math.max(...loc) - Math.min(...loc);
+    const gloSpread = Math.max(...glo) - Math.min(...glo);
+    assert.ok(locSpread < gloSpread,
+      `${name}: local moved ${locSpread.toFixed(3)}, global ${gloSpread.toFixed(3)} - the figure's whole point is that local moves less`);
+  }
+});
+
+test('the figure reports what it found rather than asserting a headline', () => {
+  // Same rule restart-roulette learned the hard way: a title that promises six
+  // different answers while drawing six identical ones teaches the opposite of
+  // its point.
+  const st = srState();
+  assert.match(SR.spreadText(SR.panels(st)), /\d\.\d\d/);
+  assert.match(SR.render(st), /data-role="spread"/);
+});
+
+test('seed-roulette reaches the uniform square, so the honest failure is reachable', () => {
+  // Ruled explicitly by Andrew 2026-08-27: showing the failure mode is useful,
+  // and a reader has to be able to get to it rather than be told about it.
+  assert.ok(SR.controls.some(c => c.id === 'use-uniform'),
+    'the structureless dataset must be one button away, per spec §8');
+});
+
+test('seed-roulette is deterministic: the same state renders the same markup', () => {
+  assert.equal(SR.render(srState()), SR.render(srState()));
+});

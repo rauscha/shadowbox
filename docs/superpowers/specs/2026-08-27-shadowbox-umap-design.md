@@ -12,6 +12,29 @@ It earned its keep immediately. Four things in this spec are the opposite of wha
 reasonable person would have written down from memory, and one of them reverses a design
 decision recorded in the lesson-4 spec. They are collected in §2 rather than buried.
 
+## Status: approved 2026-08-27
+
+Briefed rather than read cold. Every call in §2 stands as written, plus four rulings
+taken at the same time:
+
+- **UMAP runs live.** Approved. No precomputed frames ship. This supersedes
+  `2026-08-24-shadowbox-kmeans-design.md` §9's claim that the optimisation is too
+  expensive to run in the browser - that clause is retired, not reinterpreted.
+- **`births.json` is dropped from lesson 5 only.** Approved. It stays in lessons 1, 2
+  and 4, which never ask who your neighbours are.
+- **The closer keeps the neighbourhood measure alone.** Approved. `umap-vs-truth` shows
+  the 0.973-against-0.972 result and nothing else. The linear-R² failure from §2(c) is
+  worth teaching but belongs in §8's refusals or a short aside - it must not be given
+  equal footing in the closing instrument, where it would read as a hedge on the result.
+- **The uniform-square failure state ships.** Approved explicitly: showing that UMAP
+  makes structureless data look *more* structured is useful, and the reader has to be
+  able to reach it rather than be told about it.
+- **UMAP is not presented as beating k-means.** Approved. §8's requirement stands: the
+  k=5 median of 0.660, worse than k-means' 0.747, appears alongside the k=50 result.
+  The point is that the two methods are different bets, not that one wins.
+- **Random initialisation, not spectral.** Approved. The page owes one sentence saying
+  that umap-learn defaults to spectral and that this differs.
+
 ## 1. Why UMAP is on this ladder
 
 Lessons 1 to 3 flatten by projecting: a line, an axis, a pair of eigenvectors. Lesson 4

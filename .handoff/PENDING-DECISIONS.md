@@ -1,29 +1,20 @@
 # Pending decisions - for Andrew (updated 2026-08-27)
 
-One item is waiting on you.
-
-## 1. The M7 spec (lesson 5, UMAP)
-
-`docs/superpowers/specs/2026-08-27-shadowbox-umap-design.md`. Same gate lesson 4's
-spec had - brief or read cold, your call. The three calls worth your attention are
-flagged in its Section 2, because each reverses something a reasonable person would
-have assumed:
-
-- **UMAP runs live** (96ms worst case), so the precomputed frame index the lesson-4
-  spec designed for is not needed. That is a correction to an approved spec.
-- **`births.json` is dropped from this lesson only** - 78 duplicate rows out of 400
-  and ~22% of k-th neighbours decided by floating-point rounding, which makes it
-  unusable for anything built on a neighbour graph. It stays in lessons 1, 2 and 4.
-- **The closer keeps its punchline**: the embedding recovers gestational age at
-  0.973 against a ceiling of 0.972, so PCA, k-means and UMAP all land on the same
-  answer by unrelated machinery.
-
-Nothing is blocked meanwhile - the math core, the probes and the tests are committed
-and green.
+Nothing is waiting on you.
 
 ---
 
 ## Resolved since the last list
+- **The M7 spec (lesson 5, UMAP)** - approved 2026-08-27, briefed rather than read cold.
+  Every call in §2 stands. UMAP runs live and ships no precomputed frames, which retires
+  the lesson-4 spec's §9 claim that it was too expensive. `births.json` is dropped from
+  lesson 5 only. The closer keeps the neighbourhood measure alone - the linear-R² failure
+  is taught in §8 or an aside, never given equal footing in the closing instrument. The
+  uniform-square failure state ships explicitly ("showing failure modes is useful"). UMAP
+  is not presented as beating k-means: the k=5 median of 0.660 runs alongside the k=50
+  result, because the two methods being *different bets* is the thing worth knowing.
+  Random initialisation stands, with one sentence on the page noting umap-learn defaults
+  to spectral. Recorded in the spec's own **Status** block.
 - **The apps.html card** - closed 2026-08-27. It had actually been added 2026-08-22;
   the stale part was that it named only three lessons. Andrew rewrote the copy himself
   and it is live. The new wording avoids enumerating lessons on purpose.

@@ -9,6 +9,15 @@
       than read cold. Both domain calls stand as specced: `label-vs-truth` closes the
       lesson, and §8 keeps its refusal to recover SGA/AGA/LGA from the births cloud.
       The k=6 shape cap and the cut units-trap callback also stand.
+- [x] ~~Read the M7 spec (lesson 5, UMAP) and rule on it~~ - approved 2026-08-27,
+      briefed rather than read cold. All of §2 stands: **UMAP runs live** (no precomputed
+      frames - this retires the lesson-4 spec §9 clause), **`births.json` is dropped from
+      lesson 5 only**, and the closer keeps the **neighbourhood measure alone** (the
+      linear-R² failure is taught in §8 or an aside, never given equal footing in
+      `umap-vs-truth`). Also ruled: the **uniform-square failure state ships**, UMAP is
+      **not presented as beating k-means** (k=5's 0.660 runs alongside k=50's result),
+      and **random initialisation stands** with one page sentence noting umap-learn
+      defaults to spectral.
 - [x] ~~Half-step decision in `kmeans-step`~~ - ruled 2026-08-25: **half-steps**.
       Assign and recompute are two separate visible moves. Doubles the clicks to
       convergence, which is the accepted cost, because the two moves being separable
@@ -29,7 +38,8 @@
 The MFM/OB research ideas explored this session (unsupervised embedding of growth
 trajectories, the Doppler cascade, screening panels) are **research, not teaching**, and
 have been spun out to keep this project's process clean:
-- `C:\claudeyardesearch-ideas\MFM-EMBEDDING-STUDIES.md` - the idea register.
+- `C:\claudeyard
+esearch-ideas\MFM-EMBEDDING-STUDIES.md` - the idea register.
 - `C:\claudeyardgr-trajectory-power\` - the power simulation behind them.
 Do not pull that thread back in here. The one crossover that *is* shadowbox's: the UCI
 Cardiotocography set is wanted as a **teaching** dataset for a future lesson - real,

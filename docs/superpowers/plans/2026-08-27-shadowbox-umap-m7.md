@@ -1193,7 +1193,34 @@ test('one step is one epoch, and it appends a frame rather than replacing one', 
   assert.equal(st.frames.length, 2);
   assert.equal(st.view, 1);
   assert.deepEqual(st.frames[0], before, 'the initialisation must survive so the scrubber can go back to it');
-  assert.notDeepEqual(st.frames[1], before, 'an epoch that moves nothing is not an epoch');
+  // The movement check is at frames[2], not frames[1]. See the next test: epoch
+  // 0 provably moves nothing, and an earlier draft of this file asserted the
+  // opposite from expectation rather than measurement.
+  st = { ...st, ...LP.step(st) };
+  assert.equal(st.frames.length, 3);
+  assert.notDeepEqual(st.frames[2], before, 'by the second epoch the layout must have moved');
+});
+
+test('the first epoch provably moves nothing, and umap-learn behaves the same way', () => {
+  // Recorded as a fact rather than left as a surprise, because it is visible to
+  // the reader: the first click of Step advances the epoch readout without
+  // moving a single dot.
+  //
+  // The proof: epochsPerSample returns max(weight)/weight[e], whose minimum is
+  // exactly 1 (attained by the strongest edge, measured at 1.000000 across all
+  // 1398 blobs edges at k=15). eons is initialised to eps. optimizeEpoch skips
+  // an edge while eons[e] > epoch. So at epoch 0 no edge, in any dataset, at any
+  // k, on any seed, can fire. umap-learn uses the identical condition.
+  //
+  // Do not "fix" this by shifting the epoch numbering: the parity test below
+  // pins that stepping to the end reproduces umap() bit-identically, and that
+  // is worth more than a cosmetic first click.
+  let st = lpState();
+  const init = st.frames[0].map(p => p.slice());
+  st = { ...st, ...LP.step(st) };
+  assert.deepEqual(st.frames[1], init, 'epoch 0 must be a no-op, by construction');
+  st = { ...st, ...LP.step(st) };
+  assert.notDeepEqual(st.frames[2], init, 'epoch 1 is where the layout starts moving');
 });
 
 test('step returns an empty partial once the epochs run out, which is how Play stops', () => {
@@ -2301,6 +2328,12 @@ in the order the instruments appear:
    them, and that is why the answer depends on a number you chose.
 5. Stage two, and what a seed is doing here at all. The graph had no seed; the layout does.
 6. `layout-play`: it starts as noise every time. Neither axis means anything.
+6b. **Candidate sentence, Andrew's call:** the first epoch genuinely does nothing. Every
+    edge is scheduled by how strongly it pulls, and even the strongest edge's turn does not
+    come up until epoch 1, so the first click of Step advances the counter without moving a
+    dot. Measured, not assumed, and umap-learn behaves identically. Worth saying on the page
+    because a reader who notices it will otherwise read it as broken. Cut it if it reads as
+    an apology for the instrument rather than a fact about the algorithm.
 7. `seed-roulette` with its own heading: **the distance between clusters does not mean
    anything.** A statement, not a hedge, and not a parenthesis - it is the most common
    misreading of a UMAP plot in published work.

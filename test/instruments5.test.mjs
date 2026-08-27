@@ -445,3 +445,11 @@ test('the closer never draws a cluster: the biometry has a gradient, not groups'
   assert.equal(roles(svg, 'wall'), 0, 'no partition boundary belongs in this figure');
   assert.equal(roles(svg, 'center'), 0, 'and no cluster centres either');
 });
+
+test('umap-vs-truth is deterministic: the same state renders the same markup', () => {
+  // SEED is a module constant, not state, so the poster frame and the live
+  // mount must produce byte-identical output from the same input. Mirrors
+  // knn-graph's "byte-identical markup" test and seed-roulette's own version -
+  // the three lesson-5 instruments read as one family.
+  assert.equal(UT.render(utState()), UT.render(utState()));
+});

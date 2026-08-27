@@ -42,7 +42,6 @@ export const defaults = {
   columns: null,                 // [BPD, HC, AC, FL]
   names: null,
   outcome: null,                 // gestational age, which the algorithm never sees
-  outcomeName: 'gestational age (weeks)',
   k: 15,
   note: '',
   labels_: { title: 'the algorithm never saw the dates. again.' },

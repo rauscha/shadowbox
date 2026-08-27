@@ -381,3 +381,67 @@ test('seed-roulette reaches the uniform square, so the honest failure is reachab
 test('seed-roulette is deterministic: the same state renders the same markup', () => {
   assert.equal(SR.render(srState()), SR.render(srState()));
 });
+
+// ------------------------------------------------------------ umap-vs-truth
+
+import * as UT from '../js/instruments/umap-vs-truth.mjs';
+
+const utState = (over = {}) => ({ ...UT.defaults, idKey: 'ut1',
+  columns: [BIO.bpd, BIO.hc, BIO.ac, BIO.fl], names: ['BPD', 'HC', 'AC', 'FL'],
+  outcome: BIO.ga, k: 15, ...over });
+
+test('umap-vs-truth draws every scan', () => {
+  const svg = UT.render(utState());
+  assert.match(svg, /^<svg[^>]*viewBox="0 0 640 460"/);
+  assert.equal(roles(svg, 'pt'), 350);
+});
+
+test('gestational age is graduated dot AREA, linear in the value, smallest at the youngest', () => {
+  // The Lichtenstein rule the owner set 2026-08-20: dots that show a gradient
+  // vary in size. Area linear in the value means the radius goes as its square
+  // root, and the smallest dot is the minimum of the range.
+  const lo = 20, hi = 40;
+  const rLo = UT.radiusOf(lo, lo, hi), rMid = UT.radiusOf(30, lo, hi), rHi = UT.radiusOf(hi, lo, hi);
+  assert.ok(rLo < rMid && rMid < rHi, 'the dot must grow with gestational age');
+  // Area linear in t: (r(t)^2 - r(0)^2) / (r(1)^2 - r(0)^2) === t
+  const areaFrac = v => (UT.radiusOf(v, lo, hi) ** 2 - rLo ** 2) / (rHi ** 2 - rLo ** 2);
+  assert.ok(Math.abs(areaFrac(30) - 0.5) < 0.01, `area at the midpoint was ${areaFrac(30)}, not 0.5`);
+});
+
+test('the closer prints the recovered number and the ceiling it is measured against', () => {
+  const svg = UT.render(utState());
+  const said = texts(svg, 'recovered').join(' ');
+  assert.match(said, /0\.9\d\d/, 'the number has to be in text, never only in the picture');
+  assert.match(said, /0\.9\d\d[\s\S]*0\.9\d\d/, 'a recovered value without its ceiling is not a claim');
+});
+
+test('the recovered value matches the measure the claims test pins', () => {
+  const st = utState();
+  const { Y, recovered, ceiling } = UT.embedding(st);
+  assert.equal(Y.length, 350);
+  assert.ok(Math.abs(recovered - 0.973) < 0.02, `recovered ${recovered}`);
+  assert.ok(Math.abs(ceiling - 0.972) < 0.01, `ceiling ${ceiling}`);
+});
+
+test('the neighbours slider commits on change, because it recomputes a whole embedding', () => {
+  // 96 ms in Node, 2 to 3x that in Safari. Fired per pixel of drag that is a
+  // stall, not a control. Spec §11.
+  const kc = UT.controls.find(c => c.id === 'k');
+  assert.equal(kc.commit, 'change');
+  assert.match(kc.label, /neighbour/i, 'lesson 4 spent a whole page teaching k as a count of groups');
+});
+
+test('a size key is drawn, because dot area is a channel the reader has to be taught', () => {
+  const svg = UT.render(utState());
+  assert.ok(roles(svg, 'key-dot') >= 3, 'at least three reference sizes');
+  assert.equal(roles(svg, 'key-dot'), texts(svg, 'key-label').length, 'every key dot carries its own number');
+});
+
+test('the closer never draws a cluster: the biometry has a gradient, not groups', () => {
+  // Spec §8. The embedding reproduces a gradient in gestational age and shows it
+  // as an arc that a reader will be tempted to cut into groups. Nothing in this
+  // figure may do the cutting for them.
+  const svg = UT.render(utState());
+  assert.equal(roles(svg, 'wall'), 0, 'no partition boundary belongs in this figure');
+  assert.equal(roles(svg, 'center'), 0, 'and no cluster centres either');
+});

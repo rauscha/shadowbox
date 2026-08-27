@@ -102,18 +102,78 @@ test('on biometry the numbers are 0.009 against 0.379, which is the sentence the
     loc.push(knnRecall(SETS.biometry.X, Y, 15));
     glo.push(distanceSpearman(SETS.biometry.X, Y));
   }
-  assert.ok(Math.max(...loc) - Math.min(...loc) < 0.03, 'local structure must barely move');
-  assert.ok(Math.max(...glo) - Math.min(...glo) > 0.25, 'global structure must move a lot');
+  // Fix round 1, finding 5: the old bounds (<0.03, >0.25) were 3x looser than
+  // measured. Re-derived directly (2026-08-27) over these exact seeds 1-10: local
+  // spread 0.00895, global spread 0.37869 - matches results/umap-measure.log
+  // section 2's biometry row to 3 decimals. These bounds leave only platform
+  // float-drift margin, not room for a real regression to hide in.
+  assert.ok(Math.max(...loc) - Math.min(...loc) < 0.012, 'local structure must barely move');
+  assert.ok(Math.max(...glo) - Math.min(...glo) > 0.35, 'global structure must move a lot');
 });
 
 // -------------------------------------------------- neighbours are structural (§7)
 
 test('the number of neighbours changes the picture: blobs local structure at k=2/5/15/50', () => {
+  // Fix round 1, finding 4: seed is fixed at 1, so these are exact deterministic
+  // values, not a seed spread - the old +-0.05 window was wider than the real
+  // adjacent gaps (0.04 from k=2->5, -0.02 from k=15->50), so it could not tell a
+  // reversal from noise. Re-derived exactly (2026-08-27): 0.680000, 0.720000,
+  // 0.793333, 0.772889. +-0.0007 covers 3-decimal display rounding (0.0005 half
+  // width) plus a small margin for platform float drift.
   const want = [0.680, 0.720, 0.793, 0.773];
-  [2, 5, 15, 50].forEach((k, i) => {
+  const got = [2, 5, 15, 50].map((k, i) => {
     const v = knnRecall(SETS.blobs.X, embed('blobs', k, 1), Math.min(k, 15));
-    assert.ok(Math.abs(v - want[i]) < 0.05, `k=${k}: ${v} against a measured ${want[i]}`);
+    assert.ok(Math.abs(v - want[i]) < 0.0007, `k=${k}: ${v} against a measured ${want[i]}`);
+    return v;
   });
+  // The claim itself is the relationship, not four isolated numbers: recall
+  // climbs from k=2 through k=15, then dips slightly at k=50.
+  assert.ok(got[0] < got[1] && got[1] < got[2],
+    `recall must climb from k=2 to k=15: got ${got.slice(0, 3).map(x => x.toFixed(3))}`);
+  assert.ok(got[2] > got[3],
+    `recall must dip at k=50 relative to k=15: got ${got[2].toFixed(3)} vs ${got[3].toFixed(3)}`);
+});
+
+test('k is structural: crescents class recovery climbs monotonically to perfect, k=2/5/15/50 (seed 1)', () => {
+  // Fix round 1, finding 6(b): spec §7's second neighbour-count row was never
+  // pinned anywhere in the suite. Matches results/umap-measure.log section 3's
+  // crescents row, km-purity column, to 3 decimals: 0.607, 0.627, 0.753, 1.000.
+  // Seed is fixed at 1 (deterministic), so tolerance is display-rounding
+  // (0.0005 half width) plus a small drift margin, not a seed spread.
+  const want = [0.607, 0.627, 0.753, 1.000];
+  const got = [2, 5, 15, 50].map((k, i) => {
+    const Y = embed('crescents', k, 1);
+    const v = purity(kmeansRun(Y, 2, mulberry32(7), { plusplus: true }).labels, SETS.crescents.truth, 2);
+    assert.ok(Math.abs(v - want[i]) < 0.0006, `k=${k}: ${v} against a measured ${want[i]}`);
+    return v;
+  });
+  // The claim: k is structural here too - class recovery climbs monotonically
+  // with k, all the way to perfect at k=50.
+  assert.ok(got[0] < got[1] && got[1] < got[2] && got[2] < got[3],
+    `class recovery must climb monotonically with k: got ${got.map(x => x.toFixed(3))}`);
+});
+
+test('min_dist is cosmetic on blobs: local structure moves, class recovery does not', () => {
+  // Fix round 1, finding 6(a): spec §5 requires the prose to tell the reader
+  // min_dist is cosmetic, so it must be pinned. Matches results/umap-measure.log
+  // section 4 (k=15, seed=1, deterministic - no seed spread here): knn-recall
+  // ranges 0.7711-0.8453 across min_dist 0 to 1.0; purity against the blobs
+  // truth is 1.000 at every value tested. Window half-widths (0.006) cover
+  // display rounding plus a small drift margin.
+  const S = SETS.blobs;
+  const recalls = [];
+  for (const md of [0, 0.1, 0.35, 0.6, 0.75, 0.9, 1.0]) {
+    const Y = umap(S.X, { k: 15, seed: 1, nEpochs: 200, minDist: md }).Y;
+    recalls.push(knnRecall(S.X, Y, 15));
+    const pur = purity(kmeansRun(Y, S.k, mulberry32(7), { plusplus: true }).labels, S.truth, S.k);
+    assert.equal(pur, 1, `min_dist=${md}: class recovery must stay perfect, got ${pur}`);
+  }
+  inRange(Math.min(...recalls), 0.765, 0.777, 'min_dist sweep low end');
+  inRange(Math.max(...recalls), 0.839, 0.851, 'min_dist sweep high end');
+  // The relationship that makes "cosmetic" a claim at all: local structure
+  // genuinely moves across the sweep while class recovery never does.
+  assert.ok(Math.max(...recalls) - Math.min(...recalls) > 0.05,
+    'min_dist must visibly change local structure, or "cosmetic" has nothing to contrast with');
 });
 
 // ------------------------------------- UMAP is not a strict improvement on k-means
@@ -209,15 +269,50 @@ test('the embedding recovers gestational age as well as the four raw measurement
   // answer. Approved 2026-08-27 as the closer's ONLY number.
   const ga = BIO.ga;
   const ceiling = gaFromNeighbours(SETS.biometry.X, ga, 15);
-  assert.ok(Math.abs(ceiling - 0.972) < 0.01, `ceiling ${ceiling} against a measured 0.972`);
+  // Fix round 1, finding 3: the ceiling has no seed dependence at all - it is a
+  // pure function of the committed biometry data via a fixed k=15 neighbour
+  // query, so it is exactly deterministic. 0.972 is a display value rounded to
+  // 3 decimals (rounding half-width 0.0005); +0.0001 covers platform float
+  // drift. Exact measured value (2026-08-27): 0.972116. The old +-0.01 was
+  // ~20x looser than this needs.
+  assert.ok(Math.abs(ceiling - 0.972) < 0.0006, `ceiling ${ceiling} against a measured 0.972`);
+
+  // Fix round 1, finding 1: the relationship IS the claim - "as well as the raw
+  // measurements do" means each embedding value must sit close to the ceiling,
+  // not merely fall inside a wide absolute window that says nothing about the
+  // other side of the comparison. Measured max |embedding - ceiling| across
+  // k in {5,15,50}, all 10 seeds (2026-08-27): 0.00191 (worst case, k=50).
+  // 0.0025 leaves a small margin without hiding a real regression away from
+  // the ceiling.
+  const CEILING_EPS = 0.0025;
+
+  // Fix round 1, finding 2: the old +-0.02/0.025-wide windows were 8-10x looser
+  // than the measured 10-seed spread at each k. Re-derived exactly (2026-08-27,
+  // matches results/umap-measure.log section 9 to 3 decimals): k=5
+  // 0.971008-0.972914 (spread 0.0019), k=15 0.972146-0.973690 (spread 0.0015),
+  // k=50 0.971634-0.974030 (spread 0.0024). +-0.003 on each bound and a 0.004
+  // spread ceiling cover platform float drift while staying tight to what was
+  // actually measured.
+  const windows = {
+    5:  { min: 0.971008, max: 0.972914 },
+    15: { min: 0.972146, max: 0.973690 },
+    50: { min: 0.971634, max: 0.974030 },
+  };
+  const BOUND_TOL = 0.003;
+  const SPREAD_CEILING = 0.004;
 
   for (const k of [5, 15, 50]) {
     const v = [];
     for (let seed = 1; seed <= 10; seed++) v.push(gaFromNeighbours(embed('biometry', k, seed), ga, 15));
-    inRange(Math.min(...v), 0.955, 0.975, `k=${k} low end`);
-    inRange(Math.max(...v), 0.960, 0.985, `k=${k} high end`);
-    assert.ok(Math.max(...v) - Math.min(...v) < 0.02,
+    const w = windows[k];
+    inRange(Math.min(...v), w.min - BOUND_TOL, w.min + BOUND_TOL, `k=${k} low end`);
+    inRange(Math.max(...v), w.max - BOUND_TOL, w.max + BOUND_TOL, `k=${k} high end`);
+    assert.ok(Math.max(...v) - Math.min(...v) < SPREAD_CEILING,
       `k=${k}: the closer must be rock stable across seeds, spread was ${(Math.max(...v) - Math.min(...v)).toFixed(4)}`);
+    for (const x of v) {
+      assert.ok(Math.abs(x - ceiling) < CEILING_EPS,
+        `k=${k}: embedding value ${x} strayed ${Math.abs(x - ceiling).toFixed(4)} from the ceiling ${ceiling.toFixed(4)} - the claim is that they match`);
+    }
   }
 });
 

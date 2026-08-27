@@ -25,7 +25,20 @@
 - [x] ~~Biometry sim parameters~~ - Andrew accepted them ("doesn't have to be a
       worthwhile study question, can just show association").
 
+## Not this project - moved out 2026-08-27
+The MFM/OB research ideas explored this session (unsupervised embedding of growth
+trajectories, the Doppler cascade, screening panels) are **research, not teaching**, and
+have been spun out to keep this project's process clean:
+- `C:\claudeyardesearch-ideas\MFM-EMBEDDING-STUDIES.md` - the idea register.
+- `C:\claudeyardgr-trajectory-power\` - the power simulation behind them.
+Do not pull that thread back in here. The one crossover that *is* shadowbox's: the UCI
+Cardiotocography set is wanted as a **teaching** dataset for a future lesson - real,
+public, 21 features, two nested truths, and heavily benchmarked (so useless as research).
+
 ## Accepted, not verified
+- **UMAP runs live in the browser.** Timed at 96 ms worst case (biometry, n=350, k=50,
+  200 epochs) - but in Node/V8. Safari and Firefox are inferred to be 2-3x slower, which
+  keeps it under 300 ms. That inference wants one real-hardware check before M7 closes.
 - **iOS Safari touch behaviour.** The mobile drag fix (commit `c397076`) was measured
   only in Blink under DevTools mobile emulation. `touch-action` on SVG children is the
   one half of it that no test and no measurement exercises. Andrew accepted it as-is on

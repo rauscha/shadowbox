@@ -1,70 +1,66 @@
-# Session hand-off - 2026-08-26 (machine: desktop)
+# Session hand-off - 2026-08-27 (machine: desktop)
 
 ## STATE (read this first)
 
-- Branch: `main`, clean, pushed, synced with `origin/main`. (No SHA pinned here on purpose
-  - it goes stale the moment this file is itself committed.)
-- **M6 is complete and lesson 4 is live** at https://andrewrausch.com/shadowbox/kmeans.html.
-  Four lessons now ship: least squares, covariance, PCA, k-means. 177 tests pass, poster
-  generation is idempotent, and the page teaches with JavaScript off. Every number in the
-  prose is pinned by a test that was written before the prose existed. The next milestone
-  is M7, lesson 5, UMAP, and nothing blocks starting it.
+- Branch: `main`, clean, pushed, synced with `origin/main`.
+- **M7's spec is written and waiting on your ruling**:
+  `docs/superpowers/specs/2026-08-27-shadowbox-umap-design.md`. It was measured before it
+  was written, per the standing rule - `js/math/umap.mjs` is already built and pinned
+  against umap-learn 0.5.12, and `node --test` is green at **195 tests**. Nothing is
+  blocked: the moment the spec is approved, the next step is `writing-plans` for the
+  build. Four lessons remain live at https://andrewrausch.com/shadowbox/.
 
 ## Done this session
 
-- **Lesson 4 shipped end to end**: four instruments (`kmeans-step`, `restart-roulette`,
-  `elbow`, `label-vs-truth`), `data/blobs.json`, `js/lib/marks.mjs` (the shape channel),
-  `kmeans.html`, four committed poster frames, nav and index wired.
-- **Prose cleared as written.** The draft lives at `.handoff/LESSON-4-PROSE-DRAFT.md` and
-  its header records what was ruled, including two short sentences that were cleared with
-  them in and must not be tidied away later.
-- **Mobile drag bug fixed** (`c397076`). Touch drags were dying after one animation frame
-  because the node under the finger was destroyed on every re-render. Drag listeners now
-  live on the mount container, controls update in place, and `touch-action: none` is
-  scoped to handles and sliders only so pages still scroll.
-- **Keyboard defect fixed.** The six roulette panels carried `role="button"` and
-  `tabindex="0"` but the page listened only for `click`, so they did nothing for anyone
-  not using a mouse. Enter and Space now work.
-- **Two untested colorblind-shape holes closed.** Nothing asserted that clusters get
-  different shapes on `restart-roulette`, or that `kmeans-step`'s legend matches the
-  points it keys. Both were holes in the tests, not the drawing.
-- `.gitattributes` added (`* text=auto eol=lf`), measured to cost zero content diff.
+- **`apps.html` card refreshed** (site repo `df44fbe`). It had not been un-actioned - it
+  went in 2026-08-22 and had simply frozen at three lessons. You rewrote the copy
+  yourself; the new wording deliberately names **no lessons** so it cannot go stale again.
+- **`index.html` fixed twice** (`a417b0a`). It enumerated three lessons in both the meta
+  description and the opening paragraph, and - more seriously - promised "real fetal
+  measurements". The biometry is 350 simulated scans and every lesson page says so, with
+  "not patients" on the figures; the landing page was the one surface contradicting them.
+- **UMAP core built and pinned** (`ff8e17e`): `js/math/umap.mjs`, `reference/umap-probe.py`
+  (ground truth from umap-learn), `reference/umap-measure.mjs`, `test/umap.test.mjs`.
+  Every rho exact, every sigma and edge weight within 1e-5, the a/b fit within 5.1e-6
+  across a 28-point grid.
+- **M7 spec written** (`4813bfc`). Four instruments, no new data files, **no contract
+  change** - M6's Play loop already takes it.
 
 ## Next up
 
-1. **M7, lesson 5, UMAP.** Spec first. `NEXT-STEPS.md` records what it inherits (the two
-   "start from zero" blocks, the Play surface built to take a precomputed frame index, the
-   shape channel in `marks.mjs`) and the one thing it must **not** inherit blindly: the
-   k=6 cap, which binds only instruments drawing membership as a mark per point. This is a
-   large multi-task build - commit after each task and consider `/compact` between them.
-2. **`apps.html` card on andrewrausch.com** - still open, unblocked since 2026-08-21,
-   never actioned. Carried in `.handoff/PENDING-DECISIONS.md`.
-
-   Nothing else is outstanding. The worktree scan found no stranded work: every other
-   sandbox repo is either clean or holding local-only changes on purpose.
+1. **Rule on the M7 spec.** Same gate lesson 4's spec had - brief or read cold. Its §2
+   collects the four things measurement reversed, and each one changes a design decision,
+   so that section is the one that actually needs you.
+2. **Then `writing-plans` for M7.** Large multi-task build - commit after each task and
+   consider `/compact` between them.
+3. **One real-hardware check before M7 closes:** all UMAP timings are Node/V8. The claim
+   that it runs live in a browser is an inference from 96 ms worst case, not a measurement.
 
 ## Watch out for
 
-- **`hp-review`'s uncommitted work is deliberate and local-only.** Ruled 2026-08-26. It
-  looks alarming from a worktree scan - 984 insertions across 12 files, last commit two
-  weeks ago - and it is meant to stay that way. **Do not commit it, do not push it, and do
-  not flag it as stranded next time.** Recorded in the root `INDEX.md` too, so a future
-  scan sees it before raising the alarm. `hp-data-batch1` is a worktree of the same repo
-  on a detached HEAD with 12MB of untracked pipeline output; same category, leave it.
-- Loose untracked files elsewhere: `mfm-round-2/scripts/lor_orchestrate.py`,
-  `mfm-round-3/SESSION-3-NOTES.md`, `mfm-round-4/SESSION-4-NOTES.md`, and two stale
-  `.log.prev` files in `digi-me`. `app-review` is clean and its side branch is merged.
-- **iOS Safari is accepted, not verified.** Every measurement of the mobile drag fix was
-  Blink under DevTools emulation. Ismely will check a real iPhone. If drags still die
-  mid-gesture, that is a *second* mechanism and wants its own investigation, not a re-run
-  of the same fix. Recorded under "Accepted, not verified" in `NEXT-STEPS.md`.
-- **`pca.html:888` keeps "gestational age wearing a disguise"** by explicit ruling, even
-  though the same metaphor was cut from lesson 4. Lesson 3's prose was approved before
-  that rule existed. `PROSE-GUIDE.md` rule 14 carries the standing exception. Do not
-  sweep it out for consistency.
-- **The house-rules test sweep drives a hand-written list of four instrument names**
-  (`test/instruments4.test.mjs`). Lesson 5's instruments must be added to it or it passes
-  by simply not looking at them.
-- Filed as future work, deliberately not done: `band-mean`/`band-n` inside the clip group
-  in `label-vs-truth` (cannot trigger on fixed data), the double-mount case in
-  `hydrate.mjs` (no live caller), and three small refactors that belong with lesson 5.
+- **The research thread has moved out of this repo and must not come back.** The
+  MFM/OB study ideas that came up in this session now live at
+  `C:\claudeyard\research-ideas\MFM-EMBEDDING-STUDIES.md`, with the supporting power
+  simulation at `C:\claudeyard\fgr-trajectory-power\`. Shadowbox is the teaching project;
+  keeping real-research work here dilutes both. One thing does belong here: the **UCI
+  Cardiotocography** dataset was wanted as a *teaching* dataset for a future lesson.
+- **Four things measurement reversed, all recorded in the spec's §2.** Most consequential:
+  UMAP runs live at 96 ms, so the precomputed frame index that the *approved* lesson-4
+  spec designed for is unnecessary. That is a correction to an approved spec.
+- **`births.json` is dropped from lesson 5 only.** 78 duplicate rows of 400, 129 points
+  whose nearest neighbour sits at distance 0, ~22% of rows where the k-th neighbour is
+  decided by rounding. It stays in lessons 1, 2 and 4, which never ask who your
+  neighbours are.
+- **`test/instruments4.test.mjs` drives a hand-written list of four instrument names.**
+  Lesson 5's four must be added or the house-rules sweep passes by not looking at them.
+- **Poster frames vs a live-computed instrument** is a new problem lesson 4 did not have:
+  the poster must be generated from a fixed seed and the live instrument must start from
+  that same seed, or the page visibly jumps when JS loads.
+- **`pca.html:888` keeps "gestational age wearing a disguise"** by explicit ruling
+  (`PROSE-GUIDE.md` rule 14). Do not sweep it out for consistency.
+- **iOS Safari is accepted, not verified** - Ismely was checking the mobile drag fix on a
+  real iPhone. If drags still die mid-gesture, that is a *second* mechanism and wants its
+  own investigation, not a re-run of the same fix.
+- **`hp-review`'s uncommitted work is deliberate and local-only** (ruled 2026-08-26). Do
+  not commit it, do not push it, do not flag it as stranded. Same for the
+  `hp-data-batch1` worktree of that repo.

@@ -28,3 +28,20 @@ test('lesson 4 teaches with JavaScript off', () => {
   const html = readFileSync(new URL('../kmeans.html', import.meta.url), 'utf8');
   assert.equal((html.match(/<svg/g) || []).length >= 4, true);
 });
+
+test('every lesson-5 poster marker exists and holds a rendered SVG', () => {
+  const html = readFileSync(new URL('../umap.html', import.meta.url), 'utf8');
+  for (const key of ['knn-graph-crescents', 'layout-play-blobs', 'seed-roulette-blobs', 'umap-vs-truth-biometry']) {
+    const m = html.match(new RegExp(`<!-- poster:${key} -->([\\s\\S]*?)<!-- /poster:${key} -->`));
+    assert.ok(m, `marker missing: ${key}`);
+    assert.match(m[1], /<svg[^>]*viewBox="0 0 640 460"/, `${key} holds no rendered SVG`);
+    assert.ok(!m[1].includes(String.fromCharCode(0x2014)), `${key} carries an em-dash`);
+  }
+});
+
+test('lesson 5 teaches with JavaScript off', () => {
+  // The posters are the archival layer. If a figure is empty without JS, the
+  // page does not teach in 2041 and does not print today.
+  const html = readFileSync(new URL('../umap.html', import.meta.url), 'utf8');
+  assert.equal((html.match(/<svg/g) || []).length >= 4, true);
+});

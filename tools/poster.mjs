@@ -17,6 +17,10 @@ import * as kmeansStep from '../js/instruments/kmeans-step.mjs';
 import * as restartRoulette from '../js/instruments/restart-roulette.mjs';
 import * as elbow from '../js/instruments/elbow.mjs';
 import * as labelVsTruth from '../js/instruments/label-vs-truth.mjs';
+import * as knnGraph from '../js/instruments/knn-graph.mjs';
+import * as layoutPlay from '../js/instruments/layout-play.mjs';
+import * as seedRoulette from '../js/instruments/seed-roulette.mjs';
+import * as umapVsTruth from '../js/instruments/umap-vs-truth.mjs';
 import { synthLine, ols, detrend, standardize } from '../js/math/core.mjs';
 
 export function injectPoster(html, key, svg) {
@@ -196,6 +200,58 @@ const CONFIGS = [{
           outcome: d.ga, k: 3,
           note: '350 simulated scans, 20-40 weeks',
           labels_: { title: 'the algorithm never saw the dates. look what it found.' } };
+      },
+    },
+  ],
+}, {
+  file: 'umap.html',
+  posters: [
+    {
+      key: 'knn-graph-crescents', instrument: knnGraph,
+      // Crescents at 5 neighbours: the graph runs ALONG each arc and does not yet
+      // bridge between them. That single picture is the mechanism behind every
+      // crescents number in the claims table.
+      state: () => {
+        const c = JSON.parse(readFileSync(inRepo('data/blobs.json'), 'utf8')).configs.crescents;
+        return { ...knnGraph.defaults, idKey: 'kg-cres', dataset: 'crescents',
+          columns: [c.xs, c.ys], truth: c.labels, k: 5,
+          note: knnGraph.DATASETS.crescents.note,
+          labels_: { title: 'who is near whom. no seed, no restart, one answer.' } };
+      },
+    },
+    {
+      key: 'layout-play-blobs', instrument: layoutPlay,
+      // Epoch 0, seed 1, matching the live mount exactly: the poster shows the
+      // NOISE the layout starts from, which is the thing the reader is about to
+      // watch resolve. Seed 1 here and seed 1 in umap.html, or the page jumps.
+      state: () => {
+        const c = JSON.parse(readFileSync(inRepo('data/blobs.json'), 'utf8')).configs.blobs;
+        const base = { ...layoutPlay.defaults, idKey: 'lp-blobs', dataset: 'blobs',
+          columns: [c.xs, c.ys], truth: c.labels, k: 15, seed: 1,
+          note: layoutPlay.DATASETS.blobs.note,
+          labels_: { title: 'press Play. it starts as noise, every time.' } };
+        return { ...base, ...layoutPlay.start(base, 1) };
+      },
+    },
+    {
+      key: 'seed-roulette-blobs', instrument: seedRoulette,
+      state: () => {
+        const c = JSON.parse(readFileSync(inRepo('data/blobs.json'), 'utf8')).configs.blobs;
+        return { ...seedRoulette.defaults, idKey: 'sr-blobs', dataset: 'blobs',
+          columns: [c.xs, c.ys], truth: c.labels, k: 15,
+          note: seedRoulette.DATASETS.blobs.note,
+          labels_: { title: 'six seeds. same data, same neighbours.' } };
+      },
+    },
+    {
+      key: 'umap-vs-truth-biometry', instrument: umapVsTruth,
+      state: () => {
+        const d = JSON.parse(readFileSync(inRepo('data/biometry.json'), 'utf8'));
+        return { ...umapVsTruth.defaults, idKey: 'ut-bio',
+          columns: [d.bpd, d.hc, d.ac, d.fl], names: ['BPD', 'HC', 'AC', 'FL'],
+          outcome: d.ga, k: 15,
+          note: '350 simulated scans, 20-40 weeks. not patients.',
+          labels_: { title: 'the algorithm never saw the dates. again.' } };
       },
     },
   ],

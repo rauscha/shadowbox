@@ -134,10 +134,13 @@ export function render(state) {
   }
   parts.push(`</g>`);
 
-  // st.note is what setDataset stashes for a caller that only reads state; a
-  // state built by hand (as the tests do) never populates it, so fall back to
-  // the same DATASETS note setDataset would have copied. Either way it is the
-  // one place the reader is told the biometry graph saw four columns, not two.
+  // kmeans-step.mjs sets the precedent: it reads its dataset's note straight
+  // out of DATASETS rather than trusting state to carry it. Falling back to
+  // cfgOf(st).note here substitutes exactly the value setDataset would have
+  // copied into st.note, so the two can never disagree - and it means a mount
+  // that never threads note through state (kmeans-step's own primary mount in
+  // kmeans.html is one) still labels its dataset. This is the one place the
+  // reader is told the biometry graph saw four columns, not two.
   const note = st.note || cfgOf(st).note;
   if (note) parts.push(`<text data-role="note" x="${PLOT.x0}" y="${H - 14}" font-size="11" fill="var(--text-light)">${note}</text>`);
   parts.push(`</svg>`);

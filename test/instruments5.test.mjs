@@ -106,6 +106,16 @@ test('biometry computes its neighbours on all four measurements, not on the two 
     Math.hypot(Number(e.x2) - Number(e.x1), Number(e.y2) - Number(e.y1)));
   const sorted = [...len].sort((a, b) => a - b);
   const med = sorted[sorted.length >> 1];
+  // Measured, not guessed: on this fixture the ratio is 4.425 (max 38.700,
+  // median 8.746, over 1200 edges), so the 4x threshold clears with roughly
+  // 10 percent of headroom, not a comfortable margin. That is safe rather than
+  // fragile because the quantity is exactly reproducible: knn/fuzzyGraph in
+  // js/math/umap.mjs take no seed (see that file's header comment), and
+  // data/biometry.json is a committed fixture generated with a fixed seed, so
+  // rerunning this test can never move the ratio. If this assertion ever
+  // fails, it means the kNN/fuzzy-graph algorithm, the default k, or the
+  // biometry fixture changed underneath it - a real signal worth having, not
+  // flakiness to paper over.
   assert.ok(Math.max(...len) > 4 * med,
     'if no edge looks wrong in the shadow, the figure is not teaching what it was chosen to teach');
 });

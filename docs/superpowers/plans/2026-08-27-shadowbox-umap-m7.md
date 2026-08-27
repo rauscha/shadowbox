@@ -741,11 +741,25 @@ recompute, and `hydrate.mjs` binds `input`, which fires on every pixel of a drag
 
 - [ ] **Step 1: Write the failing test**
 
-Append to `test/hydrate.test.mjs`, matching whatever DOM stub the file already uses for
-`bindControls`. If the file has no DOM stub (its header says DOM binding is exercised in
-the browser QA pass), assert on the pure surface instead - that `visibleControls` and
-`controlsMarkup` treat a `commit`-bearing slider exactly like any other slider, so the
-option cannot change what gets rendered or how identity is keyed:
+Append to `test/hydrate.test.mjs`. **Write two tests, not one.**
+
+`test/hydrate.test.mjs` already stubs `globalThis.document` and hand-rolls fake element
+objects to exercise `mount()` without a browser - see the existing tests
+`'the Play loop never leaves the same callback scheduled twice'`,
+`'pointer and keyboard drag listeners live on the container, attached exactly once, never
+on the replaceable svg'`, and `'rerender() actually uses updateControls, and never rebinds
+a control that survived in place'`. Mirror that machinery. A test that only checks
+`controlsMarkup` cannot fail if `bindControls` binds the wrong event, which is the entire
+behaviour being added.
+
+**Test 1, the real one: the declared event is the event actually bound.** Mount an
+instrument whose controls are two sliders - one plain, one carrying `commit: 'change'` -
+and record the event names each fake `<input>` node receives through `addEventListener`.
+Assert the plain slider got `input` and the committing slider got `change`, and that
+neither got both. Model the fake nodes on whichever existing test in this file is closest;
+do not invent a new stub style.
+
+**Test 2, the guard: the option never leaks into the markup or into control identity.**
 
 ```js
 test('a slider that commits on change still renders and keys identically', () => {

@@ -393,7 +393,9 @@ call, not this plan's.
 - [ ] **Step 9: Run the whole suite and commit**
 
 Run: `node --test`
-Expected: 202 pass, 0 fail (195 existing + 7 new).
+Expected: 202 pass, 0 fail (195 existing + 7 new). Test counts stated anywhere in
+this plan are indicative: report the actual count, and treat a mismatch as
+information rather than as a target to hit.
 
 ```bash
 git add js/lib/embed-metrics.mjs test/embed-metrics.test.mjs reference/umap-measure.mjs \
@@ -1148,6 +1150,7 @@ Append to `test/instruments5.test.mjs`:
 // ------------------------------------------------------------- layout-play
 
 import * as LP from '../js/instruments/layout-play.mjs';
+import * as UMAP from '../js/math/umap.mjs';
 
 const lpState = (over = {}) => {
   const c = BLOBS.configs.blobs;
@@ -1221,6 +1224,20 @@ test('layout-play never produces a NaN coordinate at any min_dist the slider rea
         `min_dist ${minDist} produced ${p}, which draws as an empty figure and reports nothing`);
     }
   }
+});
+
+test('stepping to the end reproduces umap() exactly, so the page and the tests agree', () => {
+  // start() must consume the rng in the same order umap() does - graph, a/b fit,
+  // random initialisation, then epochs - or the instrument would draw a
+  // trajectory no claim in test/umap-claims.test.mjs describes. Bit-identical is
+  // the right bar here: both paths call the same optimizeEpoch with the same
+  // schedule, so anything less means the orders diverged.
+  const c = BLOBS.configs.blobs;
+  const X = c.xs.map((x, i) => [x, c.ys[i]]);
+  let st = lpState({ seed: 7, k: 15 });
+  for (let i = 0; i < LP.N_EPOCHS; i++) st = { ...st, ...LP.step(st) };
+  const direct = UMAP.umap(X, { k: 15, seed: 7, nEpochs: LP.N_EPOCHS });
+  assert.deepEqual(st.frames[st.frames.length - 1], direct.Y);
 });
 
 test('layout-play draws every point and reports which epoch is on screen', () => {
@@ -2030,10 +2047,11 @@ The hydration script, modelled on `kmeans.html`'s:
     import * as UT from './js/instruments/umap-vs-truth.mjs';
     import { createStore, mount } from './js/lib/hydrate.mjs';
 
-    // births.json is deliberately absent. 78 duplicate rows out of 400 and about
-    // 22 percent of k-th neighbours decided by floating-point rounding make it
-    // unusable for anything built on a neighbour graph. It stays in lessons 1, 2
-    // and 4, which never ask who your neighbours are. Spec §2(b).
+    // The birth-weight dataset is deliberately absent. 78 duplicate rows out of
+    // 400 and about 22 percent of k-th neighbours decided by floating-point
+    // rounding make it unusable for anything built on a neighbour graph. It
+    // stays in lessons 1, 2 and 4, which never ask who your neighbours are.
+    // Spec §2(b). Task 10's sweep pins that this page never loads it.
     const load = name => fetch(`data/${name}.json`).then(r => r.json());
 
     Promise.all([load('blobs'), load('biometry')]).then(([blobs, bio]) => {
@@ -2384,14 +2402,21 @@ test('the lesson-5 sources are free of em-dashes too', () => {
   }
 });
 
-test('nothing in lesson 5 reads births.json', () => {
+test('nothing in lesson 5 loads the birth-weight dataset', () => {
   // 78 duplicate rows out of 400 and about 22 percent of k-th neighbours decided
   // by rounding. Unusable for anything built on a neighbour graph, and dropped
   // from this lesson only. Spec §2(b).
+  //
+  // This matches on how the file would be LOADED, not on the word appearing.
+  // A bare substring check would forbid the page from explaining why the
+  // dataset is missing, which is a sentence the prose may well want.
   const files = ['js/instruments/knn-graph.mjs', 'js/instruments/layout-play.mjs',
     'js/instruments/seed-roulette.mjs', 'js/instruments/umap-vs-truth.mjs', 'umap.html'];
   for (const f of files) {
-    assert.ok(!readFileSync(new URL(`../${f}`, import.meta.url), 'utf8').includes('births'), f);
+    const src = readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+    assert.ok(!/data\/births/.test(src), `${f} references the births data file`);
+    assert.ok(!/load\(\s*['"]births['"]\s*\)/.test(src), `${f} loads the births dataset`);
+    assert.ok(!/births\.json/.test(src), `${f} names the births data file`);
   }
 });
 
